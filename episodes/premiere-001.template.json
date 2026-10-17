@@ -1,0 +1,40 @@
+{
+  "schema": "echo.episode/1",
+  "id": "premiere-001",
+  "status": "template — no creative content yet; every \"TBD\" is a founder input",
+  "title": {"ka": "TBD", "en": "ECHO Premiere #001"},
+  "lang": "ka",
+  "durationSec": "TBD",
+  "noAiVideo": true,
+  "people": [
+    {"id": "producer", "role": "producer", "name": "TBD"},
+    {"id": "creator-art", "role": "creator", "specialty": "Art", "name": "TBD"},
+    {"id": "creator-music", "role": "creator", "specialty": "Music", "name": "TBD"}
+  ],
+  "agents": [
+    {"id": "agent-art", "owner": "creator-art", "client": "TBD (Claude Code / Codex / Gemini CLI / Cursor)"},
+    {"id": "agent-music", "owner": "creator-music", "client": "TBD"},
+    {"id": "agent-house", "owner": "producer", "client": "TBD", "note": "writes house lines only; cannot approve"}
+  ],
+  "presenters": [
+    {"id": "presenter-1", "name": "TBD", "castActor": "TBD", "voices": {"elevenlabs": "TBD"}},
+    {"id": "presenter-2", "name": "TBD", "castActor": "TBD", "voices": {"elevenlabs": "TBD"}}
+  ],
+  "segments": [
+    {"id": "intro", "module": "host", "title": {"ka": "TBD"}, "owner": "producer", "house": true, "duration": "TBD",
+     "spoken": {"presenters": ["presenter-1", "presenter-2"], "writers": ["agent-house"], "maxChars": 600}},
+    {"id": "art-intro", "module": "host", "title": {"ka": "TBD"}, "owner": "creator-art", "duration": "TBD",
+     "spoken": {"presenters": ["presenter-1"], "writers": ["agent-art"], "maxChars": 300}},
+    {"id": "art", "module": "art", "title": {"ka": "TBD"}, "owner": "creator-art", "duration": "TBD",
+     "assets": [{"kind": "image", "count": "TBD", "minCount": 1, "maxCount": 6, "rightsDeclared": "required", "credit": "required", "license": "required"}]},
+    {"id": "premiere-intro", "module": "host", "title": {"ka": "TBD"}, "owner": "creator-music", "duration": "TBD",
+     "spoken": {"presenters": ["presenter-2"], "writers": ["agent-music"], "maxChars": 300}},
+    {"id": "premiere", "module": "music", "title": {"ka": "TBD"}, "owner": "creator-music", "duration": "TBD", "booking": "confirmed",
+     "assets": [{"kind": "audio", "count": 1, "minSeconds": "duration", "rightsDeclared": "required", "credit": "required", "license": "required"}]},
+    {"id": "discussion", "module": "host", "title": {"ka": "TBD"}, "owner": "producer", "house": true, "duration": "TBD",
+     "spoken": {"presenters": ["presenter-1", "presenter-2"], "writers": ["agent-house", "agent-art", "agent-music"], "maxChars": 1200,
+       "rule": "each creator's agent writes only lines about its own creator's work; no factual news claims"}},
+    {"id": "closing", "module": "host", "title": {"ka": "TBD"}, "owner": "producer", "house": true, "duration": "TBD",
+     "spoken": {"presenters": ["presenter-1", "presenter-2"], "writers": ["agent-house"], "maxChars": 400}}
+  ]
+}
