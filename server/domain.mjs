@@ -124,6 +124,27 @@ export class BroadcastDesk {
     this.contentChanged(actor, `${seg.title} media replaced`, [segmentId]);
     return clone(seg);
   }
+  // ---------- voice (3.2) ----------
+  // Who may put words in a segment's mouth: its owner, or the producer for house segments. Checked before any
+  // render is paid for. Agents never render or approve; people do.
+  requireVoiceRights(actor, segmentId) {
+    const person = this.requireHuman(actor), seg = this.segment(segmentId);
+    if (seg.ownerId !== person.id && !(seg.house && person.role === 'producer')) fail('forbidden', `Only ${seg.house ? 'the producer' : 'the owner'} can voice ${seg.title}`);
+    if (seg.module !== 'host') fail('bad_request', `${seg.title} has no spoken part (only host segments can be voiced yet)`);
+    return seg;
+  }
+  // A rendered voice is a new asset: a new revision whose exact audio bytes need review like any other media.
+  setVoice(actor, {segmentId, lines, lang, asset}) {
+    const seg = this.requireVoiceRights(actor, segmentId);
+    const voiceAsset = {id: 'voice', kind: 'audio', upload: true, rightsDeclared: true, declaredBy: actor.id, title: `${seg.title}: voice`, credit: `Synthetic voice (${asset.voice.provider})`, license: 'Rendered for ECHO', ...asset};
+    seg.assets = [...seg.assets.filter(a => a.id !== 'voice'), voiceAsset];
+    seg.content = {...seg.content, voice: {assetId: 'voice', lang, lines: clone(lines)}};
+    seg.revision++; seg.state = 'submitted'; seg.approval = null;
+    this.indexMedia(asset.sha256, voiceAsset);
+    this.log(actor, 'voice_rendered', `${seg.title}: ${lines.length} line(s) voiced by ${asset.voice.provider}${asset.voice.cacheHit ? ' (cached)' : ''}; revision ${seg.revision} needs review of this exact audio`, {segmentId, revision: seg.revision, sha256: asset.sha256, provider: asset.voice.provider});
+    this.contentChanged(actor, `${seg.title} voice rendered`, [segmentId]);
+    return clone(seg);
+  }
   // Content changed outside a proposal: the programme gets a new revision, open proposals are rebased onto it
   // (durations are unaffected) and every approval already given for them is void, because people approved
   // what they saw before the change.

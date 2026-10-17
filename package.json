@@ -6,19 +6,22 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "npm run test:studio && npm run test:broadcast",
+    "test": "npm run test:studio && npm run test:broadcast && npm run test:voice && npm run test:episode",
     "test:studio": "node tests/studio-transport.mjs > /dev/null && node tests/studio-expressions.mjs && node --no-warnings --experimental-loader=./tests/three-loader.mjs tests/studio-rig.mjs && node --no-warnings --experimental-loader=./tests/three-loader.mjs tests/studio-materials.mjs && node --no-warnings --experimental-loader=./tests/three-loader.mjs tests/nova-study.mjs",
     "test:broadcast": "node --test --test-timeout=20000 tests/broadcast/*.test.mjs",
     "start": "node server/server.mjs",
     "test:browser": "node tests/browser/board.mjs",
     "test:broadcast-browser": "node tests/browser/broadcast.mjs",
     "test:audio-stall": "node tests/browser/audio-stall.mjs",
-    "test:browser-all": "npm run test:browser && npm run test:board-lan && npm run test:audio-stall && npm run test:art-fault && npm run test:art-display-fault && npm run test:countdown-reject && npm run test:activation-race && npm run test:broadcast-browser",
+    "test:browser-all": "npm run test:browser && npm run test:board-lan && npm run test:audio-stall && npm run test:art-fault && npm run test:art-display-fault && npm run test:countdown-reject && npm run test:activation-race && npm run test:voice-playout && npm run test:broadcast-browser",
     "test:board-lan": "node tests/browser/board-lan.mjs",
     "test:art-fault": "node tests/browser/art-fault.mjs",
     "test:art-display-fault": "node tests/browser/art-display-fault.mjs",
     "test:countdown-reject": "node tests/browser/countdown-reject.mjs",
-    "test:activation-race": "node tests/browser/activation-race.mjs"
+    "test:activation-race": "node tests/browser/activation-race.mjs",
+    "test:voice": "node --test --test-timeout=180000 tests/voice/*.test.mjs",
+    "test:voice-playout": "node tests/browser/voice-playout.mjs",
+    "test:episode": "node --test tests/episode/*.test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.31.0",

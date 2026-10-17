@@ -173,7 +173,7 @@ function playMusic(seg, local) {
 }
 function playHost(seg, local, ms) {
   const host = seg.content.host;
-  lower('ECHO · host', seg.title, host?.audio ? 'Scripted from the approved programme · offline synthetic voice' : 'Scripted from the approved programme · captions only (voice unavailable)', seg.ownerId);
+  lower('ECHO · host', seg.title, host?.credit || (host?.audio ? 'Scripted from the approved programme · offline synthetic voice' : 'Scripted from the approved programme · captions only (voice unavailable)'), seg.ownerId);
   const caption = host ? captionAt({text: host.text, captions: host.captions}, local) : '';
   $('#caption').hidden = !caption || local > (host?.duration ?? 0) + .8; setText('#caption', caption);
   syncAudio(host?.audio, local, 1, host?.duration ?? 0);
@@ -233,6 +233,9 @@ function tick(ms) {
   if (!state) return;
   if (!m || b.state === 'queued') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Off air'); setText('#manifest', ''); setText('#clock', ''); setText('#next', ''); return slate('ECHO TV', 'Off air', 'The next programme is being prepared on the Production Board by its creators and their agents.'); }
   setText('#manifest', `publication #${m.publicationId ?? '–'} · r${m.publishRevision} · ${m.hash.slice(0, 10)}`);
+  // Say which synthetic voices this publication really uses (from the approved manifest), never a fixed claim.
+  const hosts = m.segments.map(s => s.content?.host).filter(h => h?.audio), cloud = hosts.some(h => /ElevenLabs/.test(h.credit || ''));
+  setText('#voice-disclosure', !hosts.length ? 'shown as captions (no voice)' : cloud ? `synthetic (${hosts.some(h => !/ElevenLabs/.test(h.credit || '')) ? 'ElevenLabs and Piper, offline' : 'ElevenLabs'})` : 'synthesised offline (Piper)');
   if (b.state === 'failed') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Technical break'); return slate('ECHO TV', 'We’ll be right back.', 'Playout was stopped by the producer. Approved programme r' + m.publishRevision + ' is safe.'); }
   if (b.state === 'ready') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Standby'); setText('#clock', `0:00 / ${fmt(m.durationSec)}`); setText('#next', ''); return slate('Next on ECHO', m.title, `${m.segments.map(s => s.title).join(' · ')}`, `Approved revision r${m.publishRevision} · waiting for the producer to go live`); }
   const t = (now() - b.onAirAt) / 1000, startKey = `${m.publicationId}:${m.hash}:${b.onAirAt}`;

@@ -8,11 +8,12 @@ import {timingSafeEqual} from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
 import {BroadcastDesk, DomainError, sha256, MEDIA_CHECKS} from './domain.mjs';
 import {seedState} from './seed.mjs';
+import {voiceServiceFromEnv, ProviderError} from './voice/index.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary',
   '.hdr': 'application/octet-stream', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.m4a': 'audio/mp4', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8'};
-const STATUS = {unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
+const STATUS = {voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
 const MAX_UPLOAD = 25 * 1024 * 1024;
 
 const MAGIC = {
@@ -67,7 +68,7 @@ export function demoMedia(mediaDir) {
 }
 
 export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(ROOT, 'media'), staticDir = join(ROOT, 'dist'), now = () => Date.now(), requestTtlMs = 180000, seedOptions = {}, quiet = false,
-  hostVoiceEnabled = process.env.ECHO_HOST_VOICE !== 'off', sseDelayMs = 0} = {}) {
+  hostVoiceEnabled = process.env.ECHO_HOST_VOICE !== 'off', sseDelayMs = 0, voice = null} = {}) {
   mkdirSync(join(dataDir, 'uploads'), {recursive: true});
   const statePath = join(dataDir, 'state.json');
   const fresh = () => seedState({...seedOptions, media: demoMedia(mediaDir)});
@@ -173,20 +174,29 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     send(res, 404, {error: 'not_found'});
   }
 
+  // Voices go through the provider-neutral voice service (3.2). The 3.1 house lines keep their behaviour: Piper,
+  // or the same captions-only fallback when no voice is available.
+  const voices = voice || voiceServiceFromEnv({root: ROOT, dataDir, probe: path => { const {reason, ...p} = probeMedia(path); return {...p, reason}; }, log: (event, data) => quiet || console.log(`voice: ${event} ${JSON.stringify(data)}`)});
   async function hostVoice(lines) {
     const fallback = Object.fromEntries(lines.map(l => [l.id, {text: l.text, captions: [{start: 0, end: 6, text: l.text}], cues: [], duration: 6, audio: null}]));
-    if (!lines.length || !hostVoiceEnabled || !existsSync(join(ROOT, '.venv/bin/python')) || !existsSync(join(ROOT, 'voices/en_US-ljspeech-high.onnx'))) return fallback;
-    try {
-      const out = await new Promise((resolve, reject) => {
-        const child = spawn(join(ROOT, '.venv/bin/python'), ['-I', join(ROOT, 'tools/host-voice.py')], {stdio: ['pipe', 'pipe', 'pipe']});
-        let stdout = '', stderr = '';
-        child.stdout.on('data', d => stdout += d); child.stderr.on('data', d => stderr += d);
-        const timer = setTimeout(() => { child.kill(); reject(new Error('host voice timed out')); }, 60000);
-        child.on('close', code => { clearTimeout(timer); code === 0 ? resolve(JSON.parse(stdout)) : reject(new Error(stderr.slice(-300))); });
-        child.stdin.end(JSON.stringify({outDir: join(dataDir, 'host'), lines}));
-      });
-      return Object.fromEntries(lines.map(l => [l.id, out[l.id] ? {text: l.text, audio: `/host/${out[l.id].file}`, duration: out[l.id].duration, cues: out[l.id].cues, captions: out[l.id].captions} : fallback[l.id]]));
-    } catch (error) { if (!quiet) console.error('Host voice failed:', error.message); return fallback; }
+    const out = {};
+    for (const l of lines) {
+      try {
+        const r = await voices.synthesize({lines: [{presenter: 'echo', text: l.text}], lang: 'en', order: hostVoiceEnabled ? ['piper', 'captions'] : ['captions']});
+        out[l.id] = r.audioFile ? {text: l.text, audio: `/voice/${r.key}.mp3`, duration: r.duration, cues: r.cues, captions: r.captions} : fallback[l.id];
+      } catch (error) { if (!quiet) console.error('Host voice failed:', error.message); out[l.id] = fallback[l.id]; }
+    }
+    return out;
+  }
+  // Approved voice assets play as the segment's host audio: the exact bytes people approved, served by hash.
+  function approvedVoices(state) {
+    const out = {};
+    for (const seg of Object.values(state.segments)) {
+      const a = seg.content?.voice && seg.assets.find(x => x.id === seg.content.voice.assetId);
+      if (a) out[seg.id] = {text: seg.content.voice.lines.map(l => l.text).join(' '), audio: `/media/${a.sha256}`, duration: a.voice.duration, cues: a.voice.cues, captions: a.voice.captions, turns: a.voice.turns,
+        credit: `Approved script · synthetic voice (${a.voice.provider === 'elevenlabs' ? 'ElevenLabs' : a.voice.provider === 'piper' ? 'Piper, offline' : a.voice.provider})${a.voice.approximateTiming ? ' · approximate timing' : ''}`};
+    }
+    return out;
   }
 
   const routes = [
@@ -251,10 +261,29 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
         title: decodeURIComponent(req.headers['x-title'] || ''), credit: decodeURIComponent(req.headers['x-credit'] || ''), license: decodeURIComponent(req.headers['x-license'] || '')};
       return mutate(d => d.replaceAsset(actor, {segmentId: m[1], assetId: m[2], sha256: hash, meta}));
     }],
+    // Render a spoken script for a segment (owner, or producer for house segments). Rights are checked before anything
+    // is rendered or paid for. The audio becomes the segment's 'voice' asset: a new revision that people must approve
+    // as these exact bytes. Agents cannot call this.
+    ['POST', /^\/api\/segments\/(\w+)\/voice$/, async ({actor, json, m}) => {
+      const body = json();
+      desk.requireVoiceRights(actor, m[1]);
+      if (!Array.isArray(body.lines)) throw new DomainError('bad_request', 'lines must be a list of {presenter, text}');
+      let r;
+      try { r = await voices.synthesize({lines: body.lines, lang: body.lang || 'en', ...(Array.isArray(body.order) ? {order: body.order} : {})}); }
+      catch (e) { if (e instanceof ProviderError) throw new DomainError('voice_unavailable', e.message); throw e; }
+      if (!r.audioFile) throw new DomainError('voice_unavailable', `No voice could render this script: ${r.attempts.map(a => `${a.provider}: ${a.skipped || a.error}`).join('; ') || 'captions only'}`, {attempts: r.attempts});
+      const bytes = readFileSync(r.audioFile), hash = sha256(bytes), file = `${hash}.mp3`, path = join(dataDir, 'uploads', file);
+      writeFileSync(path, bytes);
+      const {sha256: _sameAsHash, unplayableReason, ...check} = checkMedia(path);
+      if (!check.decodable) throw new DomainError('undecodable_media', `Rendered voice cannot be played: ${unplayableReason}`);
+      const voiceMeta = {provider: r.provider, model: r.model, voiceIds: r.voiceIds, lang: r.lang, duration: r.duration, captions: r.captions, cues: r.cues, turns: r.turns, approximateTiming: r.approximateTiming, requestIds: r.requestIds, cacheHit: r.cacheHit, fallbacks: r.attempts};
+      return mutate(d => d.setVoice(actor, {segmentId: m[1], lines: r.lines, lang: r.lang, asset: {sha256: hash, file, ...check, voice: voiceMeta}}));
+    }],
+    ['GET', /^\/api\/voice\/status$/, () => ({budget: voices.budget()})],
     // House host lines are written from the programme and voiced offline with Piper; captions-only if unavailable.
     ['POST', /^\/api\/publish$/, async ({actor}) => {
       desk.requireProducer(actor);
-      const host = await hostVoice(hostLines(desk.state));
+      const host = {...await hostVoice(hostLines(desk.state)), ...approvedVoices(desk.state)};
       verifyAssets(Object.keys(desk.state.segments)); // immediately before publishing: no await in between
       return mutate(d => {
         const manifest = d.publish(actor, {host});
@@ -295,6 +324,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       return;
     }
     if (url.pathname.startsWith('/media/')) return serveMedia(req, res, url.pathname.slice(7));
+    if (/^\/voice\/[0-9a-f]{64}\.mp3$/.test(url.pathname) && existsSync(join(dataDir, 'voice-cache', url.pathname.slice(7)))) return serveFile(req, res, join(dataDir, 'voice-cache', url.pathname.slice(7)));
     if (/^\/host\/[\w-]+\.mp3$/.test(url.pathname) && existsSync(join(dataDir, 'host', url.pathname.slice(6)))) return serveFile(req, res, join(dataDir, 'host', url.pathname.slice(6)));
     if (!url.pathname.startsWith('/api/')) return serveStatic(req, res, url.pathname);
     const route = routes.find(([method, re]) => method === req.method && re.test(url.pathname));
@@ -350,7 +380,7 @@ export function hostLines(state) {
     interstitial: `You're watching ECHO. Coming up, a confirmed premiere from ${premiere ? state.people[premiere.ownerId].name : 'our creators'}.`,
     outro: `That was ${state.episode.title}. Made by ${names}, and their agents, together. See you at the next premiere.`,
   };
-  return state.order.map(id => state.segments[id]).filter(s => s.module === 'host' && s.duration > 0 && lines[s.content?.line])
+  return state.order.map(id => state.segments[id]).filter(s => s.module === 'host' && s.duration > 0 && !s.content?.voice && lines[s.content?.line])
     .map(s => ({id: s.id, text: lines[s.content.line]}));
 }
 

@@ -73,7 +73,9 @@ try {
   }
   const outroState = await state(one);
   if (voiced) {
-    assert.ok(outroState.audioSrc.startsWith('/host/'), 'host voice playing in the outro');
+    // 3.2: house voices are served from the voice cache (/voice/<key>.mp3); the viewer must play exactly the manifest's outro audio.
+    const outroAudio = manifest.segments.find(x => x.id === 'outro').content.host?.audio;
+    assert.ok(outroAudio && outroState.audioSrc === outroAudio, `host voice playing in the outro (${outroState.audioSrc} vs manifest ${outroAudio})`);
     let speech = 0; for (let i = 0; i < 10; i++) { speech = Math.max(speech, (await state(one)).audioLevel); await new Promise(r => setTimeout(r, 100)); }
     assert.ok(speech > .02, `outro speech signal present: peak ${speech}`);
     console.log(`outro: ${outroState.audioSrc}, speech signal peak ${speech.toFixed(3)}`);
