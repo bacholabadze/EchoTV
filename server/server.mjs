@@ -6,7 +6,7 @@ import {join, normalize, extname, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {timingSafeEqual} from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
-import {BroadcastDesk, DomainError, sha256} from './domain.mjs';
+import {BroadcastDesk, DomainError, sha256, MEDIA_CHECKS} from './domain.mjs';
 import {seedState} from './seed.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -47,18 +47,23 @@ export function probeMedia(file) {
   return {kind, decodable: true, probed: true, width: stream.width, height: stream.height};
 }
 
+// Checks the actual bytes of a media file now. A result is stamped with the check that produced it and the SHA-256
+// of the bytes it was run on; the domain trusts nothing else. Decode results are cached by content hash (same bytes,
+// same check, same answer), so re-checking before every approval, publication and start stays cheap.
+const [FULL_DECODE, RECORDED_FINGERPRINT] = MEDIA_CHECKS, decoded = new Map();
+export function checkMedia(file, recorded = null) {
+  const hash = sha256(readFileSync(file)), key = `${hash}${extname(file).toLowerCase()}`;
+  if (!decoded.has(key)) decoded.set(key, probeMedia(file));
+  let {reason, ...probe} = decoded.get(key), method = FULL_DECODE;
+  // Without a decoder, a shipped file is trusted only if its bytes are exactly the ones verified when it was authored.
+  if (!probe.probed && recorded?.sha256 === hash) { probe = {kind: probe.kind, decodable: true, probed: false, verifiedRecord: recorded.by, ...recorded.metadata}; method = RECORDED_FINGERPRINT; }
+  return probe.decodable ? {...probe, sha256: hash, verification: {method, sha256: hash}} : {...probe, sha256: hash, unplayableReason: reason, verification: null};
+}
+
 // Demo media shipped in the repo; uploads are stored in the data directory.
+const shippedList = mediaDir => existsSync(join(mediaDir, 'media.json')) ? JSON.parse(readFileSync(join(mediaDir, 'media.json'), 'utf8')) : {};
 export function demoMedia(mediaDir) {
-  const manifestPath = join(mediaDir, 'media.json');
-  if (!existsSync(manifestPath)) return {};
-  const list = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  return Object.fromEntries(Object.entries(list).map(([id, {verified, ...meta}]) => {
-    const file = join(mediaDir, meta.file), hash = sha256(readFileSync(file));
-    let {reason, ...probe} = probeMedia(file);
-    // Without a decoder, a shipped file is trusted only if its bytes are exactly the ones verified when it was authored.
-    if (!probe.probed && verified?.sha256 === hash) probe = {kind: meta.kind, decodable: true, probed: false, verifiedRecord: verified.by, ...verified.metadata};
-    return [id, {...meta, ...probe, sha256: hash}];
-  }));
+  return Object.fromEntries(Object.entries(shippedList(mediaDir)).map(([id, {verified, ...meta}]) => [id, {...meta, ...checkMedia(join(mediaDir, meta.file), verified)}]));
 }
 
 export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(ROOT, 'media'), staticDir = join(ROOT, 'dist'), now = () => Date.now(), requestTtlMs = 180000, seedOptions = {}, quiet = false,
@@ -71,17 +76,25 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
   for (const a of [...Object.values(desk.state.segments).flatMap(seg => seg.assets), ...(desk.state.broadcast.manifest?.segments || []).flatMap(seg => seg.assets)])
     if (a.file) desk.indexMedia(a.sha256, a);
   desk.state.idempotency ??= {};
-  // State written by earlier versions has assets without a verification result: check them now (fail closed).
-  const demo = demoMedia(mediaDir), demoByHash = Object.fromEntries(Object.values(demo).map(m => [m.sha256, m]));
-  for (const seg of Object.values(desk.state.segments)) for (const a of seg.assets) {
-    if (a.decodable !== undefined) continue;
-    const known = demoByHash[a.sha256], path = a.upload ? join(dataDir, 'uploads', a.file || '') : join(mediaDir, a.file || '');
-    const {reason, ...probe} = known ? {decodable: known.decodable, probed: known.probed, durationSec: known.durationSec, width: known.width, height: known.height} : existsSync(path) && a.file ? probeMedia(path) : {decodable: false, probed: false};
-    Object.assign(a, probe);
-  }
   const clients = new Set();
   const persist = () => { const tmp = statePath + '.tmp'; writeFileSync(tmp, JSON.stringify(desk.state)); renameSync(tmp, statePath); };
-  persist();
+  // Stored verification results are never trusted on their own (state from earlier versions carries flags from a
+  // weaker check): the actual bytes of every asset are checked again at startup and before every approval,
+  // publication and start. A file that is missing or whose bytes no longer match its fingerprint is unplayable.
+  const recorded = Object.fromEntries(Object.values(shippedList(mediaDir)).map(m => [m.file, m.verified]));
+  function verifyAssets(segmentIds) {
+    for (const id of segmentIds) for (const a of desk.state.segments[id]?.assets || []) {
+      const path = a.file && (a.upload ? join(dataDir, 'uploads', a.file) : join(mediaDir, a.file));
+      let {sha256: actual, ...result} = path && existsSync(path) ? checkMedia(path, a.upload ? null : recorded[a.file]) : {decodable: false, probed: false, unplayableReason: 'media file missing', verification: null};
+      if (actual && actual !== a.sha256) result = {...result, decodable: false, unplayableReason: 'the bytes on disk do not match the approved fingerprint', verification: null};
+      const was = a.decodable;
+      if (result.decodable) delete a.unplayableReason;
+      Object.assign(a, result);
+      if (was === true && !a.decodable) desk.log({type: 'system', id: 'media'}, 'media_revalidated', `${desk.state.segments[id].title}: ${a.id} failed the check of its actual bytes (${a.unplayableReason}); it cannot be approved, published or aired`, {segmentId: id, assetId: a.id, sha256: a.sha256});
+    }
+    persist();
+  }
+  verifyAssets(Object.keys(desk.state.segments));
 
   const tokenMatch = (a, b) => typeof a === 'string' && a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
   function actorFor(token) {
@@ -202,7 +215,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     ['POST', /^\/api\/proposals\/(\w+)\/decision$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.decideProposal(actor, {...body, proposalId: m[1]})); }],
     ['POST', /^\/api\/requests\/(\w+)\/respond$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.respondToRequest(actor, {...body, requestId: m[1]})); }],
     ['POST', /^\/api\/slots\/(hold|confirm|release)$/, ({actor, json, m}) => { const body = json(); return mutate(d => d[{hold: 'holdSlot', confirm: 'confirmSlot', release: 'releaseSlot'}[m[1]]](actor, body)); }],
-    ['POST', /^\/api\/segments\/(\w+)\/review$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.reviewSegment(actor, {...body, segmentId: m[1]})); }],
+    ['POST', /^\/api\/segments\/(\w+)\/review$/, ({actor, json, m}) => { const body = json(); verifyAssets([m[1]]); return mutate(d => d.reviewSegment(actor, {...body, segmentId: m[1]})); }],
     // Owner uploads authorised existing media. The hash binds any later approval to these exact bytes.
     ['POST', /^\/api\/segments\/(\w+)\/media\/([\w-]+)$/, ({actor, req, m, raw}) => {
       desk.requireHuman(actor);
@@ -211,8 +224,8 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       const hash = sha256(raw), file = `${hash}${ext}`, path = join(dataDir, 'uploads', file);
       // Bytes are on disk before the state can reference them (same hash, so a rejected change leaves a harmless orphan).
       writeFileSync(path, raw);
-      const {reason, ...probe} = probeMedia(path);
-      if (!probe.decodable) throw new DomainError('undecodable_media', `This file cannot be played: ${reason}`);
+      const {sha256: _sameAsHash, unplayableReason, ...probe} = checkMedia(path);
+      if (!probe.decodable) throw new DomainError('undecodable_media', `This file cannot be played: ${unplayableReason}`);
       const kind = probe.kind, expected = desk.segment(m[1]).assets.find(a => a.id === m[2])?.kind;
       if (expected && expected !== kind) throw new DomainError('bad_request', `${m[2]} must be ${expected === 'audio' ? 'an audio file' : 'an image'}`);
       const meta = {upload: true, file, rightsDeclared: req.headers['x-rights-declared'] === 'yes', ...probe,
@@ -223,6 +236,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     ['POST', /^\/api\/publish$/, async ({actor}) => {
       desk.requireProducer(actor);
       const host = await hostVoice(hostLines(desk.state));
+      verifyAssets(Object.keys(desk.state.segments)); // immediately before publishing: no await in between
       return mutate(d => {
         const manifest = d.publish(actor, {host});
         const silent = Object.entries(host).filter(([, h]) => !h.audio).map(([id]) => d.state.segments[id].title);
@@ -230,7 +244,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
         return manifest;
       });
     }],
-    ['POST', /^\/api\/golive$/, ({actor, json}) => { const body = json(); return mutate(d => d.goLive(actor, {delayMs: body.delayMs ?? 3000, publicationId: body.publicationId, hash: body.hash})); }],
+    ['POST', /^\/api\/golive$/, ({actor, json}) => { const body = json(); verifyAssets((desk.state.broadcast.manifest?.segments || []).map(s => s.id)); return mutate(d => d.goLive(actor, {delayMs: body.delayMs ?? 3000, publicationId: body.publicationId, hash: body.hash})); }],
     ['POST', /^\/api\/broadcast\/fail$/, ({actor, json}) => { const body = json(); return mutate(d => d.failBroadcast(actor, body)); }],
     // Rehearsal reset keeps identities and tokens so connected agents stay valid.
     ['POST', /^\/api\/reset$/, ({actor}) => {

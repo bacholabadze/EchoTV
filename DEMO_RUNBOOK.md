@@ -27,7 +27,7 @@ npm install                     # MCP SDK 1.31.0, zod 4.6.5, playwright 1.49.1 (
 .venv/bin/pip install piper-tts==1.8.0 onnx==1.23.0
 mkdir -p voices && for f in en_US-ljspeech-high.onnx en_US-ljspeech-high.onnx.json; do
   curl -L -o voices/$f https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ljspeech/high/$f; done
-npm test                        # expect: 36 broadcast tests + 5 studio suites pass (at 7ee7394)
+npm test                        # expect: 50 broadcast tests + 5 studio suites pass
 ```
 
 If `npm install` fails with an `~/.npm` permission error, run `npm install --cache /tmp/echo-npm-cache` (do not sudo).
@@ -81,7 +81,7 @@ The agent scripts start Claude Code and Codex with only the ECHO tools attached.
 4. When the last required person approves, the Showrunner re-checks every rule and commits `r2`. The revision history shows the before/after diff.
 5. Agents can never approve. There is no approve tool, and the server returns 403 for agent tokens. Any person whose approval is required can press **Reject** instead; the programme then stays as it was.
 
-**Editorial rejection after publishing (approved policy N04):** the producer's **Reject rN…** button in *Segments and editorial approval* asks for a reason. If that revision is part of the ready publication, the publication is withdrawn before air: the label shows `#n withdrawn` and Go live is refused with the reason. To air, the creator corrects the content (new media or an approved change), the producer approves the new revision, and publishes again. Rejecting while on air never interrupts playback. To stop an active show, use the existing stop control. It is an API call, not a board button:
+**Editorial rejection after publishing (approved policy N04):** the producer's **Reject rN…** button in *Segments and editorial approval* asks for a reason. If that revision is part of the ready publication, or of one still counting down after Go live, the publication is withdrawn before air (a countdown is cancelled; viewers return to Off air): the label shows `#n withdrawn` and Go live is refused with the reason. To air, the creator corrects the content (new media or an approved change), the producer approves the new revision, and publishes again. Rejecting while on air never interrupts playback. To stop an active show, use the existing stop control. It is an API call, not a board button:
 
 ```bash
 curl -X POST http://127.0.0.1:8787/api/broadcast/fail -H "authorization: Bearer $(grep '(producer) board' data/credentials.txt | sed 's/.*#token=//')" -H 'content-type: application/json' -d '{"reason":"<why>"}'
@@ -91,7 +91,7 @@ Viewers then see the technical-break slate.
 
 Then the producer presses **Publish approved revision**. The board and the broadcast's top-right corner show `#<publication> · r2 · <hash>`; publication numbers are never reused. Then the producer presses **Go live** (5-second countdown on every viewer). Go live only airs the exact publication shown on the producer's board: if the programme or its media changed since, the server refuses and asks for a new Publish.
 
-If any creator replaces media while a proposal waits for approval, every approval already given is void. The board asks everyone to approve the new version, and the changed segment needs the producer's editorial approval again before publishing. Uploads that cannot be decoded, the wrong kind of file, or audio too short for its slot are refused.
+If any creator replaces media while a proposal waits for approval, every approval already given is void. The board asks everyone to approve the new version, and the changed segment needs the producer's editorial approval again before publishing. Uploads that cannot be decoded, the wrong kind of file, or audio too short for its slot are refused. The server checks the actual bytes of every file again at startup and before each approval, publication and Go live; a file that no longer decodes or no longer matches its fingerprint is refused with the reason.
 
 ## 5. What to type to the agents
 
@@ -124,6 +124,7 @@ Optional proofs: **NO AGREEMENT** (see §5). **Stale approval**: B uses *Replace
 - **An AI agent fails:** run `data/demo/fallback-b.sh` (or the equivalent for A, per `server/fallback-agent.mjs`). The board shows the agent's client as "ECHO fallback (rule-based)".
 - **An agent stays silent for 3 minutes:** its request expires as *no change*, never as consent.
 - **Piper missing:** the outro shows captions only; the activity feed says so.
+- **An artwork fails to display on a viewer** (even after it preloaded): within about 1.5 s the broadcast shows **Live · artwork loading** or **Live · artwork unavailable** with a banner and the work's credits card instead of a blank frame. The same approved image is retried automatically (up to 3 times, every 2 s) and the fault clears when it appears. The programme continues on time.
 - **Audio stalls on a viewer:** after about 2.5 s the broadcast shows **Live · audio interrupted** and retries up to 3 times. After about 8 s it shows **Live · audio unavailable** with a **Retry audio** button, and the programme continues without sound. It never shows a plain "Live" while required audio is stuck.
 - **WebGL unavailable:** the outro shows a text slate; the programme continues.
 - **Rehearse again:** `scripts/demo.sh reset`, or **Reset rehearsal** on the producer board.

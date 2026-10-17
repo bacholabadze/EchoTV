@@ -8,6 +8,7 @@ import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {createEchoServer, probeMedia, demoMedia} from '../../server/server.mjs';
 import {seedState} from '../../server/seed.mjs';
+import {BroadcastDesk} from '../../server/domain.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const fixture = name => readFileSync(join(ROOT, 'tests/fixtures', name));
@@ -51,13 +52,21 @@ test('N02 (P0): signature-valid but undecodable media is rejected before review 
   } finally { await x.stop(); }
 });
 
+// Since 3e0c846's R2 fix the server checks the actual bytes before every publication, so an unverified asset can no
+// longer reach the domain over HTTP; the fail-closed rule is asserted on the domain directly, including bare flags.
 test('N02 (P0): publication fails closed for any asset not positively verified', async () => {
-  const x = await start();
-  try {
-    delete x.echo.desk.state.segments.gallery.assets[0].decodable; // e.g. an asset whose verification never ran
-    const r = await x.post('/api/publish', x.T.P);
-    assert.equal(r.status, 409); assert.match(r.body.message, /art-1 has not been verified as playable/);
-  } finally { await x.stop(); }
+  const producer = {type: 'person', id: 'producer'};
+  const cases = {'verification never ran': a => { delete a.decodable; delete a.verification; },
+    'bare flag from an earlier check': a => { delete a.verification; },
+    'result for other bytes': a => { a.verification = {...a.verification, sha256: 'f'.repeat(64)}; },
+    'unknown check': a => { a.verification = {...a.verification, method: 'ffprobe-header/1'}; }};
+  for (const [name, spoil] of Object.entries(cases)) {
+    const state = seedState({media: demoMedia(join(ROOT, 'media'))});
+    spoil(state.segments.gallery.assets.find(a => a.id === 'art-1'));
+    assert.throws(() => new BroadcastDesk(state, {now: () => 0}).publish(producer), e => e.code === 'not_publishable' && /art-1 has not been verified as playable/.test(e.message), name);
+  }
+  const healthy = seedState({media: demoMedia(join(ROOT, 'media'))});
+  assert.equal(new BroadcastDesk(healthy, {now: () => 0}).publish(producer).publicationId, 1, 'control: verified media publishes');
 });
 
 test('N05 (P1): without a media decoder, uploads fail closed; only the exact shipped demo files are trusted', () => {

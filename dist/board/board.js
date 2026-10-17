@@ -84,10 +84,12 @@ function render() {
       <td>${canReview ? `<button data-review="${id}" data-rev="${seg.revision}">Approve r${seg.revision}</button>` : ''}${canReject ? `<button class="quiet" data-reject="${id}" data-rev="${seg.revision}">Reject r${seg.revision}…</button>` : ''}${mine ? `<label class="fine"><input type="file" data-upload="${id}" accept="image/*,audio/*" hidden><button data-pick="${id}">Replace media</button></label>` : ''}</td></tr>`;
   }).join('');
   for (const b of document.querySelectorAll('[data-review]')) b.onclick = act(() => api('POST', `/api/segments/${b.dataset.review}/review`, {revision: +b.dataset.rev, decision: 'approved'}), b);
-  // Rejecting content in a ready publication withdraws that publication (N04); a reason is required and logged.
+  // Rejecting content in a ready publication, or in one counting down to air, withdraws it (N04); a reason is
+  // required and logged. The server's clock decides; this text only warns.
   for (const b of document.querySelectorAll('[data-reject]')) b.onclick = act(async () => {
-    const seg = state.segments[b.dataset.reject], inReady = state.broadcast.state === 'ready' && state.broadcast.manifest?.segments.some(x => x.id === seg.id && x.revision === +b.dataset.rev);
-    const reason = prompt(`Reject “${seg.title}” r${b.dataset.rev}? ${inReady ? 'This withdraws the ready publication before air. ' : ''}Reason (logged):`);
+    const seg = state.segments[b.dataset.reject], bs = state.broadcast, starting = bs.state === 'on_air' && Date.now() + clockOffset < bs.onAirAt;
+    const inPublication = (bs.state === 'ready' || starting) && bs.manifest?.segments.some(x => x.id === seg.id && x.revision === +b.dataset.rev);
+    const reason = prompt(`Reject “${seg.title}” r${b.dataset.rev}? ${inPublication ? (starting ? 'This cancels the start and withdraws the publication before air. ' : 'This withdraws the ready publication before air. ') : ''}Reason (logged):`);
     if (!reason?.trim()) return;
     await api('POST', `/api/segments/${b.dataset.reject}/review`, {revision: +b.dataset.rev, decision: 'rejected', note: reason.trim()});
   }, b);

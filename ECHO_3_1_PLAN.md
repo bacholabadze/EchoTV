@@ -76,4 +76,5 @@ Reusable as is: room/actors/materials/blocking/performance, `Director`, `caption
 |---|---|---|
 | `64d1dc5` | **NOT READY**: 10 PASS / 3 FAIL (as relayed by the project owner) | 3 P0 + 7 P1 findings; all reproduced and fixed in `7ee7394` (`docs/evidence/2026-10-17-audit-fixes.md`) |
 | `cec5fb2` | not audited | launcher and docs only; resolved no findings |
-| `7ee7394` | **pending** independent regression run | implementer's own tests pass; not independently verified |
+| `7ee7394` | **AUTOMATED QA FAIL** | N01/N02/N03/N05 + N04 policy; fixed in `c3aa204`, N04 in `3e0c846` |
+| `3e0c846` | **AUTOMATED QA FAIL** (all other gates PASS) | R1 P0 displayed-image fault, R2 P1 legacy media flags, R3 P1 countdown rejection; fixed in the next commit (`docs/evidence/2026-10-17-regression-3e0c846-fixes.md`), pending independent validation |

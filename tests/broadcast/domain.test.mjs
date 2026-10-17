@@ -1,12 +1,14 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {BroadcastDesk, DomainError} from '../../server/domain.mjs';
+import {BroadcastDesk, DomainError, MEDIA_CHECKS} from '../../server/domain.mjs';
 import {seedState} from '../../server/seed.mjs';
 
 const A = {type: 'agent', id: 'agent-a'}, B = {type: 'agent', id: 'agent-b'};
 const creatorA = {type: 'person', id: 'creator-a'}, creatorB = {type: 'person', id: 'creator-b'}, producer = {type: 'person', id: 'producer'};
-// Domain-level fixtures stand in for media the server has already decoded and verified (see probeMedia).
-function verifiedSeed() { const s = seedState(); for (const seg of Object.values(s.segments)) for (const a of seg.assets) Object.assign(a, {decodable: true, probed: true}); return s; }
+// Domain-level fixtures stand in for media the server has already decoded and verified (see checkMedia): the
+// result is stamped with the check and the exact bytes' SHA-256, as the server does.
+const verified = sha => ({decodable: true, probed: true, verification: {method: MEDIA_CHECKS[0], sha256: sha}});
+function verifiedSeed() { const s = seedState(); for (const seg of Object.values(s.segments)) for (const a of seg.assets) Object.assign(a, verified(a.sha256)); return s; }
 function desk() { let t = 1000; const d = new BroadcastDesk(verifiedSeed(), {now: () => (t += 10)}); d.advance = ms => (t += ms); return d; }
 const code = c => e => e instanceof DomainError && e.code === c;
 const openRequest = (d, agentId) => Object.values(d.state.requests).find(r => r.toAgentId === agentId && r.status === 'open');
@@ -138,7 +140,7 @@ test('two simultaneous bookings of the same interval: at most one is confirmed',
 
 test('old approval does not carry over to changed media', () => {
   const d = desk();
-  d.replaceAsset(creatorB, {segmentId: 'premiere', assetId: 'track', sha256: 'new-hash', meta: {rightsDeclared: true, kind: 'audio', decodable: true, probed: true, durationSec: 62}});
+  d.replaceAsset(creatorB, {segmentId: 'premiere', assetId: 'track', sha256: 'new-hash', meta: {rightsDeclared: true, kind: 'audio', ...verified('new-hash'), durationSec: 62}});
   assert.equal(d.approvalValid(d.state.segments.premiere), false);
   assert.throws(() => d.publish(producer), code('not_publishable'));
   assert.throws(() => d.reviewSegment(producer, {segmentId: 'premiere', revision: 1, decision: 'approved'}), code('stale_revision'));

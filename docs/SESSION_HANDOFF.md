@@ -1,6 +1,6 @@
 # ECHO TV 3.1 — session handoff
 
-Written 2026-10-17 ~18:30 (Tbilisi) to continue in a fresh session. Hackathon submission deadline: **Sunday 18 Oct 2026, 12:00 Tbilisi** (internal target 11:30, Master Plan §28).
+Written 2026-10-17 ~18:30 (Tbilisi), updated ~20:45 after Codex's 3e0c846 verdict, to continue in a fresh session. Hackathon submission deadline: **Sunday 18 Oct 2026, 12:00 Tbilisi** (internal target 11:30, Master Plan §28).
 
 **Read first, in this order:** this file → `DEMO_RUNBOOK.md` → `docs/evidence/2026-10-17-audit-fixes.md`. The product source of truth is the Master Plan (`../ECHO_TV_3_1_Execution_Master_Plan_KA (1).md`, Georgian, v3.1). Where the older `ECHO_TV_ROADMAP.md` conflicts with it, the Master Plan wins for the hackathon (see `ECHO_3_1_PLAN.md` §2).
 
@@ -10,15 +10,15 @@ Written 2026-10-17 ~18:30 (Tbilisi) to continue in a fresh session. Hackathon su
 |---|---|
 | Repo | `/Users/apple/Bridge/Projects/Hacktoberfest/echo-stage` (git, local only, no remote) |
 | Branch | `echo-3.1` (`main` = untouched baseline) |
-| **Latest implementation commit (for Codex re-validation)** | the commit that adds `tests/broadcast/withdrawal.test.mjs` (N04, founder-approved option 1): `git log -1 --format=%H -- tests/broadcast/withdrawal.test.mjs`. Before it: `c3aa204` (fixes for the 7ee7394 findings) |
-| Previously validated | `7ee73943…` (`7ee7394`): **AUTOMATED QA FAIL** (Codex, `../echo-stage-qa/qa/REGRESSION-7ee7394.md`). `733f3e5` = docs-only on top of it |
+| **Latest implementation commit (for Codex re-validation)** | the commit that adds `tests/broadcast/regression-3e0c846.test.mjs` (fixes R1/R2/R3): `git log -1 --format=%H -- tests/broadcast/regression-3e0c846.test.mjs`. Evidence: `docs/evidence/2026-10-17-regression-3e0c846-fixes.md` |
+| Previously validated | `3e0c846e…` (N04): **AUTOMATED QA FAIL** (Codex, `../echo-stage-qa/qa/REGRESSION-3e0c846.md`): R1 P0, R2 P1, R3 P1/N04; all other gates PASS. Earlier: `7ee7394` AUTOMATED QA FAIL, `64d1dc5` NOT READY |
 | Baseline (original ZIP, pre-hackathon code) | `c7eb068` |
 | Tag | `echo-3.1-demo-candidate` → `64d1dc5` (the commit audited as NOT READY) |
-| Offline bundles (parent dir) | `echo-3.1-64d1dc5.bundle`, `echo-3.1-cec5fb2.bundle` (pre-fix). `git bundle verify` passes on both. |
+| Offline bundles (parent dir) | `echo-3.1-64d1dc5.bundle`, `echo-3.1-cec5fb2.bundle`, `echo-3.1-733f3e5.bundle`, `echo-3.1-3e0c846.bundle`. Make a new one for each nominated SHA. |
 | Codex QA worktree | `../echo-stage-qa`. **Never modify it or run its scripts** (they write evidence into it). Read its reports only when the owner asks. |
 | Parent dir | Master Plan, `roadmap.md` (mojibake copy of `ECHO_TV_ROADMAP.md`), original ZIP |
 
-**Running process, not ours to stop:** a demo server, `node server/server.mjs` from this repo on **port 8787**, was started at 16:53 via `scripts/demo.sh start "Bacho" "Keti"` (pid in `data/demo/server.pid`). It runs **pre-fix code** in memory. Before any rehearsal on the fixed code, run `scripts/demo.sh stop && scripts/demo.sh start "Bacho" "Keti"` (same names keep links and tokens), then reload all tabs and restart both agent sessions. `data/` holds live credentials (git-ignored); never print or commit them.
+**Running process, not ours to stop:** a demo server, `node server/server.mjs` from this repo on **port 8787**, was started at 16:53 via `scripts/demo.sh start "Bacho" "Keti"` (pid in `data/demo/server.pid`). It runs **code from before every fix wave** in memory. Before any rehearsal on the fixed code, run `scripts/demo.sh stop && scripts/demo.sh start "Bacho" "Keti"` (same names keep links and tokens), then reload all tabs and restart both agent sessions. `data/` holds live credentials (git-ignored); never print or commit them.
 
 ## 2. Product vision (unchanged; do not reduce ECHO to a production tool)
 
@@ -76,7 +76,7 @@ Written 2026-10-17 ~18:30 (Tbilisi) to continue in a fresh session. Hackathon su
 | Claim | Implementer evidence (this repo) | Independent QA |
 |---|---|---|
 | A → B → A with two real, independent LLM agents (Claude Code + Codex) | 5 runs + 1 post-fix run, all clean (`docs/evidence/2026-10-17-real-agent-series.md`). Approvals in those runs were issued **by a script standing in for the humans**. | Not yet. The human approval rehearsal is pending. |
-| Rules (bookings, approvals, revisions, publish, go-live, idempotency, media) | 36/36 `npm run test:broadcast` (domain, HTTP, MCP, regression) | `64d1dc5`: NOT READY (10 PASS / 3 FAIL). `7ee7394`: **pending** |
+| Rules (bookings, approvals, revisions, publish, go-live, idempotency, media) | 50/50 `npm run test:broadcast` (domain, HTTP, MCP, regression, withdrawal) | `64d1dc5` NOT READY; `7ee7394` FAIL; `3e0c846` FAIL (R1–R3, all other gates PASS); latest: **pending** |
 | Board: three separate sessions approve with their own identity | `npm run test:browser` PASS | pending |
 | Full 2-minute playout, two viewers in sync, reconnect, audio sync, outro | `npm run test:broadcast-browser` PASS in 3 configs: normal / SSE delayed 1.5 s / `ECHO_HOST_VOICE=off` | pending |
 | Audio stall handling (P0-3) | `npm run test:audio-stall` PASS (interrupted at 2.6 s, unavailable at 8.1 s, 3 retries, recovery) | pending |
@@ -91,7 +91,16 @@ Written 2026-10-17 ~18:30 (Tbilisi) to continue in a fresh session. Hackathon su
 
 Regression proof: `tests/broadcast/regression.test.mjs` passes 9/9 on `7ee7394` and **fails 9/9 on `64d1dc5`**, each for the reported defect.
 
+**On the fix commit after Codex's 3e0c846 regression (~21:00):** `npm test` 50/50 + 5/5; all 7 browser tests PASS (incl. new `test:art-display-fault`, `test:countdown-reject`); full playout normal / SSE 1.5 s / no Piper PASS, onsets ≤ +26 ms; one real Claude Code + Codex run CLEAN (approvals scripted as stand-ins). The new tests fail on `3e0c846` for the reported defects. Details: `docs/evidence/2026-10-17-regression-3e0c846-fixes.md`.
+
 ## 5. Codex QA status
+
+**Update (20:4x):** Codex's run on `3e0c846` = **AUTOMATED QA FAIL** with three blockers; every other gate passed (original P0s, fresh corrupt uploads, LAN, idempotency, decoder, timing, real-agent exchange and playback, three N04 cases):
+- **R1 P0:** an artwork that preloaded fine but failed on screen stayed blank under plain "Live".
+- **R2 P1:** retained corrupt media carrying an old `decodable:true` flag could be approved, published and started.
+- **R3 P1/N04:** a rejection during the Starting countdown did not stop the start.
+
+All three were reproduced here and fixed in the next implementation commit, each with a regression test that fails on `3e0c846` (`docs/evidence/2026-10-17-regression-3e0c846-fixes.md`). That commit is **not yet independently validated**. Rehearsal entry stays on HOLD until Codex passes it; DEMO READY additionally needs the observed two-human rehearsal.
 
 **Update (19:20):** Codex's regression run on `7ee7394` = **AUTOMATED QA FAIL**. The three original P0s passed. New: P0 N02 (header-only PNG published, blank gallery under "Live"); P1 N01 (board actions broken on plain-HTTP LAN origins); N05 (no decoder = fail open); N03 (retry identity ignored upload metadata); P1-11 (one late outro onset, +289 ms); N04 (reject-after-publish policy). The fixes are in the next implementation commit (`docs/evidence/2026-10-17-regression-7ee7394-fixes.md`):
 - N02, N01, N05, N03: FIXED.
@@ -109,7 +118,7 @@ Earlier history:
 ## 6. Known limitations and open issues
 
 - **Not done by humans yet:** an observed rehearsal with two real people approving on their own boards, the real creator names and media, and the recording.
-- **Organiser answers outstanding:** prior-code eligibility (baseline `c7eb068` separates old from new) and the submission video spec.
+- **Organiser answers:** prior code is **permitted** (the owner reported on 2026-10-17 that organisers allow the earlier ECHO Studio code as a reference; baseline `c7eb068` still separates old from new). The submission video spec is still unconfirmed.
 - **No public link.** Cloudflare Quick Tunnels don't support SSE (official docs). The options needing owner approval are a named Cloudflare Tunnel or Tailscale Funnel (`DEPLOYMENT.md`). LAN mode is untested from a second device; venue Wi-Fi may isolate devices.
 - **ffmpeg is now required to accept creator uploads** (fail closed). The shipped demo media are trusted by their recorded SHA-256 without it.
 - **N04 implemented as option 1 only.** Not implemented: on-air *Pull segment*, after-air archive marking, and a board button for Stop broadcast (API only: `POST /api/broadcast/fail`).
@@ -127,11 +136,13 @@ Earlier history:
 ```bash
 cd /Users/apple/Bridge/Projects/Hacktoberfest/echo-stage
 npm install                                   # if node_modules is missing
-npm test                                      # 36 broadcast + 5 studio suites (~1 min)
+npm test                                      # 50 broadcast + 5 studio suites (~1 min)
 npm run test:browser                          # board, 3 sessions (Chrome)
 npm run test:audio-stall                      # P0-3 regression (Chrome, ~15 s)
 npm run test:board-lan                        # board actions on a plain-HTTP non-localhost origin (Chrome)
 npm run test:art-fault                        # broken published artwork shown as a fault (Chrome, ~45 s)
+npm run test:art-display-fault                # artwork that preloaded but fails on screen: fault + automatic recovery (Chrome, ~35 s)
+npm run test:countdown-reject                 # reject during the Starting countdown: never airs (Chrome, ~10 s)
 npm run test:browser-all                      # all browser tests in sequence
 npm run test:broadcast-browser                # full 2-min playout (Chrome)
 ECHO_SSE_DELAY_MS=1500 npm run test:broadcast-browser   # skew regression
@@ -156,7 +167,7 @@ URLs: `/broadcast/` (viewer, click "Watch with sound"), `/board/` (public, read-
 
 ## 9. Next priorities (in order)
 
-1. Get Codex's verdict on the latest implementation commit (N04 is implemented); for any finding, reproduce it independently, fix it minimally, and add a regression test that fails on the previous commit. No feature work.
+1. Get Codex's verdict on the latest implementation commit (fixes R1/R2/R3 from the 3e0c846 run; the owner called this the last release-safety fix wave); for any finding, reproduce it independently, fix it minimally, and add a regression test that fails on the previous commit. No feature work, no ElevenLabs on this branch (3.2 design: `../ECHO_3_2_INTEGRATION_DESIGN.md`).
 2. Restart the demo on the fixed code and run the observed two-human rehearsal; record what actually happens.
 3. Recording and submission package before 11:30.
 4. After the hackathon (not before):
@@ -169,7 +180,7 @@ URLs: `/broadcast/` (viewer, click "Watch with sound"), `/board/` (public, read-
 
 ## 10. Continuing safely in a new session
 
-- Start with `git status`, `git log --oneline -5` and `npm test`. Expect a clean tree at the docs commit on top of `7ee7394`.
+- Start with `git status`, `git log --oneline -5` and `npm test`. Expect a clean tree at the latest implementation commit (§1).
 - Never touch `../echo-stage-qa`, `data/credentials.txt` or the processes in `data/demo/server.pid` without the owner's go-ahead.
 - Don't add features, dependencies or paid services while QA or rehearsal is in progress. Make docs-only changes in separate commits.
 - New dependencies must be pinned to releases at least two weeks old. If `~/.npm` permissions fail, use `npm install --cache /tmp/<dir>` (never sudo).

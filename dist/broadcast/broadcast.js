@@ -122,6 +122,25 @@ function checkImage(url) {
   }
   return images.get(url);
 }
+// The image on screen is the authority, not the preload: the displayed element makes its own fetch, which can fail
+// after a successful preload (e.g. once the cache is evicted). Each assignment is judged by that element's own
+// decode result, bounded in time, and a failed slide is retried while it stays on screen (same approved URL).
+const IMAGE_RETRIES = 3, IMAGE_RETRY_MS = 2000, shown = new WeakMap();
+function showImage(img, url, attempt = 0) {
+  const rec = {url, attempt, state: attempt ? 'retrying' : 'loading', at: performance.now()};
+  shown.set(img, rec);
+  if (attempt) img.removeAttribute('src');
+  img.src = url;
+  const settle = ok => { if (shown.get(img) === rec) { rec.state = ok && img.naturalWidth > 0 ? 'ok' : 'failed'; rec.at = performance.now(); } };
+  img.decode().then(() => settle(true), () => settle(false));
+}
+function displayedStatus(img) {
+  const rec = img && shown.get(img), t = performance.now();
+  if (!rec) return 'loading';
+  if ((rec.state === 'loading' || rec.state === 'retrying') && t - rec.at > IMAGE_FAIL_MS) { rec.state = 'failed'; rec.at = t; }
+  if (rec.state === 'failed' && rec.attempt < IMAGE_RETRIES && t - rec.at > IMAGE_RETRY_MS) showImage(img, rec.url, rec.attempt + 1);
+  return rec.state === 'retrying' ? 'failed' : rec.state;
+}
 function playArt(seg, local) {
   const slides = seg.content.slides || [];
   let at = 0, index = 0;
@@ -130,9 +149,12 @@ function playArt(seg, local) {
   if (view.artKey !== `${seg.id}:${index}`) {
     view.artKey = `${seg.id}:${index}`; view.slideAt = performance.now();
     const [on, off] = $('#art-a').classList.contains('on') ? [$('#art-b'), $('#art-a')] : [$('#art-a'), $('#art-b')];
-    on.src = asset.url; on.alt = `${asset.title || ''}, ${asset.credit || ''}`; on.classList.add('on'); off.classList.remove('on');
+    showImage(on, asset.url); on.alt = `${asset.title || ''}, ${asset.credit || ''}`; on.classList.add('on'); off.classList.remove('on');
   }
-  const status = checkImage(asset.url), slow = status === 'loading' && performance.now() - view.slideAt > IMAGE_SLOW_MS;
+  // Shown only when the displayed element decoded; failed when it failed, or while it is pending and the preload failed.
+  const display = displayedStatus(document.querySelector('#art img.on')), preload = checkImage(asset.url);
+  const status = display === 'ok' ? 'ok' : display === 'failed' || preload === 'failed' ? 'failed' : 'loading';
+  const slow = status === 'loading' && performance.now() - view.slideAt > IMAGE_SLOW_MS;
   view.artFault = status === 'failed' ? {state: 'failed', asset} : slow ? {state: 'stalled', asset} : null;
   $('#art-missing').hidden = status !== 'failed';
   if (status === 'failed') { setText('#art-missing-title', asset.title || 'Untitled'); setText('#art-missing-credit', [asset.credit, asset.license].filter(Boolean).join(' · ')); }

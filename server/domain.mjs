@@ -20,6 +20,11 @@ export const BOOKING = ['available', 'held', 'confirmed', 'released'];
 export const SEGMENT = ['draft', 'submitted', 'approved', 'needs_changes', 'rejected'];
 export const BROADCAST = ['queued', 'ready', 'on_air', 'completed', 'failed'];
 const OPEN_PROPOSAL = new Set(['negotiating', 'awaiting_proposer', 'awaiting_approval']);
+// Media is playable only on the strength of a current check of its exact bytes: a full decode, or (shipped demo
+// files without a decoder) the fingerprint recorded when they were verified. Bare flags from older checks count for nothing.
+export const MEDIA_CHECKS = ['ffmpeg-full-decode/2', 'recorded-fingerprint/1'];
+export const playable = a => a.decodable === true && !!a.verification && a.verification.sha256 === a.sha256 && MEDIA_CHECKS.includes(a.verification.method);
+const whyUnplayable = a => `${a.id} ${a.decodable === false ? `could not be decoded${a.unplayableReason ? ` (${a.unplayableReason})` : ''}` : 'has not been verified as playable'}`;
 
 export class BroadcastDesk {
   constructor(state, {now = () => Date.now()} = {}) { this.state = state; this.now = now; }
@@ -148,6 +153,7 @@ export class BroadcastDesk {
     if (revision !== seg.revision) fail('stale_revision', `Review is for revision ${revision}; current is ${seg.revision}`, {current: seg.revision});
     if (!['approved', 'needs_changes', 'rejected'].includes(decision)) fail('bad_request', 'Unknown review decision');
     if (decision === 'approved' && seg.assets.some(a => !a.rightsDeclared)) fail('rights_required', 'Every asset needs declared rights before approval');
+    if (decision === 'approved' && seg.assets.some(a => !playable(a))) fail('undecodable_media', `${seg.title} cannot be approved: ${seg.assets.filter(a => !playable(a)).map(whyUnplayable).join('; ')}`);
     // A revision that was turned down stays turned down: corrected content (a new revision) must be reviewed instead.
     if (decision === 'approved' && seg.declined?.revision === seg.revision)
       fail('rejected_revision', `${seg.title} r${seg.revision} was ${seg.declined.decision === 'rejected' ? 'rejected' : 'sent back for changes'}; submit corrected content (a new revision) for review`);
@@ -161,16 +167,20 @@ export class BroadcastDesk {
   // N04 policy (approved by the product owner, option 1): turning down content that is part of the ready
   // publication withdraws that publication before air. Nothing else changes: no airtime, no other segment,
   // no media. On air, playback is never interrupted automatically; the producer keeps Stop broadcast.
+  // "Before air" includes the Starting countdown: Go live schedules a start (state on_air, onAirAt in the future),
+  // and until that instant on the server clock the start is only pending, so a rejection cancels it.
   withdrawIfPublished(actor, seg, decision, note) {
     const b = this.state.broadcast, m = b.manifest;
     if (!m?.segments.some(x => x.id === seg.id && x.revision === seg.revision)) return;
     const reason = note || `${seg.title} r${seg.revision} ${decision === 'rejected' ? 'rejected' : 'needs changes'} in editorial review`;
-    if (b.state === 'ready') {
-      const record = {publicationId: m.publicationId, publishRevision: m.publishRevision, hash: m.hash, segmentId: seg.id, segmentRevision: seg.revision, decision, reason, by: actor.id, at: this.now()};
+    const pendingStart = b.state === 'on_air' && this.now() < b.onAirAt;
+    if (b.state === 'ready' || pendingStart) {
+      const record = {publicationId: m.publicationId, publishRevision: m.publishRevision, hash: m.hash, segmentId: seg.id, segmentRevision: seg.revision, decision, reason, by: actor.id, at: this.now(),
+        ...(pendingStart ? {cancelledStartAt: b.onAirAt} : {})};
       (this.state.withdrawals ??= {})[m.publicationId] = record;
       this.state.broadcast = {state: 'queued', publicationId: null, publishRevision: null, manifest: null, onAirAt: null, withdrawn: record};
-      this.log(actor, 'publication_withdrawn', `Publication #${m.publicationId} (revision ${m.publishRevision}) withdrawn before air by ${this.state.people[actor.id].name}: ${reason}`,
-        {publicationId: m.publicationId, revision: m.publishRevision, segmentId: seg.id, reason});
+      this.log(actor, 'publication_withdrawn', `Publication #${m.publicationId} (revision ${m.publishRevision}) withdrawn before air by ${this.state.people[actor.id].name}${pendingStart ? `, cancelling its start in ${((b.onAirAt - this.now()) / 1000).toFixed(1)}s` : ''}: ${reason}`,
+        {publicationId: m.publicationId, revision: m.publishRevision, segmentId: seg.id, reason, ...(pendingStart ? {cancelledStartAt: b.onAirAt} : {})});
     } else if (b.state === 'on_air') {
       this.log(actor, 'rejected_on_air', `${seg.title} turned down while publication #${m.publicationId} is on air: ${reason}. Playback continues; use Stop broadcast to interrupt.`,
         {publicationId: m.publicationId, revision: m.publishRevision, segmentId: seg.id, reason});
@@ -468,7 +478,7 @@ export class BroadcastDesk {
     for (const e of this.layout().filter(e => e.duration > 0)) {
       const seg = this.state.segments[e.segmentId];
       // Fail closed: only media positively verified as decodable can be published.
-      for (const a of seg.assets) if (a.decodable !== true) unplayable.push(`${seg.title}: ${a.id} ${a.decodable === false ? 'could not be decoded' : 'has not been verified as playable'}`);
+      for (const a of seg.assets) if (!playable(a)) unplayable.push(`${seg.title}: ${whyUnplayable(a)}`);
       const audio = seg.module === 'music' && seg.assets.find(a => a.id === seg.content?.assetId);
       if (audio?.durationSec !== undefined && audio.durationSec + .05 < (seg.content.offset || 0) + e.duration)
         unplayable.push(`${seg.title}: audio is ${audio.durationSec.toFixed(1)}s but the slot needs ${(seg.content.offset || 0) + e.duration}s`);
@@ -497,6 +507,9 @@ export class BroadcastDesk {
     if (publicationId !== b.manifest.publicationId || hash !== b.manifest.hash)
       fail('stale_manifest', `You confirmed publication #${publicationId ?? '?'}; the ready publication is #${b.manifest.publicationId} (${b.manifest.hash.slice(0, 10)}). Review it and go live again.`);
     if (b.publishRevision !== this.state.showRevision) fail('stale_manifest', `Publication #${b.manifest.publicationId} is revision ${b.publishRevision}, but the programme is now at revision ${this.state.showRevision}. Publish again.`);
+    // Nothing unplayable starts: the server re-checks the actual bytes just before this call.
+    const bad = b.manifest.segments.flatMap(x => this.state.segments[x.id].assets.filter(a => !playable(a)).map(a => `${x.title}: ${whyUnplayable(a)}`));
+    if (bad.length) fail('undecodable_media', `Publication #${b.manifest.publicationId} cannot go live: ${bad.join('; ')}`, {unplayable: bad});
     if (!Number.isInteger(delayMs) || delayMs < 0 || delayMs > 600000) fail('bad_request', 'delayMs must be 0–600000');
     b.state = 'on_air'; b.onAirAt = this.now() + delayMs;
     this.log(actor, 'on_air', `Revision ${b.publishRevision} on air`, {revision: b.publishRevision});
