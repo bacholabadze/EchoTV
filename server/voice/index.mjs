@@ -7,6 +7,7 @@ import {readFileSync, existsSync, rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {cacheKey, createCache, createLedger, BudgetError} from './store.mjs';
 import {piperProvider, elevenLabsProvider, captionsProvider, approximateTiming, ProviderError} from './providers.mjs';
+import {elevenLabsStt} from './stt.mjs';
 import {normalizeText} from './align.mjs';
 
 export {BudgetError, ProviderError};
@@ -81,4 +82,12 @@ export function voiceServiceFromEnv({root, dataDir, probe, env = process.env, lo
     captions: captionsProvider(),
   };
   return createVoiceService({providers, cacheDir: join(dataDir, 'voice-cache'), ledger: createLedger(join(dataDir, 'voice-ledger.json'), +env.ECHO_VOICE_BUDGET_CHARS || 0), probe, log});
+}
+
+// Speech-to-text for spoken interview answers: off unless both a key and a seconds budget are set.
+export function sttFromEnv({dataDir, env = process.env}) {
+  const keyFile = join(dataDir, 'secrets', 'elevenlabs.key');
+  const apiKey = env.ELEVENLABS_API_KEY || (existsSync(keyFile) ? readFileSync(keyFile, 'utf8').trim() : '');
+  return {provider: elevenLabsStt({apiKey, baseUrl: env.ELEVENLABS_BASE_URL || 'https://api.elevenlabs.io', model: env.ELEVENLABS_STT_MODEL || 'scribe_v2'}),
+    ledger: createLedger(join(dataDir, 'stt-ledger.json'), +env.ECHO_STT_BUDGET_SECONDS || 0, {what: 'Speech-recognition budget', unit: 'seconds', unset: 'No speech-recognition budget is set (ECHO_STT_BUDGET_SECONDS); spoken answers are off'})};
 }

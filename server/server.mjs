@@ -1,19 +1,20 @@
 // ECHO broadcast server: one process serialises every mutation of the shared state.
 // node:http only; serves the static site, media, the API, and live updates (SSE).
 import http from 'node:http';
-import {readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, statSync, createReadStream} from 'node:fs';
+import {readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, statSync, createReadStream, mkdtempSync, rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
 import {join, normalize, extname, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {timingSafeEqual} from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
 import {BroadcastDesk, DomainError, sha256, MEDIA_CHECKS} from './domain.mjs';
 import {seedState} from './seed.mjs';
-import {voiceServiceFromEnv, ProviderError} from './voice/index.mjs';
+import {voiceServiceFromEnv, sttFromEnv, ProviderError, BudgetError} from './voice/index.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary',
   '.hdr': 'application/octet-stream', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.m4a': 'audio/mp4', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8'};
-const STATUS = {voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
+const STATUS = {consent_required: 403, transcription_failed: 503, voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
 const MAX_UPLOAD = 25 * 1024 * 1024, SENT = Symbol('sent');
 
 const MAGIC = {
@@ -82,6 +83,16 @@ export function checkLibraryFile(file) {
   return {kind, decodable: true, reason: null, durationSec: Math.round(+info.format?.duration * 1000) / 1000, width: v.width, height: v.height, method: MEDIA_CHECKS[0]};
 }
 
+// Length of a recording in seconds. Browser recordings (webm/ogg) often carry no duration header, so decode if needed.
+export function audioSeconds(path) {
+  const p = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path], {encoding: 'utf8', timeout: 15000});
+  const d = parseFloat(p.stdout);
+  if (d > 0) return d;
+  const f = spawnSync('ffmpeg', ['-v', 'quiet', '-stats', '-i', path, '-f', 'null', '-'], {encoding: 'utf8', timeout: 30000});
+  const t = [...String(f.stderr).matchAll(/time=(\d+):(\d+):(\d+(?:\.\d+)?)/g)].pop();
+  return t ? (+t[1]) * 3600 + (+t[2]) * 60 + parseFloat(t[3]) : 0;
+}
+
 // Demo media shipped in the repo; uploads are stored in the data directory.
 const shippedList = mediaDir => existsSync(join(mediaDir, 'media.json')) ? JSON.parse(readFileSync(join(mediaDir, 'media.json'), 'utf8')) : {};
 export function demoMedia(mediaDir) {
@@ -89,7 +100,7 @@ export function demoMedia(mediaDir) {
 }
 
 export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(ROOT, 'media'), staticDir = join(ROOT, 'dist'), now = () => Date.now(), requestTtlMs = 180000, seedOptions = {}, quiet = false,
-  hostVoiceEnabled = process.env.ECHO_HOST_VOICE !== 'off', sseDelayMs = 0, voice = null} = {}) {
+  hostVoiceEnabled = process.env.ECHO_HOST_VOICE !== 'off', sseDelayMs = 0, voice = null, stt = null} = {}) {
   mkdirSync(join(dataDir, 'uploads'), {recursive: true});
   const statePath = join(dataDir, 'state.json');
   const fresh = () => seedState({...seedOptions, media: demoMedia(mediaDir)});
@@ -201,6 +212,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
   // Voices go through the provider-neutral voice service (3.2). The 3.1 house lines keep their behaviour: Piper,
   // or the same captions-only fallback when no voice is available.
   const voices = voice || voiceServiceFromEnv({root: ROOT, dataDir, probe: path => { const {reason, ...p} = probeMedia(path); return {...p, reason}; }, log: (event, data) => quiet || console.log(`voice: ${event} ${JSON.stringify(data)}`)});
+  const speech = stt || sttFromEnv({dataDir});
   async function hostVoice(lines) {
     const fallback = Object.fromEntries(lines.map(l => [l.id, {text: l.text, captions: [{start: 0, end: 6, text: l.text}], cues: [], duration: 6, audio: null}]));
     const out = {};
@@ -309,6 +321,39 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     ['POST', /^\/api\/interviews$/, ({actor}) => mutate(d => d.startInterview(actor))],
     ['POST', /^\/api\/interviews\/(\w+)\/(answer|skip|goto|review|quotes|approve|withdraw)$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.interviewAct(actor, m[1], m[2], body)); }],
     ['POST', /^\/api\/briefs\/(\w+)\/prepare$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.prepareSegment(actor, {interviewId: m[1], segmentId: body.segmentId, assets: body.assets || {}})); }],
+    // ---- spoken interview (3.2): consent, transcription (never stored by ECHO), spoken questions ----
+    ['POST', /^\/api\/interviews\/(\w+)\/consent$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.interviewConsent(actor, m[1], body)); }],
+    ['POST', /^\/api\/interviews\/(\w+)\/transcribe$/, async ({actor, req, raw, m}) => {
+      desk.requireHuman(actor);
+      const iv = desk.interviewFor(actor, m[1]);
+      if (!iv.consent?.voice) throw new DomainError('consent_required', 'Allow spoken answers first: the recording is sent to the speech-recognition service and is not kept by ECHO');
+      const mime = String(req.headers['content-type'] || '').split(';')[0], ext = {'audio/webm': '.webm', 'audio/ogg': '.ogg', 'audio/mp4': '.m4a', 'audio/mpeg': '.mp3', 'audio/wav': '.wav', 'audio/x-wav': '.wav'}[mime];
+      if (!ext) throw new DomainError('bad_request', 'Send audio/webm, ogg, mp4, mpeg or wav');
+      if (!raw.length || raw.length > 10 * 1024 * 1024) throw new DomainError('bad_request', 'Recording must be between 1 byte and 10 MB');
+      const dir = mkdtempSync(join(tmpdir(), 'echo-stt-')), path = join(dir, `answer${ext}`);
+      try {
+        writeFileSync(path, raw);
+        const seconds = audioSeconds(path);
+        if (!(seconds > 0)) throw new DomainError('bad_request', 'This recording could not be read; try again or type your answer');
+        if (seconds > 60) throw new DomainError('bad_request', `Answers can be up to 60 seconds (this one is ${Math.round(seconds)} s)`);
+        const ok = speech.provider.available();
+        if (ok !== true) throw new DomainError('voice_unavailable', `Spoken answers are not available: ${ok}. Type your answer instead.`);
+        try { speech.ledger.check(Math.ceil(seconds)); } catch (e) { if (e instanceof BudgetError) throw new DomainError('voice_unavailable', `${e.message}. Type your answer instead.`); throw e; }
+        let r;
+        try { r = await speech.provider.transcribe({bytes: raw, filename: `answer${ext}`, mime, lang: 'ka'}); }
+        catch (e) { if (e instanceof ProviderError) throw new DomainError('transcription_failed', `Speech recognition failed (${e.message.replace(/^[\w-]+: /, '')}). Try again or type your answer.`); throw e; }
+        speech.ledger.record({provider: speech.provider.name, model: speech.provider.model, chars: Math.ceil(seconds), requestIds: [r.requestId].filter(Boolean)});
+        return {recognised: r.text, provider: speech.provider.name, model: speech.provider.model, languageCode: r.languageCode, confidence: r.languageProbability, durationSec: Math.round(seconds * 10) / 10, stored: false};
+      } finally { rmSync(dir, {recursive: true, force: true}); }
+    }],
+    ['GET', /^\/api\/interviews\/(\w+)\/question-audio$/, async ({actor, m}) => {
+      if (!actor) throw new DomainError('unauthorized', 'Sign in');
+      const prompt = desk.interviewView(actor, m[1]).prompt;
+      if (!prompt) throw new DomainError('not_found', 'No open question');
+      const r = await voices.synthesize({lines: [{presenter: 'interviewer', text: prompt.question.ka}], lang: 'ka', order: ['elevenlabs', 'captions']});
+      return {stepId: prompt.stepId, text: prompt.question.ka, audio: r.audioFile ? `/voice/${r.key}.mp3` : null, duration: r.duration, captions: r.captions, cues: r.cues, provider: r.provider,
+        ...(r.audioFile ? {} : {reason: r.attempts.map(a => a.skipped || a.error).join('; ') || 'captions only'})};
+    }],
     ['GET', /^\/api\/library$/, ({actor}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); return desk.libraryView(actor); }],
     ['GET', /^\/api\/library\/media\/(\w+)\/file$/, ({actor, m, req, res}) => { const item = desk.mediaOf(actor, m[1]); serveFile(req, res, join(dataDir, 'uploads', item.file)); return SENT; }],
     ['POST', /^\/api\/library\/media$/, ({actor, req, raw}) => {

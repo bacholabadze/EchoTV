@@ -149,7 +149,7 @@ export class BroadcastDesk {
   }
   interviewView(actor, id) {
     const iv = this.interviewFor(actor, id);
-    return {id: iv.id, status: iv.status, step: iv.step, prompt: Interview.nextPrompt(iv), answers: iv.answers, brief: iv.brief, history: iv.history, briefRevisions: iv.briefRevisions, updatedAt: iv.updatedAt};
+    return {id: iv.id, status: iv.status, step: iv.step, prompt: Interview.nextPrompt(iv), consent: iv.consent || {voice: false}, answers: iv.answers, brief: iv.brief, history: iv.history, briefRevisions: iv.briefRevisions, updatedAt: iv.updatedAt};
   }
   interviewAct(actor, id, action, body = {}) {
     const iv = this.interviewFor(actor, id), by = actor.id, now = this.now(), ctx = this.ivCtx(iv.ownerId);
@@ -170,6 +170,14 @@ export class BroadcastDesk {
     if (action === 'approve' || action === 'withdraw') this.log(actor, `brief_${action === 'approve' ? 'approved' : 'withdrawn'}`, `${this.state.people[iv.ownerId].name}: creator brief ${id} ${action === 'approve' ? `v${iv.brief.version} approved by the creator` : 'withdrawn by the creator'}`, {interviewId: id});
     if (action === 'withdraw') this.briefWithdrawn(actor, iv);
     return this.interviewView(actor, id);
+  }
+  // Spoken answers need the creator's explicit consent, per interview, revocable. The text shown is versioned.
+  interviewConsent(actor, id, {voice}) {
+    this.requireHuman(actor);
+    const iv = this.interviewFor(actor, id);
+    iv.consent = {voice: voice === true, at: this.now(), by: actor.id, text: 'voice-v1'};
+    iv.history.push({at: this.now(), by: actor.id, action: voice === true ? 'voice_consent_given' : 'voice_consent_revoked'});
+    return {consent: clone(iv.consent)};
   }
   // Media: upload acceptance and the technical check (server) are separate from the rights declaration (creator),
   // editorial review (producer, per segment revision) and broadcast authorisation (publication + start checks).

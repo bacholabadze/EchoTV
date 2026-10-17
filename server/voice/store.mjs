@@ -39,15 +39,15 @@ export class BudgetError extends Error { constructor(message, details) { super(m
 
 // Billed characters are counted before a paid call is sent; a call that would pass the limit is refused unsent.
 // Every paid call is recorded (time, chars, provider, model, request ids). The ledger never stores keys.
-export function createLedger(path, limitChars) {
+export function createLedger(path, limitChars, {what = 'Voice budget', unit = 'characters', unset = 'No voice budget is set (ECHO_VOICE_BUDGET_CHARS); paid voices are off'} = {}) {
   const read = () => existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {billedChars: 0, calls: []};
   return {
-    limitChars,
-    status() { const l = read(); return {limitChars, billedChars: l.billedChars, remainingChars: Math.max(0, limitChars - l.billedChars), calls: l.calls.length}; },
+    limitChars, unit,
+    status() { const l = read(); return {unit, limit: limitChars, billed: l.billedChars, remaining: Math.max(0, limitChars - l.billedChars), limitChars, billedChars: l.billedChars, remainingChars: Math.max(0, limitChars - l.billedChars), calls: l.calls.length}; },
     check(chars) {
       const l = read();
-      if (!(limitChars > 0)) throw new BudgetError('No voice budget is set (ECHO_VOICE_BUDGET_CHARS); paid voices are off', {limitChars});
-      if (l.billedChars + chars > limitChars) throw new BudgetError(`Voice budget: ${chars} characters requested, ${limitChars - l.billedChars} of ${limitChars} left`, {chars, billedChars: l.billedChars, limitChars});
+      if (!(limitChars > 0)) throw new BudgetError(unset, {limitChars});
+      if (l.billedChars + chars > limitChars) throw new BudgetError(`${what}: ${chars} ${unit} requested, ${Math.round((limitChars - l.billedChars) * 10) / 10} of ${limitChars} left`, {chars, billedChars: l.billedChars, limitChars});
     },
     record(call) { const l = read(); l.billedChars += call.chars; l.calls.push({...call, at: new Date().toISOString()}); writeAtomic(path, JSON.stringify(l, null, 1)); },
   };

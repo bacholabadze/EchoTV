@@ -17,13 +17,21 @@ function alignmentFor(text, duration = 3.9) {
 export async function startMockElevenLabs({mode = 'ok', audio = AUDIO} = {}) {
   const calls = [];
   const server = http.createServer((req, res) => {
-    let raw = '';
-    req.on('data', d => raw += d).on('end', () => {
-      const url = new URL(req.url, 'http://mock'), body = raw ? JSON.parse(raw) : null;
+    const chunks = [];
+    req.on('data', d => chunks.push(d)).on('end', () => {
+      const url = new URL(req.url, 'http://mock'), buf = Buffer.concat(chunks), raw = buf.toString('utf8');
+      // Speech-to-text is multipart: record the form fields by name (and the file's size), not JSON.
+      const multipart = String(req.headers['content-type'] || '').startsWith('multipart/form-data');
+      const body = multipart ? Object.fromEntries([...raw.matchAll(/name="([^"]+)"(?:; filename="[^"]*")?\r\n(?:Content-Type: [^\r]*\r\n)?\r\n([\s\S]*?)\r\n--/g)].map(([, k, v]) => [k, k === 'file' ? `<${Buffer.byteLength(v, 'latin1')} bytes>` : v])) : raw ? JSON.parse(raw) : null;
       calls.push({method: req.method, path: url.pathname, query: Object.fromEntries(url.searchParams), headers: {...req.headers}, body});
       if (mode === 'hang') return; // never answers
       if (mode === 'error') { res.writeHead(500, {'content-type': 'application/json'}); return res.end(JSON.stringify({detail: {message: `internal error for key ${req.headers['xi-api-key']}`}})); }
       if (mode === 'unauthorized') { res.writeHead(401, {'content-type': 'application/json'}); return res.end(JSON.stringify({detail: {status: 'invalid_api_key'}})); }
+      if (url.pathname === '/v1/speech-to-text') {
+        res.writeHead(200, {'content-type': 'application/json', 'request-id': `mock-stt-${calls.length}`});
+        const text = 'ჩემი სახელია ტესტ შემქმნელი და ვწერ მუსიკას.';
+        return res.end(JSON.stringify({language_code: 'kat', language_probability: 0.96, text, words: text.split(' ').map((w, i) => ({text: w, type: 'word', start: i * .4, end: i * .4 + .35, logprob: -0.1}))}));
+      }
       const dialogue = url.pathname === '/v1/text-to-dialogue/with-timestamps';
       if (!dialogue && !/^\/v1\/text-to-speech\/[^/]+\/with-timestamps$/.test(url.pathname)) { res.writeHead(404); return res.end(); }
       const text = dialogue ? body.inputs.map(i => i.text).join('') : body.text, alignment = alignmentFor(text);
