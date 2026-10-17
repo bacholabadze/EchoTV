@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "bytes": 964252,
+  "meshes": 8,
+  "triangles": 18520,
+  "bounds": {
+    "min": [
+      -3.9000000953674316,
+      -2.7446974185844955,
+      -2.2000001035630703
+    ],
+    "max": [
+      3.9000000953674316,
+      4.343676202485936,
+      -0.7349999870359898
+    ]
+  },
+  "checks": [
+    "size/geometry budgets",
+    "no external textures",
+    "scenery behind cast",
+    "load failure fallback",
+    "no retry storm",
+    "ready redraw event",
+    "idempotence"
+  ]
+}

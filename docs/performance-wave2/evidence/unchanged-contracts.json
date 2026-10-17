@@ -1,0 +1,72 @@
+[
+  {
+    "path": "dist/studio/core.js",
+    "sha256": "815ce988af8b1d197913ad44bde84b0d5c5bb26c7aa4483887eaf680c4b7311d",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/dialogue.json",
+    "sha256": "3d8f3d8e5baf7406bde5d8c26caf14b009d92b9c63b7f0733ad5cca10071edff",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/09.mp3",
+    "sha256": "e6df53e771549d5b26047b4e541d2662612130bc7f2289f6f2328e6c12a55b87",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/08.mp3",
+    "sha256": "d19fdb83722c9ef1e84d2cde483aa392fbe0a49ae1a278c82c8e7f260a55d42e",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/03.mp3",
+    "sha256": "91c1e0c1b8c65b466107c098a37c45dabb8300c77af72d7a6e0fb9cbc9adbc0e",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/02.mp3",
+    "sha256": "1c82c8e7886efdff543b922b2890c7b1ed6f51d5ac9680699fbb67b588eabbc2",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/01.mp3",
+    "sha256": "0c1637d5c29b5055c8f094764b8b5e94fc0e203343291aaebfba8bd1b2c45369",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/05.mp3",
+    "sha256": "f60d97c9897de263cde73034e770cbf7d7549d5d8b2ad9f5e07c373d0901bea9",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/04.mp3",
+    "sha256": "c722c6207492231ce31991ffaf9d90f97f479d65b4d43c85f054c93b1c90ac00",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/10.mp3",
+    "sha256": "6c60192bf7f9508dfba7b3a6096cb5d2e33200a9622e3269759fa8dd6c856dc1",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/06.mp3",
+    "sha256": "6374c1e17539b5aa9588940472a306b3207027747f96f7a6060602472843ce78",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/audio/07.mp3",
+    "sha256": "43b0583bc935e51572f750f052288386641794f7e17b7d3e92fbc0e7987a3f53",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/lookdev/assets/cast-clean-v6.glb",
+    "sha256": "41fb9955588d361efe36cd9c093a4e1e17fdb1502e2d7537698c79fb52500eb6",
+    "unchanged": true
+  },
+  {
+    "path": "dist/studio/lookdev/assets/hair-clean-v6.glb",
+    "sha256": "0129ae1c2674fc8709da7c4a46f9a1467a8fde3ea50e32f17b48207cac848d66",
+    "unchanged": true
+  }
+]

@@ -1,0 +1,1335 @@
+{
+  "baseline": "9ca8eceb28ba32c6f10207c469f62757d78d0f4b",
+  "sourceSha256": {
+    "dist/lab/vendor/three.module.js": "ce1fa418de16a19495a9f72495580e3015d7745c296d3ce0485897f902ddedfb",
+    "dist/lab/vendor/SkeletonUtils.js": "ee412be1aa05f3051c2bda8ea89612c1ba70c5c87de62b56040282120d5eb991",
+    "dist/lab/vendor/GLTFLoader.js": "8a7db5a19d1018d79fb9a7a8b8372f317682027321a67d86023002e264ea479d",
+    "dist/lab/vendor/BufferGeometryUtils.js": "c25b7930e570e9ec56173cd3b866ec8d2e10016630db3937efb439daf1cedbf6",
+    "dist/studio/room.js": "3b567723a4fd9da0a9ef311a3610bf49ba31c0a4d78c85ad8b3ff8a1be14d7aa",
+    "dist/studio/blocking.js": "30d409d03e106c99f8c8643a167427d7ab4011676a3e3bca72df8fd1cffbcba7",
+    "dist/studio/body-performance.js": "1c60aa82ab3f5f80f213ac2a67bfd062e50c67e7b8cab2ebaccd546c685705c6",
+    "dist/studio/performance.js": "cf0311270924efbfb6d8c8554540ad046e28727f7ae3d194cde4e8854fc9190b",
+    "dist/studio/characters.js": "2e14ed93fc002c9624e0838d8092fe349bc8f1034fbd5eb124731e0e94e1fd54",
+    "dist/studio/materials.js": "6f4b20f9d9233a3c6a608476e0b7ec7d9e6a0d0040cdc356ce1bde3d15841ad4",
+    "dist/studio/visual-upgrade/festival-set.js": "85cb1d3a0d801849e06373919892b1eb02c2069ca22dc1cceba380de4bd4fff8",
+    "dist/studio/editorial-characters.js": "501a4ef52b32b100a163df53d61180ca7433d0702e8d2c15e7ac818890772a89",
+    "dist/studio/core.js": "815ce988af8b1d197913ad44bde84b0d5c5bb26c7aa4483887eaf680c4b7311d",
+    "dist/studio/visual-upgrade/festival-set.glb": "10f9737db6bdfb613461ff418e743621021c6056159b5241963f6edf7770161c",
+    "dist/studio/lookdev/assets/cast-clean-v6.glb": "41fb9955588d361efe36cd9c093a4e1e17fdb1502e2d7537698c79fb52500eb6",
+    "dist/studio/lookdev/assets/hair-clean-v6.glb": "0129ae1c2674fc8709da7c4a46f9a1467a8fde3ea50e32f17b48207cac848d66",
+    "tools/performance-wave2/viewer.js": "a9d5e40ed749e734b129814afd00f711aa77000567eaf70b9f0ddb16c23a50f3",
+    "dist/studio/performance-direction.js": "857eafb07f3dd6944514aed0828a4232f6bde834abcd30e9809aba3cfc92bdc2",
+    "dist/studio/studio.js": "9b189d2983079e2a7030e625aeee3dce5ea8ab3ef9834bf24eee6cbfec161ec3",
+    "dist/studio/dialogue.json": "3d8f3d8e5baf7406bde5d8c26caf14b009d92b9c63b7f0733ad5cca10071edff"
+  },
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "createdAt": "2026-10-17T20:55:26.931Z",
+  "captures": [
+    {
+      "label": "speaker-gesture",
+      "shot": "wide",
+      "turn": "01",
+      "audioTime": 1.182226,
+      "file": "speaker-gesture.png",
+      "sha256": "38513e0f949fe027475215f0c835694d2223de2248d844046fe3602f21f01a9e"
+    },
+    {
+      "label": "hand-clearance",
+      "shot": "hands",
+      "turn": "01",
+      "audioTime": 1.217448,
+      "file": "hand-clearance.png",
+      "sha256": "c84012f47266317ceb8f7f5f5096d64bf6f1654f4429d87de3f6668e17650e4b"
+    },
+    {
+      "label": "listener-acknowledgment",
+      "shot": "nova",
+      "turn": "01",
+      "audioTime": 2.605235,
+      "file": "listener-acknowledgment.png",
+      "sha256": "6acc4efb66bdc0fa3719d8bf297c1835041e5ecf47216972d7a4a320c8a39ccd"
+    },
+    {
+      "label": "seated-posture",
+      "shot": "wide",
+      "turn": "02",
+      "audioTime": 1.153708,
+      "file": "seated-posture.png",
+      "sha256": "39021182864ac31806924dd0b9234124e9eccc7abb34c99a03e3d347b7165991"
+    },
+    {
+      "label": "listener-considers",
+      "shot": "nova",
+      "turn": "03",
+      "audioTime": 6.456753,
+      "file": "listener-considers.png",
+      "sha256": "3bd31e3d51fd851acdfe7542cf97dd5a78387a7def0d7a96d834ae24bb868204"
+    },
+    {
+      "label": "two-person-conversation",
+      "shot": "two",
+      "turn": "07",
+      "audioTime": 4.050036,
+      "file": "two-person-conversation.png",
+      "sha256": "83e5dd41573075574d2c0ffe074174da7943d6e7e2ef2b63eea6c40931d78ada"
+    },
+    {
+      "label": "three-character-wide",
+      "shot": "wide",
+      "turn": "07",
+      "audioTime": 4.116764,
+      "file": "three-character-wide.png",
+      "sha256": "3a87d00e91f703b339e570b6d727fec87b26e66d476cf9e0380f29c95b63e3d4"
+    }
+  ],
+  "benchmarks": [
+    {
+      "version": "before",
+      "trial": 0,
+      "samples": 180,
+      "width": 960,
+      "height": 540,
+      "pixelRatio": 1,
+      "drawCalls": 135,
+      "triangles": 172718,
+      "animationMedianMs": 0.10000000149011612,
+      "animationP95Ms": 0.3999999985098839,
+      "submitMedianMs": 1,
+      "submitP95Ms": 4.0999999940395355,
+      "frameP95Ms": 10.100000001490116,
+      "gpuSamples": 180,
+      "gpuMedianMs": 1.44125,
+      "gpuP95Ms": 1.74925
+    },
+    {
+      "version": "after",
+      "trial": 0,
+      "samples": 180,
+      "width": 960,
+      "height": 540,
+      "pixelRatio": 1,
+      "drawCalls": 135,
+      "triangles": 172718,
+      "animationMedianMs": 0.19999999552965164,
+      "animationP95Ms": 0.5,
+      "submitMedianMs": 1.0999999940395355,
+      "submitP95Ms": 3.899999998509884,
+      "frameP95Ms": 10.300000004470348,
+      "gpuSamples": 180,
+      "gpuMedianMs": 1.456916,
+      "gpuP95Ms": 1.733291
+    },
+    {
+      "version": "after",
+      "trial": 1,
+      "samples": 180,
+      "width": 960,
+      "height": 540,
+      "pixelRatio": 1,
+      "drawCalls": 135,
+      "triangles": 172718,
+      "animationMedianMs": 0.19999999552965164,
+      "animationP95Ms": 0.6000000014901161,
+      "submitMedianMs": 1,
+      "submitP95Ms": 3.9000000059604645,
+      "frameP95Ms": 9.600000001490116,
+      "gpuSamples": 180,
+      "gpuMedianMs": 1.469249,
+      "gpuP95Ms": 1.655333
+    },
+    {
+      "version": "before",
+      "trial": 1,
+      "samples": 180,
+      "width": 960,
+      "height": 540,
+      "pixelRatio": 1,
+      "drawCalls": 135,
+      "triangles": 172718,
+      "animationMedianMs": 0.10000000149011612,
+      "animationP95Ms": 0.3999999985098839,
+      "submitMedianMs": 1.1000000014901161,
+      "submitP95Ms": 4,
+      "frameP95Ms": 9.899999998509884,
+      "gpuSamples": 180,
+      "gpuMedianMs": 1.463625,
+      "gpuP95Ms": 1.740874
+    }
+  ],
+  "cuts": [
+    {
+      "version": "after",
+      "at": 4.436866,
+      "shot": "echo",
+      "event": "sentence"
+    },
+    {
+      "version": "before",
+      "at": 7.2686,
+      "shot": "nova",
+      "event": "turn-start"
+    },
+    {
+      "version": "after",
+      "at": 7.2686,
+      "shot": "nova",
+      "event": "turn-start"
+    },
+    {
+      "version": "after",
+      "at": 14.025607,
+      "shot": "atlas",
+      "event": "turn-end"
+    },
+    {
+      "version": "before",
+      "at": 14.5256,
+      "shot": "atlas",
+      "event": "turn-start"
+    },
+    {
+      "version": "after",
+      "at": 20.548641,
+      "shot": "nova",
+      "event": "performance"
+    },
+    {
+      "version": "before",
+      "at": 22.8739,
+      "shot": "two",
+      "event": "turn-start"
+    },
+    {
+      "version": "after",
+      "at": 22.8739,
+      "shot": "two",
+      "event": "turn-start"
+    },
+    {
+      "version": "before",
+      "at": 28.526083,
+      "shot": "atlas",
+      "event": "sentence"
+    },
+    {
+      "version": "after",
+      "at": 28.526083,
+      "shot": "atlas",
+      "event": "sentence"
+    }
+  ],
+  "timing": [
+    {
+      "turn": "01",
+      "audioTime": 0.000598,
+      "caption": "Would you trust a perfect answer?",
+      "cue": null,
+      "wallTime": 150378.9
+    },
+    {
+      "turn": "01",
+      "audioTime": 0.219072,
+      "caption": "Would you trust a perfect answer?",
+      "cue": "U",
+      "wallTime": 150612.2
+    },
+    {
+      "turn": "01",
+      "audioTime": 0.418002,
+      "caption": "Would you trust a perfect answer?",
+      "cue": "RR",
+      "wallTime": 150812.2
+    },
+    {
+      "turn": "01",
+      "audioTime": 0.615002,
+      "caption": "Would you trust a perfect answer?",
+      "cue": "DD",
+      "wallTime": 151012.3
+    },
+    {
+      "turn": "01",
+      "audioTime": 0.816606,
+      "caption": "Would you trust a perfect answer?",
+      "cue": null,
+      "wallTime": 151212.3
+    },
+    {
+      "turn": "01",
+      "audioTime": 1.01461,
+      "caption": "Would you trust a perfect answer?",
+      "cue": "FF",
+      "wallTime": 151412.2
+    },
+    {
+      "turn": "01",
+      "audioTime": 1.217448,
+      "caption": "Would you trust a perfect answer?",
+      "cue": null,
+      "wallTime": 151611.4
+    },
+    {
+      "turn": "01",
+      "audioTime": 1.415147,
+      "caption": "Would you trust a perfect answer?",
+      "cue": "aa",
+      "wallTime": 151811.8
+    },
+    {
+      "turn": "01",
+      "audioTime": 1.616773,
+      "caption": "Would you trust a perfect answer?",
+      "cue": "aa",
+      "wallTime": 152012.3
+    },
+    {
+      "turn": "01",
+      "audioTime": 1.81437,
+      "caption": "Would you trust a perfect answer?",
+      "cue": null,
+      "wallTime": 152212.2
+    },
+    {
+      "turn": "01",
+      "audioTime": 2.017985,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "aa",
+      "wallTime": 152411.7
+    },
+    {
+      "turn": "01",
+      "audioTime": 2.200026,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "aa",
+      "wallTime": 152895.5
+    },
+    {
+      "turn": "01",
+      "audioTime": 2.401027,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "SS",
+      "wallTime": 153095.6
+    },
+    {
+      "turn": "01",
+      "audioTime": 2.605235,
+      "caption": "Nova says confidence helps us move.",
+      "cue": null,
+      "wallTime": 153295.1
+    },
+    {
+      "turn": "01",
+      "audioTime": 2.803862,
+      "caption": "Nova says confidence helps us move.",
+      "cue": null,
+      "wallTime": 153495.6
+    },
+    {
+      "turn": "01",
+      "audioTime": 3.001118,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "nn",
+      "wallTime": 153695.5
+    },
+    {
+      "turn": "01",
+      "audioTime": 3.200567,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "aa",
+      "wallTime": 153895.6
+    },
+    {
+      "turn": "01",
+      "audioTime": 3.40438,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "aa",
+      "wallTime": 154095.6
+    },
+    {
+      "turn": "01",
+      "audioTime": 3.601951,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "PP",
+      "wallTime": 154295.3
+    },
+    {
+      "turn": "01",
+      "audioTime": 3.80131,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "aa",
+      "wallTime": 154495.6
+    },
+    {
+      "turn": "01",
+      "audioTime": 4.001297,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "PP",
+      "wallTime": 154695.6
+    },
+    {
+      "turn": "01",
+      "audioTime": 4.202805,
+      "caption": "Nova says confidence helps us move.",
+      "cue": "U",
+      "wallTime": 154895.5
+    },
+    {
+      "turn": "01",
+      "audioTime": 4.401691,
+      "caption": "Nova says confidence helps us move.",
+      "cue": null,
+      "wallTime": 155095.6
+    },
+    {
+      "turn": "01",
+      "audioTime": 4.60184,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "aa",
+      "wallTime": 155295.6
+    },
+    {
+      "turn": "01",
+      "audioTime": 4.811997,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "aa",
+      "wallTime": 155503.9
+    },
+    {
+      "turn": "01",
+      "audioTime": 5.009333,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "TH",
+      "wallTime": 155704
+    },
+    {
+      "turn": "01",
+      "audioTime": 5.213969,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "kk",
+      "wallTime": 155903
+    },
+    {
+      "turn": "01",
+      "audioTime": 5.410473,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "I",
+      "wallTime": 156103
+    },
+    {
+      "turn": "01",
+      "audioTime": 5.612234,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "aa",
+      "wallTime": 156303.9
+    },
+    {
+      "turn": "01",
+      "audioTime": 5.810568,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": null,
+      "wallTime": 156504.6
+    },
+    {
+      "turn": "01",
+      "audioTime": 6.013538,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "TH",
+      "wallTime": 156702.9
+    },
+    {
+      "turn": "01",
+      "audioTime": 6.209349,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "RR",
+      "wallTime": 156903.9
+    },
+    {
+      "turn": "01",
+      "audioTime": 6.409147,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "aa",
+      "wallTime": 157104
+    },
+    {
+      "turn": "01",
+      "audioTime": 6.61296,
+      "caption": "Atlas thinks it can hide the problem.",
+      "cue": "PP",
+      "wallTime": 157303.9
+    },
+    {
+      "turn": "02",
+      "audioTime": 0.001833,
+      "caption": "I trust an answer that saves hours.",
+      "cue": null,
+      "wallTime": 158008.1
+    },
+    {
+      "turn": "02",
+      "audioTime": 0.220172,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "I",
+      "wallTime": 158241.4
+    },
+    {
+      "turn": "02",
+      "audioTime": 0.417064,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "DD",
+      "wallTime": 158441.4
+    },
+    {
+      "turn": "02",
+      "audioTime": 0.617248,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "aa",
+      "wallTime": 158641.4
+    },
+    {
+      "turn": "02",
+      "audioTime": 0.816612,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "aa",
+      "wallTime": 158841.4
+    },
+    {
+      "turn": "02",
+      "audioTime": 1.020852,
+      "caption": "I trust an answer that saves hours.",
+      "cue": null,
+      "wallTime": 159041.4
+    },
+    {
+      "turn": "02",
+      "audioTime": 1.216606,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "SS",
+      "wallTime": 159241.3
+    },
+    {
+      "turn": "02",
+      "audioTime": 1.416137,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "aa",
+      "wallTime": 159441.3
+    },
+    {
+      "turn": "02",
+      "audioTime": 1.621423,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "DD",
+      "wallTime": 159640.5
+    },
+    {
+      "turn": "02",
+      "audioTime": 1.817507,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "SS",
+      "wallTime": 159841.5
+    },
+    {
+      "turn": "02",
+      "audioTime": 2.020581,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "I",
+      "wallTime": 160041.4
+    },
+    {
+      "turn": "02",
+      "audioTime": 2.220325,
+      "caption": "I trust an answer that saves hours.",
+      "cue": null,
+      "wallTime": 160241.4
+    },
+    {
+      "turn": "02",
+      "audioTime": 2.420226,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "aa",
+      "wallTime": 160441.5
+    },
+    {
+      "turn": "02",
+      "audioTime": 2.619368,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "aa",
+      "wallTime": 160641.5
+    },
+    {
+      "turn": "02",
+      "audioTime": 2.820167,
+      "caption": "I trust an answer that saves hours.",
+      "cue": "SS",
+      "wallTime": 160841.5
+    },
+    {
+      "turn": "02",
+      "audioTime": 3.021329,
+      "caption": "I trust an answer that saves hours.",
+      "cue": null,
+      "wallTime": 161045.6
+    },
+    {
+      "turn": "02",
+      "audioTime": 3.225267,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": null,
+      "wallTime": 161245.4
+    },
+    {
+      "turn": "02",
+      "audioTime": 3.424213,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": null,
+      "wallTime": 161445.5
+    },
+    {
+      "turn": "02",
+      "audioTime": 3.620072,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "E",
+      "wallTime": 161644.7
+    },
+    {
+      "turn": "02",
+      "audioTime": 3.822062,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": null,
+      "wallTime": 161845.6
+    },
+    {
+      "turn": "02",
+      "audioTime": 4.020906,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "RR",
+      "wallTime": 162045.1
+    },
+    {
+      "turn": "02",
+      "audioTime": 4.224205,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": null,
+      "wallTime": 162245.7
+    },
+    {
+      "turn": "02",
+      "audioTime": 4.420012,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "aa",
+      "wallTime": 162445.7
+    },
+    {
+      "turn": "02",
+      "audioTime": 4.625396,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "SS",
+      "wallTime": 162649.9
+    },
+    {
+      "turn": "02",
+      "audioTime": 4.827269,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": null,
+      "wallTime": 162849.8
+    },
+    {
+      "turn": "02",
+      "audioTime": 5.02848,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "FF",
+      "wallTime": 163049.8
+    },
+    {
+      "turn": "02",
+      "audioTime": 5.225197,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": null,
+      "wallTime": 163249.8
+    },
+    {
+      "turn": "02",
+      "audioTime": 5.428782,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": null,
+      "wallTime": 163449.8
+    },
+    {
+      "turn": "02",
+      "audioTime": 5.601208,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": null,
+      "wallTime": 163621.5
+    },
+    {
+      "turn": "02",
+      "audioTime": 5.829618,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "aa",
+      "wallTime": 163853.9
+    },
+    {
+      "turn": "02",
+      "audioTime": 6.029571,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "aa",
+      "wallTime": 164053.9
+    },
+    {
+      "turn": "02",
+      "audioTime": 6.235169,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "kk",
+      "wallTime": 164256.2
+    },
+    {
+      "turn": "02",
+      "audioTime": 6.404068,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "I",
+      "wallTime": 164428.9
+    },
+    {
+      "turn": "02",
+      "audioTime": 6.604675,
+      "caption": "If I check everything myself, what have I gained?",
+      "cue": "DD",
+      "wallTime": 164628.9
+    },
+    {
+      "turn": "03",
+      "audioTime": 0.01303,
+      "caption": "Time, perhaps.",
+      "cue": null,
+      "wallTime": 165299.7
+    },
+    {
+      "turn": "03",
+      "audioTime": 0.204568,
+      "caption": "Time, perhaps.",
+      "cue": "aa",
+      "wallTime": 165533.1
+    },
+    {
+      "turn": "03",
+      "audioTime": 0.40136,
+      "caption": "Time, perhaps.",
+      "cue": null,
+      "wallTime": 165733
+    },
+    {
+      "turn": "03",
+      "audioTime": 0.600762,
+      "caption": "Time, perhaps.",
+      "cue": "aa",
+      "wallTime": 165932.4
+    },
+    {
+      "turn": "03",
+      "audioTime": 0.802457,
+      "caption": "Time, perhaps.",
+      "cue": null,
+      "wallTime": 166132.2
+    },
+    {
+      "turn": "03",
+      "audioTime": 1.008099,
+      "caption": "Time, perhaps.",
+      "cue": "aa",
+      "wallTime": 166337.3
+    },
+    {
+      "turn": "03",
+      "audioTime": 1.212271,
+      "caption": "Time, perhaps.",
+      "cue": "SS",
+      "wallTime": 166541
+    },
+    {
+      "turn": "03",
+      "audioTime": 1.416181,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": null,
+      "wallTime": 166745.3
+    },
+    {
+      "turn": "03",
+      "audioTime": 1.613938,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "aa",
+      "wallTime": 166945.4
+    },
+    {
+      "turn": "03",
+      "audioTime": 1.820827,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": null,
+      "wallTime": 167149.5
+    },
+    {
+      "turn": "03",
+      "audioTime": 2.018429,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": null,
+      "wallTime": 167349.5
+    },
+    {
+      "turn": "03",
+      "audioTime": 2.21842,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "aa",
+      "wallTime": 167549.6
+    },
+    {
+      "turn": "03",
+      "audioTime": 2.41921,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "kk",
+      "wallTime": 167749.5
+    },
+    {
+      "turn": "03",
+      "audioTime": 2.618431,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "aa",
+      "wallTime": 167948.9
+    },
+    {
+      "turn": "03",
+      "audioTime": 2.822033,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "DD",
+      "wallTime": 168149.6
+    },
+    {
+      "turn": "03",
+      "audioTime": 3.024985,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": null,
+      "wallTime": 168354.3
+    },
+    {
+      "turn": "03",
+      "audioTime": 3.220654,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": null,
+      "wallTime": 168553.1
+    },
+    {
+      "turn": "03",
+      "audioTime": 3.423223,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "SS",
+      "wallTime": 168753.8
+    },
+    {
+      "turn": "03",
+      "audioTime": 3.626974,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "aa",
+      "wallTime": 168953.9
+    },
+    {
+      "turn": "03",
+      "audioTime": 3.823321,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "I",
+      "wallTime": 169153.8
+    },
+    {
+      "turn": "03",
+      "audioTime": 4.022609,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": null,
+      "wallTime": 169354
+    },
+    {
+      "turn": "03",
+      "audioTime": 4.223629,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "E",
+      "wallTime": 169553.7
+    },
+    {
+      "turn": "03",
+      "audioTime": 4.426383,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "SS",
+      "wallTime": 169753.5
+    },
+    {
+      "turn": "03",
+      "audioTime": 4.625165,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "nn",
+      "wallTime": 169953.8
+    },
+    {
+      "turn": "03",
+      "audioTime": 4.822129,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "nn",
+      "wallTime": 170154
+    },
+    {
+      "turn": "03",
+      "audioTime": 5.025048,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "aa",
+      "wallTime": 170353
+    },
+    {
+      "turn": "03",
+      "audioTime": 5.222204,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "FF",
+      "wallTime": 170554
+    },
+    {
+      "turn": "03",
+      "audioTime": 5.427892,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": null,
+      "wallTime": 170753.1
+    },
+    {
+      "turn": "03",
+      "audioTime": 5.625411,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": "kk",
+      "wallTime": 170953.5
+    },
+    {
+      "turn": "03",
+      "audioTime": 5.823236,
+      "caption": "But a confident voice can make a guess sound like a fact.",
+      "cue": null,
+      "wallTime": 171153.7
+    },
+    {
+      "turn": "03",
+      "audioTime": 6.023041,
+      "caption": "Even a beautiful guess.",
+      "cue": "I",
+      "wallTime": 171354
+    },
+    {
+      "turn": "03",
+      "audioTime": 6.223358,
+      "caption": "Even a beautiful guess.",
+      "cue": "nn",
+      "wallTime": 171553.1
+    },
+    {
+      "turn": "03",
+      "audioTime": 6.425905,
+      "caption": "Even a beautiful guess.",
+      "cue": "PP",
+      "wallTime": 171754
+    },
+    {
+      "turn": "03",
+      "audioTime": 6.623578,
+      "caption": "Even a beautiful guess.",
+      "cue": "aa",
+      "wallTime": 171953.6
+    },
+    {
+      "turn": "03",
+      "audioTime": 6.82318,
+      "caption": "Even a beautiful guess.",
+      "cue": "FF",
+      "wallTime": 172154
+    },
+    {
+      "turn": "03",
+      "audioTime": 7.022551,
+      "caption": "Even a beautiful guess.",
+      "cue": "nn",
+      "wallTime": 172354.1
+    },
+    {
+      "turn": "03",
+      "audioTime": 7.225133,
+      "caption": "Even a beautiful guess.",
+      "cue": null,
+      "wallTime": 172553.9
+    },
+    {
+      "turn": "03",
+      "audioTime": 7.426165,
+      "caption": "Even a beautiful guess.",
+      "cue": "E",
+      "wallTime": 172754
+    },
+    {
+      "turn": "03",
+      "audioTime": 7.626456,
+      "caption": "Even a beautiful guess.",
+      "cue": "SS",
+      "wallTime": 172954
+    },
+    {
+      "turn": "03",
+      "audioTime": 7.822543,
+      "caption": "Even a beautiful guess.",
+      "cue": null,
+      "wallTime": 173154
+    },
+    {
+      "turn": "07",
+      "audioTime": 0.003396,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": null,
+      "wallTime": 173720.7
+    },
+    {
+      "turn": "07",
+      "audioTime": 0.216814,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "I",
+      "wallTime": 173954
+    },
+    {
+      "turn": "07",
+      "audioTime": 0.417726,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": null,
+      "wallTime": 174153.8
+    },
+    {
+      "turn": "07",
+      "audioTime": 0.620593,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "aa",
+      "wallTime": 174354
+    },
+    {
+      "turn": "07",
+      "audioTime": 0.817407,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "aa",
+      "wallTime": 174554.1
+    },
+    {
+      "turn": "07",
+      "audioTime": 1.016975,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "kk",
+      "wallTime": 174754
+    },
+    {
+      "turn": "07",
+      "audioTime": 1.221209,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "aa",
+      "wallTime": 174954
+    },
+    {
+      "turn": "07",
+      "audioTime": 1.420181,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "I",
+      "wallTime": 175154.1
+    },
+    {
+      "turn": "07",
+      "audioTime": 1.620036,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "nn",
+      "wallTime": 175353.1
+    },
+    {
+      "turn": "07",
+      "audioTime": 1.820192,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "SS",
+      "wallTime": 175554.1
+    },
+    {
+      "turn": "07",
+      "audioTime": 2.016823,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "U",
+      "wallTime": 175753.9
+    },
+    {
+      "turn": "07",
+      "audioTime": 2.217319,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": null,
+      "wallTime": 175954
+    },
+    {
+      "turn": "07",
+      "audioTime": 2.416026,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "kk",
+      "wallTime": 176154
+    },
+    {
+      "turn": "07",
+      "audioTime": 2.618697,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "TH",
+      "wallTime": 176354.1
+    },
+    {
+      "turn": "07",
+      "audioTime": 2.817457,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "I",
+      "wallTime": 176554
+    },
+    {
+      "turn": "07",
+      "audioTime": 3.020386,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": "SS",
+      "wallTime": 176753.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 3.217184,
+      "caption": "Maybe useful confidence sounds like this:",
+      "cue": null,
+      "wallTime": 176954
+    },
+    {
+      "turn": "07",
+      "audioTime": 3.417379,
+      "caption": "here is my suggestion,",
+      "cue": null,
+      "wallTime": 177153.9
+    },
+    {
+      "turn": "07",
+      "audioTime": 3.617198,
+      "caption": "here is my suggestion,",
+      "cue": null,
+      "wallTime": 177353.6
+    },
+    {
+      "turn": "07",
+      "audioTime": 3.818216,
+      "caption": "here is my suggestion,",
+      "cue": null,
+      "wallTime": 177553.9
+    },
+    {
+      "turn": "07",
+      "audioTime": 4.017908,
+      "caption": "here is my suggestion,",
+      "cue": "RR",
+      "wallTime": 177753.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 4.217785,
+      "caption": "here is my suggestion,",
+      "cue": "SS",
+      "wallTime": 177954.1
+    },
+    {
+      "turn": "07",
+      "audioTime": 4.416859,
+      "caption": "here is my suggestion,",
+      "cue": "aa",
+      "wallTime": 178154.1
+    },
+    {
+      "turn": "07",
+      "audioTime": 4.616764,
+      "caption": "here is my suggestion,",
+      "cue": "aa",
+      "wallTime": 178354
+    },
+    {
+      "turn": "07",
+      "audioTime": 4.817834,
+      "caption": "here is my suggestion,",
+      "cue": null,
+      "wallTime": 178553.5
+    },
+    {
+      "turn": "07",
+      "audioTime": 5.020409,
+      "caption": "here is my suggestion,",
+      "cue": "DD",
+      "wallTime": 178753.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 5.219515,
+      "caption": "here is my suggestion,",
+      "cue": "nn",
+      "wallTime": 178954.1
+    },
+    {
+      "turn": "07",
+      "audioTime": 5.416878,
+      "caption": "here is my suggestion,",
+      "cue": null,
+      "wallTime": 179154.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 5.617756,
+      "caption": "here is my suggestion,",
+      "cue": null,
+      "wallTime": 179353.7
+    },
+    {
+      "turn": "07",
+      "audioTime": 5.817786,
+      "caption": "here is what I am missing.",
+      "cue": "aa",
+      "wallTime": 179553.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 6.020485,
+      "caption": "here is what I am missing.",
+      "cue": null,
+      "wallTime": 179758.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 6.220704,
+      "caption": "here is what I am missing.",
+      "cue": null,
+      "wallTime": 179957.9
+    },
+    {
+      "turn": "07",
+      "audioTime": 6.4202,
+      "caption": "here is what I am missing.",
+      "cue": "DD",
+      "wallTime": 180158.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 6.620752,
+      "caption": "here is what I am missing.",
+      "cue": "I",
+      "wallTime": 180358.1
+    },
+    {
+      "turn": "07",
+      "audioTime": 6.819695,
+      "caption": "here is what I am missing.",
+      "cue": null,
+      "wallTime": 180557.3
+    },
+    {
+      "turn": "07",
+      "audioTime": 7.020514,
+      "caption": "here is what I am missing.",
+      "cue": "I",
+      "wallTime": 180757.3
+    },
+    {
+      "turn": "07",
+      "audioTime": 7.220569,
+      "caption": "here is what I am missing.",
+      "cue": "kk",
+      "wallTime": 180958.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 7.423825,
+      "caption": "Help me check it.",
+      "cue": null,
+      "wallTime": 181158.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 7.620631,
+      "caption": "Help me check it.",
+      "cue": null,
+      "wallTime": 181358.3
+    },
+    {
+      "turn": "07",
+      "audioTime": 7.820344,
+      "caption": "Help me check it.",
+      "cue": null,
+      "wallTime": 181558.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 8.022958,
+      "caption": "Help me check it.",
+      "cue": null,
+      "wallTime": 181757.7
+    },
+    {
+      "turn": "07",
+      "audioTime": 8.222435,
+      "caption": "Help me check it.",
+      "cue": null,
+      "wallTime": 181958.2
+    },
+    {
+      "turn": "07",
+      "audioTime": 8.420196,
+      "caption": "Help me check it.",
+      "cue": "DD",
+      "wallTime": 182158.3
+    },
+    {
+      "turn": "07",
+      "audioTime": 8.620879,
+      "caption": "Help me check it.",
+      "cue": null,
+      "wallTime": 182357.7
+    }
+  ],
+  "audioEvents": [
+    {
+      "turn": "01",
+      "wallOffsetMs": 127412.5,
+      "mediaTime": 0.000181
+    },
+    {
+      "turn": "01",
+      "wallOffsetMs": 129829.19999999553,
+      "mediaTime": 2.120213
+    },
+    {
+      "turn": "02",
+      "wallOffsetMs": 135039.29999999702,
+      "mediaTime": 9.8e-05
+    },
+    {
+      "turn": "03",
+      "wallOffsetMs": 142345.79999999702,
+      "mediaTime": 8e-05
+    },
+    {
+      "turn": "07",
+      "wallOffsetMs": 150752.29999999702,
+      "mediaTime": 0.000123
+    }
+  ],
+  "failures": [],
+  "recording": {
+    "mime": "video/webm;codecs=vp9",
+    "bytes": 9752603,
+    "turns": [
+      "01",
+      "02",
+      "03",
+      "07"
+    ],
+    "expectedDuration": 32.0001,
+    "width": 1920,
+    "height": 620,
+    "fpsTarget": 30,
+    "audio": "video-only capture; original dialogue is muxed at measured media-element playing offsets",
+    "comparison": "matched Wave 2 camera on both versions",
+    "mediaOriginMs": 127412.5,
+    "sha256": "921823c0ff884545662b567692718f796a0532cea1efc7d365938cf5ba4fc101",
+    "mp4Sha256": "f90e82bddddde5e824464f4df44d4d189ccb2a0de756d28e19e9283f23eb1ab0",
+    "mux": "Original unchanged MP3s aligned to observed media playing/resume events relative to first rendered playback frame; approximate frame alignment, not captured system audio."
+  }
+}
