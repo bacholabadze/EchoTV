@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from '../lab/vendor/GLTFLoader.js';
 import {lightEditorialRoom} from './materials.js?v=6';
 import {makeEditorialCharacter} from './editorial-characters.js?v=6';
+import {PerformanceDirector,crossedPerformance,handoffTarget} from './performance-direction.js';
 import {Director,MockAdapter,captionAt} from './core.js?v=2';
 import {createRoom,cameraFrame,applyPerformance} from './room.js?v=5';
 const $=s=>document.querySelector(s),stage=$('#stage'),canvas=$('#scene');
@@ -10,7 +11,8 @@ const legacy=new URLSearchParams(location.search).get('edition')==='2';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const names={echo:'ECHO',nova:'Nova',atlas:'Atlas'};
 const shotNames={wide:'Establishing',echo:'Moderator',nova:'Nova',atlas:'Atlas',two:'Two-person',};
-const director=new Director();
+const director=legacy?new Director():new PerformanceDirector();
+let performanceCursor=-1,handoff=null;
 let renderer,scene,camera,actors=[],adapter,raf=0,last=0,visualTime=0,ready=false,sentence=-1,reaction=null,reactionAt=0,frameSamples=[],quality=1,frames=0,cueCursor=0,renderedShot=null,environment=null,resizeObserver=null;
 const audio=new Audio();audio.preload='auto';
 function fallback(message){$('#loading').hidden=true;$('#fallback').hidden=false;$('#fallback-text').textContent=message;canvas.hidden=true;renderer?.setAnimationLoop(null);cancelAnimationFrame(raf);raf=0;}
@@ -37,12 +39,20 @@ function frame(ms){raf=0;if(document.hidden||!renderer||canvas.hidden)return;
     const turn=adapter.turn,segments=turn.captions||[];const index=segments.findIndex(c=>audio.currentTime>=c.start&&audio.currentTime<c.end);
     if(index!==-1&&index!==sentence){sentence=index;const event={type:'sentence',speaker:turn.speaker,reaction:turn.reaction&&Math.abs(segments[index].start-(turn.reactionAt??-1))<.1?turn.reaction:null};
       if(event.reaction){reaction=event.reaction;reactionAt=visualTime;}const next=director.event(event,adapter.time);if(next!==renderedShot)selectShot(next);}
+    if(!legacy){
+      if(audio.currentTime<performanceCursor)performanceCursor=-1;
+      for(const cue of crossedPerformance(turn,performanceCursor,audio.currentTime)){
+        const next=director.event({type:'performance',speaker:turn.speaker,cue,audioTime:audio.currentTime,remaining:turn.duration-audio.currentTime},adapter.time);
+        if(next!==renderedShot)selectShot(next);
+      }
+      performanceCursor=audio.currentTime;
+    }
     updateCaption();
   }
   const cues=adapter?.turn?.cues||[];
   if(cueCursor>=cues.length||audio.currentTime<(cues[cueCursor]?.start||0))cueCursor=0;
   while(cueCursor<cues.length&&audio.currentTime>=cues[cueCursor].end)cueCursor++;
-  const cue=cues[cueCursor],performanceState={speaker:adapter?.turn?.speaker,speaking:playing&&!adapter.gap,mouthStrength:legacy?.78:.56,expressive:!legacy,directed:!legacy,attention:adapter?.turn?.attention||[],gestures:adapter?.turn?.gestures||[],performance:adapter?.turn?.performance||[],audioTime:audio.currentTime,cue:cue&&audio.currentTime>=cue.start?cue:null,reaction,reactionAge:visualTime-reactionAt};
+  const cue=cues[cueCursor],performanceState={speaker:adapter?.turn?.speaker,speaking:playing&&!adapter.gap,mouthStrength:legacy?.78:.56,expressive:!legacy,directed:!legacy,attention:adapter?.turn?.attention||[],gestures:adapter?.turn?.gestures||[],performance:adapter?.turn?.performance||[],audioTime:audio.currentTime,cue:cue&&audio.currentTime>=cue.start?cue:null,reaction,reactionAge:visualTime-reactionAt,paused:adapter?.state==='paused',handoff:handoff?{...handoff,age:visualTime-handoff.at}:null};
   for(const actor of actors)applyPerformance(actor,visualTime,dt,performanceState,reduced);
   renderer.render(scene,camera);frames++;
   if(playing){frameSamples.push(delta);if(frameSamples.length===90){const avg=frameSamples.reduce((a,b)=>a+b,0)/90;if(avg>.05&&quality>1){quality=1;resize();}frameSamples=[];}requestFrame();}
@@ -63,9 +73,13 @@ function enrichCaptions(turn){
 async function init(){
   try{const response=await fetch('dialogue.json?v=5');if(!response.ok)throw Error('Dialogue could not load. Reload the studio to retry.');const turns=(await response.json()).map(enrichCaptions);adapter=new MockAdapter(turns,audio);
     for(const turn of turns){const p=document.createElement('p'),b=document.createElement('b');b.textContent=names[turn.speaker];p.append(b,document.createTextNode(turn.text));$('#transcript').append(p);}
-    adapter.addEventListener('turn-start',event=>{sentence=-1;cueCursor=0;reaction=null;$('#error').hidden=true;selectShot(director.event(event.detail,adapter.time));updateCaption();});
+    adapter.addEventListener('turn-start',event=>{sentence=-1;cueCursor=0;performanceCursor=-1;reaction=null;$('#error').hidden=true;selectShot(director.event(event.detail,adapter.time));updateCaption();});
+    adapter.addEventListener('turn-end',event=>{
+      const target=handoffTarget(event.detail.utterance);handoff=target?{target,at:visualTime}:null;
+      if(!legacy){const next=director.event({...event.detail,target},adapter.time);if(next!==renderedShot)selectShot(next);}
+    });
     adapter.addEventListener('state',()=>{last=0;frameSamples=[];ui();});adapter.addEventListener('timing',updateCaption);adapter.addEventListener('failure',e=>report(e.detail.message));adapter.addEventListener('interruption',()=>{report('Turn interrupted. Press Resume to restart this turn.');requestFrame();});
-    adapter.addEventListener('reset',()=>{cueCursor=0;visualTime=0;const mode=director.mode;director.reset();director.mode=mode;selectShot(mode==='auto'?'wide':$('#camera').value);});
+    adapter.addEventListener('reset',()=>{cueCursor=0;performanceCursor=-1;handoff=null;visualTime=0;const mode=director.mode;director.reset();director.mode=mode;selectShot(mode==='auto'?'wide':$('#camera').value);});
     $('#timer').textContent=`00:00 / ${format(adapter.duration)}`;
   }catch(error){fallback(error.message);report(error.message);$('#play').textContent='Unavailable';return;}
   try{

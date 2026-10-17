@@ -1,4 +1,5 @@
 import {conversationGaze} from './blocking.js?v=5';
+import {bodyPerformance} from './body-performance.js';
 import {facePerformance} from './performance.js?v=4';
 import * as THREE from 'three';
 import {makeCharacter} from './characters.js?v=2';
@@ -34,7 +35,14 @@ export function seatActor(actor){
     aimBone(model,b(side+'ForeArm'),b(side+'Hand'),new THREE.Vector3(sign*.20,1.285,.49));
     // Flatten palms toward the tabletop by aligning a finger base along the forearm.
     const finger=bones[side+'HandMiddle1']?.bone;
-    if(finger)aimBone(model,b(side+'Hand'),finger,new THREE.Vector3(sign*.17,1.285,.60));
+    if(finger){
+      aimBone(model,b(side+'Hand'),finger,new THREE.Vector3(sign*.17,1.285,.60));
+      // Measured palm pronation: align all four finger rows above the tabletop, not just the middle finger.
+      b(side+'Hand').rotateY(sign*.95);
+      // Unopposed thumb rests beside the fingers instead of dropping through the table.
+      bones[side+'HandThumb1']?.bone.rotateZ(sign*.58);
+      b(side+'Arm').rotateZ(sign*.018); // Millimetres of clearance for the forearm's skin envelope.
+    }
   }
   for(const entry of Object.values(bones))entry.rest.copy(entry.bone.quaternion);
   model.position.y=-.43;
@@ -108,6 +116,8 @@ export function cameraFrame(shot,aspect){
 }
 
 export function applyPerformance(actor,t,dt,state,reduced){
+  if(state.paused&&actor.performanceSampled)return;
+  actor.performanceSampled=true;
   const i=seats.findIndex(s=>s.id===actor.id),active=state.speaker===actor.id&&state.speaking;
   const facial=state.expressive?facePerformance(actor.id,t,state,reduced):null;
   const values=facial?{...facial.weights}:{};const phase=(t+i*.91)%(3.7+i*.67);if(!facial)values.eyeBlinkLeft=values.eyeBlinkRight=phase<.14?Math.sin(phase/.14*Math.PI):0;
@@ -117,16 +127,24 @@ export function applyPerformance(actor,t,dt,state,reduced){
   const speaker=seats.find(s=>s.id===state.speaker);
   const directed=state.directed?conversationGaze(actor,state):null;
   const gaze=speaker&&!active?THREE.MathUtils.clamp(Math.atan2(speaker.x-actor.seat.x,1.7)-actor.seat.yaw,-.43,.43):active?(actor.id==='nova'?.15:actor.id==='atlas'?-.15:0):0;
-  function pose(name,x,y,z){const b=actor.bones[name];if(!b)return;poseEuler.set(x,y,z);poseQuaternion.setFromEuler(poseEuler).premultiply(b.rest);b.bone.quaternion.slerp(poseQuaternion,1-Math.exp(-7*dt));}
+  function pose(name,x,y,z,speed=7){const b=actor.bones[name];if(!b)return;poseEuler.set(x,y,z);poseQuaternion.setFromEuler(poseEuler).premultiply(b.rest);b.bone.quaternion.slerp(poseQuaternion,1-Math.exp(-speed*dt));}
   const nod=!reduced&&state.reaction===actor.id?Math.sin(Math.min(state.reactionAge,1.1)/1.1*Math.PI*2)*.035:0;
-  pose('Head',nod+(facial?.nod||0),directed?directed.head:gaze*.78,0);pose('LeftEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0);pose('RightEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0);pose('Spine2',reduced?0:Math.sin(t*1.15+i*2)*.0035,0,0);
-  // Sparse shoulder emphasis leaves forearms close to their authored support position.
-  let gesture=active&&!reduced&&!state.directed&&state.audioTime>2&&state.audioTime<3.1?Math.sin((state.audioTime-2)/1.1*Math.PI)*.025:0;
-  let emphasis=0;
-  if(state.directed&&active&&!reduced)for(const cue of state.gestures||[]){const age=state.audioTime-cue.at;if(age>=0&&age<cue.duration)emphasis=Math.max(emphasis,Math.sin(age/cue.duration*Math.PI)*(cue.strength??1));}
-  // A restrained wrist/forearm accent; upper arm movement stays below .015 rad.
-  if(state.directed)gesture=emphasis*.012;
-  pose('RightArm',0,gesture,gesture*.3);
-  if(state.directed){pose('RightForeArm',0,emphasis*.045,0);pose('RightHand',0,0,emphasis*.055);}
-
+  const body=state.directed?bodyPerformance(actor.id,t,state,reduced):null;
+  if(directed)pose('Neck',0,directed.head*.12,0);
+  pose('Head',nod+(facial?.nod||0)+(body?.head[0]||0),directed?directed.head*.88:gaze*.78,body?.head[2]||0);
+  pose('LeftEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0,18);pose('RightEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0,18);
+  if(body){
+    pose('Spine1',...body.spine);pose('Spine2',...body.chest);
+    for(const [side,sign,amount] of [['Left',1,body.left],['Right',-1,body.right]]){
+      // Keep the other palm supported. Maximum gesture is ~4 cm above its seated contact.
+      pose(side+'Shoulder',0,sign*amount*.006,0);
+      pose(side+'Arm',0,0,sign*amount*.015);
+      pose(side+'ForeArm',-amount*.065,sign*amount*body.open*.035,sign*amount*.07);
+      pose(side+'Hand',0,sign*amount*.045,sign*amount*.035);
+    }
+  }else{
+    pose('Spine2',reduced?0:Math.sin(t*1.15+i*2)*.0035,0,0);
+    const gesture=active&&!reduced&&state.audioTime>2&&state.audioTime<3.1?Math.sin((state.audioTime-2)/1.1*Math.PI)*.025:0;
+    pose('RightArm',0,gesture,gesture*.3);
+  }
 }
