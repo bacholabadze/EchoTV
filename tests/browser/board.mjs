@@ -42,6 +42,15 @@ try {
   await producer.click('#publish-btn');
   await producer.waitForFunction(() => /^#1 · r2 · [0-9a-f]{10}$/.test(document.querySelector('#publish').textContent));
   await producer.screenshot({path: join(out, 'board-committed-published.png'), fullPage: true});
+  // N04: the producer turns down published content through the board; the publication is withdrawn before air.
+  assert.equal(await a.isVisible('[data-reject="gallery"]'), false, 'creators have no reject control');
+  producer.once('dialog', d => { assert.match(d.message(), /withdraws the ready publication/); d.accept('Rights for art-2 not confirmed'); });
+  await producer.click('[data-reject="gallery"]');
+  await producer.waitForFunction(() => document.querySelector('#publish').textContent === '#1 withdrawn');
+  assert.equal(await producer.isDisabled('#live-btn'), true, 'Go live unavailable after withdrawal');
+  assert.match(await producer.textContent('#feed'), /Publication #1 \(revision 2\) withdrawn before air by ECHO Producer: Rights for art-2 not confirmed/);
+  assert.equal(await producer.isVisible('[data-reject="gallery"]'), false, 'the rejected revision offers no second reject');
+  assert.equal(await producer.isVisible('[data-review="gallery"]'), false, 'and cannot simply be re-approved');
   assert.deepEqual(errors, []);
-  console.log(`PASS: three sessions, one live board; per-person approve buttons; r2 committed and published. Screenshots in ${out}`);
+  console.log(`PASS: three sessions, one live board; per-person approve buttons; r2 committed and published; producer rejection through the board withdrew publication #1 before air with the reason logged. Screenshots in ${out}`);
 } finally { await browser.close(); echo.server.closeAllConnections(); echo.server.close(); }

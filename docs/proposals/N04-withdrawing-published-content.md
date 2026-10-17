@@ -1,6 +1,6 @@
 # Proposal N04 — rejecting or withdrawing content that is already published
 
-**Status: PROPOSAL, not implemented. Needs the product owner's approval.** Raised by Codex's regression report on `7ee7394` (N04).
+**Status: APPROVED by the founder (option 1) and IMPLEMENTED** in the commit that adds `tests/broadcast/withdrawal.test.mjs`. Raised by Codex's regression report on `7ee7394` (N04). The on-air *Pull segment* (option 2) and after-air archive marking are **not** implemented.
 
 ## Current behaviour (reproduced)
 
@@ -36,3 +36,13 @@ What it never does: delete media, edit a manifest, move or shorten confirmed air
 - Reject a segment **not** in the ready publication → the publication is unaffected.
 - (Option 2) Pull segment on air → viewers see the withdrawn slate within one second; the next segment starts on time; the confirmed premiere still starts at 0:50; it is logged.
 - Agents can never withdraw (403), and creators can't either (403).
+
+## As implemented (option 1)
+
+- **Which decisions withdraw:** a producer's editorial review of `rejected` or `needs_changes` on the exact segment revision contained in the **ready** publication. Both remove approval from published content.
+- **Withdrawal:** the broadcast becomes `queued` with no manifest. A record `{publicationId, publishRevision, hash, segmentId, segmentRevision, decision, reason, by, at}` is kept in `withdrawals`, and the audit gets `publication_withdrawn` (actor, reason, publication, revision, timestamp). The reason is the review note; the board requires one.
+- **Go live** with a withdrawn publication returns 409 `withdrawn`, naming who withdrew it, when, and why.
+- **Correction:** the turned-down revision cannot be re-approved (409 `rejected_revision`). A new revision (new media, or an approved programme change) must pass review. Publishing again creates a new publication number. The withdrawn one stays refused and recorded.
+- **On air:** no automatic interruption. The rejection is logged as `rejected_on_air` and the producer keeps **Stop broadcast** (existing API `POST /api/broadcast/fail`, technical-break slate; there is no board button for it).
+- **Unchanged by a withdrawal:** running order, confirmed bookings, and other segments' revisions, approvals and media.
+- **Board:** producers get a **Reject rN…** button with a reason prompt that warns when it will withdraw the ready publication; the publication label shows `#n withdrawn`. Creators and agents cannot reject (403).

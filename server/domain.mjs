@@ -148,11 +148,33 @@ export class BroadcastDesk {
     if (revision !== seg.revision) fail('stale_revision', `Review is for revision ${revision}; current is ${seg.revision}`, {current: seg.revision});
     if (!['approved', 'needs_changes', 'rejected'].includes(decision)) fail('bad_request', 'Unknown review decision');
     if (decision === 'approved' && seg.assets.some(a => !a.rightsDeclared)) fail('rights_required', 'Every asset needs declared rights before approval');
+    // A revision that was turned down stays turned down: corrected content (a new revision) must be reviewed instead.
+    if (decision === 'approved' && seg.declined?.revision === seg.revision)
+      fail('rejected_revision', `${seg.title} r${seg.revision} was ${seg.declined.decision === 'rejected' ? 'rejected' : 'sent back for changes'}; submit corrected content (a new revision) for review`);
     seg.state = decision;
     seg.approval = decision === 'approved' ? {revision: seg.revision, assetHashes: seg.assets.map(a => a.sha256).sort(), by: actor.id, at: this.now()} : null;
     seg.reviewNote = note;
     this.log(actor, 'segment_reviewed', `${seg.title} r${revision}: ${decision}${note ? ` — ${note}` : ''}`, {segmentId, revision});
+    if (decision !== 'approved') { seg.declined = {revision: seg.revision, decision, at: this.now()}; this.withdrawIfPublished(actor, seg, decision, note); }
     return clone(seg);
+  }
+  // N04 policy (approved by the product owner, option 1): turning down content that is part of the ready
+  // publication withdraws that publication before air. Nothing else changes: no airtime, no other segment,
+  // no media. On air, playback is never interrupted automatically; the producer keeps Stop broadcast.
+  withdrawIfPublished(actor, seg, decision, note) {
+    const b = this.state.broadcast, m = b.manifest;
+    if (!m?.segments.some(x => x.id === seg.id && x.revision === seg.revision)) return;
+    const reason = note || `${seg.title} r${seg.revision} ${decision === 'rejected' ? 'rejected' : 'needs changes'} in editorial review`;
+    if (b.state === 'ready') {
+      const record = {publicationId: m.publicationId, publishRevision: m.publishRevision, hash: m.hash, segmentId: seg.id, segmentRevision: seg.revision, decision, reason, by: actor.id, at: this.now()};
+      (this.state.withdrawals ??= {})[m.publicationId] = record;
+      this.state.broadcast = {state: 'queued', publicationId: null, publishRevision: null, manifest: null, onAirAt: null, withdrawn: record};
+      this.log(actor, 'publication_withdrawn', `Publication #${m.publicationId} (revision ${m.publishRevision}) withdrawn before air by ${this.state.people[actor.id].name}: ${reason}`,
+        {publicationId: m.publicationId, revision: m.publishRevision, segmentId: seg.id, reason});
+    } else if (b.state === 'on_air') {
+      this.log(actor, 'rejected_on_air', `${seg.title} turned down while publication #${m.publicationId} is on air: ${reason}. Playback continues; use Stop broadcast to interrupt.`,
+        {publicationId: m.publicationId, revision: m.publishRevision, segmentId: seg.id, reason});
+    }
   }
   // Approval is bound to the exact revision and media hashes; any change invalidates it.
   approvalValid(seg) {
@@ -469,7 +491,8 @@ export class BroadcastDesk {
   // The producer goes live with the exact publication they reviewed, and only if it is still the current programme.
   goLive(actor, {delayMs = 3000, publicationId, hash} = {}) {
     this.requireProducer(actor);
-    const b = this.state.broadcast;
+    const b = this.state.broadcast, withdrawn = this.state.withdrawals?.[publicationId];
+    if (withdrawn) fail('withdrawn', `Publication #${publicationId} was withdrawn before air by ${this.state.people[withdrawn.by]?.name || withdrawn.by} (${new Date(withdrawn.at).toISOString()}): ${withdrawn.reason}. Correct the content, have it reviewed and approved, then publish again.`, {withdrawal: clone(withdrawn)});
     if (b.state !== 'ready') fail('not_ready', `Broadcast is ${b.state}; publish an approved revision first`);
     if (publicationId !== b.manifest.publicationId || hash !== b.manifest.hash)
       fail('stale_manifest', `You confirmed publication #${publicationId ?? '?'}; the ready publication is #${b.manifest.publicationId} (${b.manifest.hash.slice(0, 10)}). Review it and go live again.`);

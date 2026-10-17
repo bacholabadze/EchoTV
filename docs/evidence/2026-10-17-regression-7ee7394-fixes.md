@@ -65,3 +65,21 @@ Source: `../echo-stage-qa/qa/REGRESSION-7ee7394.md`, read-only at the owner's re
 | N04 | BLOCKED on the product decision; proposal written, nothing implemented |
 
 Not claimed: demo readiness. That requires Codex's independent validation of this commit and the observed two-human rehearsal.
+
+## Addendum: N04 implemented (founder approved option 1)
+
+Policy as implemented: `docs/proposals/N04-withdrawing-published-content.md` → "As implemented".
+
+`tests/broadcast/withdrawal.test.mjs`: **4/4 pass**; the same file on `c3aa204` fails **4/4**. It covers:
+- withdrawal with a reason, producer identity, publication, revision and timestamp;
+- go-live refused with the reason;
+- running order, bookings and other segments unchanged;
+- a re-approval of the rejected revision refused; correction, review, a new publication and go-live; the old publication still refused;
+- `needs_changes` also withdraws;
+- rejecting a segment not in the publication changes nothing;
+- on air: playback continues, `rejected_on_air` is logged, Stop broadcast works;
+- agents and creators get 403.
+
+The board browser test adds the human path: the producer's Reject with a typed reason leads to `#1 withdrawn`, Go live disabled, the reason in the activity feed, and no re-approve or second reject for that revision.
+
+The documented API stop command was verified against a throwaway server (`on_air` → `failed`).

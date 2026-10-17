@@ -10,7 +10,7 @@ Written 2026-10-17 ~18:30 (Tbilisi) to continue in a fresh session. Hackathon su
 |---|---|
 | Repo | `/Users/apple/Bridge/Projects/Hacktoberfest/echo-stage` (git, local only, no remote) |
 | Branch | `echo-3.1` (`main` = untouched baseline) |
-| **Latest implementation commit (for Codex re-validation)** | the commit that adds `docs/evidence/2026-10-17-regression-7ee7394-fixes.md` (`git log -1 --format=%H -- docs/evidence/2026-10-17-regression-7ee7394-fixes.md`) |
+| **Latest implementation commit (for Codex re-validation)** | the commit that adds `tests/broadcast/withdrawal.test.mjs` (N04, founder-approved option 1): `git log -1 --format=%H -- tests/broadcast/withdrawal.test.mjs`. Before it: `c3aa204` (fixes for the 7ee7394 findings) |
 | Previously validated | `7ee73943…` (`7ee7394`): **AUTOMATED QA FAIL** (Codex, `../echo-stage-qa/qa/REGRESSION-7ee7394.md`). `733f3e5` = docs-only on top of it |
 | Baseline (original ZIP, pre-hackathon code) | `c7eb068` |
 | Tag | `echo-3.1-demo-candidate` → `64d1dc5` (the commit audited as NOT READY) |
@@ -96,7 +96,7 @@ Regression proof: `tests/broadcast/regression.test.mjs` passes 9/9 on `7ee7394` 
 **Update (19:20):** Codex's regression run on `7ee7394` = **AUTOMATED QA FAIL**. The three original P0s passed. New: P0 N02 (header-only PNG published, blank gallery under "Live"); P1 N01 (board actions broken on plain-HTTP LAN origins); N05 (no decoder = fail open); N03 (retry identity ignored upload metadata); P1-11 (one late outro onset, +289 ms); N04 (reject-after-publish policy). The fixes are in the next implementation commit (`docs/evidence/2026-10-17-regression-7ee7394-fixes.md`):
 - N02, N01, N05, N03: FIXED.
 - P1-11: mitigated, not reproduced here.
-- N04: **awaiting the owner's decision** (`docs/proposals/N04-withdrawing-published-content.md`).
+- N04: **founder approved option 1; implemented** in the next commit (see `docs/proposals/N04-withdrawing-published-content.md` → "As implemented"). Rejecting content in a ready publication withdraws it before air. Go live refuses with the reason. A corrected new revision must pass review. On air there is no automatic interruption, and Stop broadcast is API-only.
 
 That commit is **not yet independently validated**.
 
@@ -112,7 +112,7 @@ Earlier history:
 - **Organiser answers outstanding:** prior-code eligibility (baseline `c7eb068` separates old from new) and the submission video spec.
 - **No public link.** Cloudflare Quick Tunnels don't support SSE (official docs). The options needing owner approval are a named Cloudflare Tunnel or Tailscale Funnel (`DEPLOYMENT.md`). LAN mode is untested from a second device; venue Wi-Fi may isolate devices.
 - **ffmpeg is now required to accept creator uploads** (fail closed). The shipped demo media are trusted by their recorded SHA-256 without it.
-- **N04 policy undecided:** today, rejecting a segment after publishing does not stop that publication from going live.
+- **N04 implemented as option 1 only.** Not implemented: on-air *Pull segment*, after-air archive marking, and a board button for Stop broadcast (API only: `POST /api/broadcast/fail`).
 - **P1-11:** onset lateness was not reproduced here (≤ +34 ms on 7ee7394, ≤ +31 ms now); Codex should re-measure.
 - **Dev-only advisory:** Playwright 1.49.1 (fixed in 1.55.1). It only affects `playwright install`, which we don't use. The bump is deferred.
 - **Platform limits:** single process, JSON state, no rate limiting, tokens in URL hash, plain HTTP on LAN.
@@ -156,7 +156,7 @@ URLs: `/broadcast/` (viewer, click "Watch with sound"), `/board/` (public, read-
 
 ## 9. Next priorities (in order)
 
-1. Get the owner's decision on N04 (`docs/proposals/N04-withdrawing-published-content.md`). Then get Codex's verdict on the latest implementation commit; for any finding, reproduce it independently, fix it minimally, and add a regression test that fails on the previous commit. No feature work.
+1. Get Codex's verdict on the latest implementation commit (N04 is implemented); for any finding, reproduce it independently, fix it minimally, and add a regression test that fails on the previous commit. No feature work.
 2. Restart the demo on the fixed code and run the observed two-human rehearsal; record what actually happens.
 3. Recording and submission package before 11:30.
 4. After the hackathon (not before):

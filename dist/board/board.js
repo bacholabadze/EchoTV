@@ -42,7 +42,9 @@ function render() {
   const s = state;
   $('#episode').textContent = s.episode.title;
   $('#revision').textContent = `r${s.showRevision}`;
-  $('#publish').textContent = s.broadcast.publishRevision ? `#${s.broadcast.manifest.publicationId ?? '–'} · r${s.broadcast.publishRevision} · ${s.broadcast.manifest.hash.slice(0, 10)}` : 'not published';
+  const w = s.broadcast.withdrawn;
+  $('#publish').textContent = s.broadcast.publishRevision ? `#${s.broadcast.manifest.publicationId ?? '–'} · r${s.broadcast.publishRevision} · ${s.broadcast.manifest.hash.slice(0, 10)}` : w ? `#${w.publicationId} withdrawn` : 'not published';
+  $('#publish').title = w && !s.broadcast.manifest ? `Withdrawn by ${name(w.by)}: ${w.reason}` : '';
   $('#broadcast-state').textContent = s.broadcast.state.replace('_', ' ');
   const ruler = [0, 20, 40, 50, 60, 80, 100, 120].filter(t => t <= s.episode.durationSec);
   $('#ruler').innerHTML = ruler.map(t => `<span style="left:${t / s.episode.durationSec * 100}%">${t}s</span>`).join('');
@@ -73,14 +75,22 @@ function render() {
   seenSeq = s.seq;
 
   $('#segments').innerHTML = s.order.map(id => {
-    const seg = s.segments[id], valid = s.segmentsValid[id], canReview = me?.role === 'producer' && !valid && seg.state !== 'rejected';
+    const seg = s.segments[id], valid = s.segmentsValid[id], declined = seg.declined?.revision === seg.revision;
+    const canReview = me?.role === 'producer' && !valid && !declined, canReject = me?.role === 'producer' && !declined;
     const mine = me?.type === 'person' && me.id === seg.ownerId && seg.assets.length;
     return `<tr><td>${esc(seg.title)}${seg.house ? ' <span class="fine">house</span>' : ''}</td><td>${esc(name(seg.ownerId))}</td><td>r${seg.revision}</td>
       <td class="mono">${seg.assets.map(a => `${esc(a.id)} ${esc(a.sha256.slice(0, 8))}`).join('<br>') || '—'}</td>
       <td>${valid ? `<span class="status ok">approved r${seg.approval.revision}</span>` : `<span class="status">${esc(seg.state)}</span>`}</td>
-      <td>${canReview ? `<button data-review="${id}" data-rev="${seg.revision}">Approve r${seg.revision}</button>` : ''}${mine ? `<label class="fine"><input type="file" data-upload="${id}" accept="image/*,audio/*" hidden><button data-pick="${id}">Replace media</button></label>` : ''}</td></tr>`;
+      <td>${canReview ? `<button data-review="${id}" data-rev="${seg.revision}">Approve r${seg.revision}</button>` : ''}${canReject ? `<button class="quiet" data-reject="${id}" data-rev="${seg.revision}">Reject r${seg.revision}…</button>` : ''}${mine ? `<label class="fine"><input type="file" data-upload="${id}" accept="image/*,audio/*" hidden><button data-pick="${id}">Replace media</button></label>` : ''}</td></tr>`;
   }).join('');
   for (const b of document.querySelectorAll('[data-review]')) b.onclick = act(() => api('POST', `/api/segments/${b.dataset.review}/review`, {revision: +b.dataset.rev, decision: 'approved'}), b);
+  // Rejecting content in a ready publication withdraws that publication (N04); a reason is required and logged.
+  for (const b of document.querySelectorAll('[data-reject]')) b.onclick = act(async () => {
+    const seg = state.segments[b.dataset.reject], inReady = state.broadcast.state === 'ready' && state.broadcast.manifest?.segments.some(x => x.id === seg.id && x.revision === +b.dataset.rev);
+    const reason = prompt(`Reject “${seg.title}” r${b.dataset.rev}? ${inReady ? 'This withdraws the ready publication before air. ' : ''}Reason (logged):`);
+    if (!reason?.trim()) return;
+    await api('POST', `/api/segments/${b.dataset.reject}/review`, {revision: +b.dataset.rev, decision: 'rejected', note: reason.trim()});
+  }, b);
   for (const b of document.querySelectorAll('[data-pick]')) b.onclick = () => document.querySelector(`[data-upload="${b.dataset.pick}"]`).click();
   for (const input of document.querySelectorAll('[data-upload]')) input.onchange = act(() => upload(input.dataset.upload, input.files[0]));
 
