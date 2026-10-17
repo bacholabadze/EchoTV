@@ -14,7 +14,7 @@ import {voiceServiceFromEnv, sttFromEnv, ProviderError, BudgetError} from './voi
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary',
   '.hdr': 'application/octet-stream', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.m4a': 'audio/mp4', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8'};
-const STATUS = {consent_required: 403, transcription_failed: 503, voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
+const STATUS = {in_use: 409, consent_required: 403, transcription_failed: 503, voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
 const MAX_UPLOAD = 25 * 1024 * 1024, SENT = Symbol('sent');
 
 const MAGIC = {
@@ -316,7 +316,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       return mutate(d => d.setVoice(actor, {segmentId: m[1], lines: r.lines, lang: r.lang, asset: {sha256: hash, file, ...check, voice: voiceMeta}}));
     }],
     // ---- creator interviews and private library (3.2): owner-scoped; never in /api/state ----
-    ['GET', /^\/api\/interviews$/, ({actor}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); const owner = desk.ownerOf(actor); return Object.values(desk.state.interviews || {}).filter(iv => iv.ownerId === owner).map(iv => ({id: iv.id, status: iv.status, title: iv.brief?.work.title || null, updatedAt: iv.updatedAt})); }],
+    ['GET', /^\/api\/interviews$/, ({actor}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); const owner = desk.ownerOf(actor); return Object.values(desk.state.interviews || {}).filter(iv => iv.ownerId === owner && iv.status !== 'deleted').map(iv => ({id: iv.id, status: iv.status, title: iv.brief?.work.title || null, updatedAt: iv.updatedAt})); }],
     ['GET', /^\/api\/interviews\/(\w+)$/, ({actor, m}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); return desk.interviewView(actor, m[1]); }],
     ['POST', /^\/api\/interviews$/, ({actor}) => mutate(d => d.startInterview(actor))],
     ['POST', /^\/api\/interviews\/(\w+)\/(answer|skip|goto|review|quotes|approve|withdraw)$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.interviewAct(actor, m[1], m[2], body)); }],
@@ -368,6 +368,8 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
         technical: {decodable: c.decodable, reason: c.reason, method: c.method || null, durationSec: c.durationSec, width: c.width, height: c.height, note: c.note || null}}));
     }],
     ['POST', /^\/api\/library\/media\/(\w+)\/rights$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.declareRights(actor, m[1], body)); }],
+    ['POST', /^\/api\/interviews\/(\w+)\/delete$/, ({actor, m}) => mutate(d => d.deleteInterview(actor, m[1]))],
+    ['POST', /^\/api\/library\/media\/(\w+)\/delete$/, ({actor, m}) => { const r = mutate(d => d.deleteLibraryMedia(actor, m[1])); if (r.removeFile) rmSync(join(dataDir, 'uploads', r.removeFile), {force: true}); return {id: r.id, deleted: true}; }],
     ['POST', /^\/api\/library\/media\/(\w+)\/withdraw$/, ({actor, m}) => mutate(d => d.withdrawLibraryMedia(actor, m[1]))],
     ['GET', /^\/api\/voice\/status$/, () => ({budget: voices.budget()})],
     // House host lines are written from the programme and voiced offline with Piper; captions-only if unavailable.

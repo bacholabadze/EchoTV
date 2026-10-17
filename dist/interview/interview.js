@@ -82,7 +82,7 @@ function mediaPicker(selected) {
   return `<label>${KA.fields.mediaIds} <small>(აირჩიე, რისი გამოყენების უფლებასაც გვაძლევ)</small></label>
     <ul class="media">${items.map(m => `<li><label style="display:flex;gap:8px;font-weight:600;margin:0"><input type="checkbox" name="media" value="${m.id}"${selected.includes(m.id) ? ' checked' : ''}> ${esc(m.title)} <span class="tag">${esc({audio: 'აუდიო', image: 'სურათი', video: 'ვიდეო', document: 'დოკუმენტი'}[m.kind] || m.kind)}</span></label>
       <div class="meta">${m.technical?.decodable ? '<span class="ok">ტექნიკური შემოწმება გაიარა</span>' : `<span class="bad">ტექნიკური შემოწმება ვერ გაიარა</span> <small>${esc(m.technical?.reason || '')}</small>`}${m.kind === 'video' ? ' · ვიდეოს ეთერში ჩვენება ჯერ არ არის ხელმისაწვდომი' : m.kind === 'document' ? ' · დამხმარე დოკუმენტი, ეთერში არ გავა' : ''}</div>
-      ${rightsEditor(m)}</li>`).join('') || '<li class="meta">ბიბლიოთეკა ცარიელია.</li>'}</ul>
+      ${rightsEditor(m)}<div class="row"><button data-delete-media="${m.id}">ფაილის წაშლა</button></div></li>`).join('') || '<li class="meta">ბიბლიოთეკა ცარიელია.</li>'}</ul>
     <label for="upload">ახალი ფაილის ატვირთვა <small>(აუდიო, სურათი, ვიდეო ან PDF; არსებული ნამუშევარი — არაფერს ვაგენერირებთ)</small></label>
     <input id="upload" type="file" accept="audio/*,image/*,video/mp4,video/quicktime,video/webm,application/pdf">`;
 }
@@ -123,6 +123,7 @@ function wireMedia() {
     await api('POST', '/api/library/media', f, {'x-filename': encodeURIComponent(f.name), 'x-title': encodeURIComponent(f.name.replace(/\.[^.]+$/, ''))});
     ui.lib = await api('GET', '/api/library');
   }, 'ფაილი ვერ აიტვირთა.');
+  for (const b of document.querySelectorAll('[data-delete-media]')) b.onclick = () => { if (confirm('წავშალოთ ფაილი? თუ ის უკვე გადაცემაშია, აუდიტისთვის შეინახება — მაშინ ჯერ გააუქმე.')) run(async () => { await api('POST', `/api/library/media/${b.dataset.deleteMedia}/delete`); ui.lib = await api('GET', '/api/library'); }, 'ფაილი ვერ წაიშალა (შესაძლოა გადაცემაშია).'); };
   for (const b of document.querySelectorAll('[data-save-rights]')) b.onclick = () => run(async () => {
     const id = b.dataset.saveRights, body = {confirm: !!document.querySelector(`[data-confirm="${id}"]`).checked};
     for (const k of Object.keys(KA.uses)) body[k] = !!document.querySelector(`[data-use="${k}"][data-media="${id}"]`).checked;
@@ -187,12 +188,16 @@ function reviewView() {
     ${own.flatMap(k => sentences(textOf(k))).map((s, i) => `<label style="display:flex;gap:8px;font-weight:400"><input type="checkbox" name="quote" value="${esc(s)}"${b.story.quotes.includes(s) ? ' checked' : ''}> „${esc(s)}“</label>`).join('') || '<p class="hint">—</p>'}
     <div class="row"><button id="quotes">ციტატების შენახვა</button></div>
     <h2>შესწორება</h2><div class="row">${iv.questions.map(q => `<button data-edit="${q.stepId}">${q.index}. ${esc(q.question.ka.replace(/\?$/, ''))}</button>`).join('')}</div>
-    <div class="row"><button class="primary" id="approve" ${ui.busy || b.contradictions.length ? 'disabled' : ''}>ვადასტურებ ბრიფს · ვერსია ${b.version}</button><button id="withdraw">ბრიფის გაუქმება</button></div>
+    <div class="row"><button class="primary" id="approve" ${ui.busy || b.contradictions.length ? 'disabled' : ''}>ვადასტურებ ბრიფს · ვერსია ${b.version}</button><button id="withdraw">ბრიფის გაუქმება</button><button id="erase">ინტერვიუს წაშლა</button></div>
     <p class="hint">გაითვალისწინე: ვინაობა, ავტორობა, AI-ის როლი და ფაილების უფლებები შენი განცხადებაა — ECHO მათ დამოუკიდებლად არ ამოწმებს.</p>`;
   $('#quotes').onclick = () => run(async () => { ui.iv = await api('POST', `/api/interviews/${iv.id}/quotes`, {quotes: [...document.querySelectorAll('input[name=quote]:checked')].map(x => x.value)}); }, 'ციტატები ვერ შეინახა.');
   $('#approve').onclick = () => run(async () => { ui.iv = await api('POST', `/api/interviews/${iv.id}/approve`, {version: b.version, hash: b.hash}); await refresh(); }, 'ვერ დადასტურდა.');
   $('#withdraw').onclick = () => { if (confirm('გავაუქმოთ ბრიფი? ეთერში ვერ გავა.')) run(async () => { ui.iv = await api('POST', `/api/interviews/${iv.id}/withdraw`, {reason: 'creator'}); }); };
   for (const e of document.querySelectorAll('[data-edit]')) e.onclick = () => { ui.editing = e.dataset.edit; render(); };
+  wireErase();
+}
+function wireErase() {
+  if ($('#erase')) $('#erase').onclick = () => { if (confirm('წავშალოთ ინტერვიუ? პასუხები და ბრიფი წაიშლება; თუ რამე უკვე გავიდა ეთერში, მხოლოდ ის დარჩება გამოქვეყნების ჩანაწერში.')) run(async () => { await api('POST', `/api/interviews/${ui.iv.id}/delete`); ui.iv = null; ui.lib = await api('GET', '/api/library'); }, 'ვერ წაიშალა.'); };
 }
 async function approvedView() {
   const iv = ui.iv, b = iv.brief, entry = ui.lib.briefs.find(x => x.interviewId === iv.id), life = entry?.lifecycle;
@@ -204,7 +209,8 @@ async function approvedView() {
       : `<h2>გადაცემაში ჩასმა</h2><p class="hint">აირჩიე შენი სეგმენტი და ფაილი, რომლის საჯარო ეთერის უფლებაც მოგვეცი. რედაქცია მას ნახავს და დაამტკიცებს.</p>
       <label for="seg">სეგმენტი</label><select id="seg">${mine.map(s => `<option value="${s.id}">${esc(s.title)}</option>`).join('')}</select>
       <div id="slots"></div><div class="row"><button class="primary" id="prepare">მომზადება</button></div>`}
-    <div class="row"><button id="edit">შესწორება</button></div>`;
+    <div class="row"><button id="edit">შესწორება</button><button id="erase">ინტერვიუს წაშლა</button></div>`;
+  wireErase();
   $('#edit').onclick = () => { ui.editing = 'who'; render(); };
   if (!life?.segmentId) {
     const slots = () => { const seg = state.segments[$('#seg').value]; $('#slots').innerHTML = seg.assets.map(a => `<label for="slot-${a.id}">${esc(a.id)} <small>(${a.kind === 'audio' ? 'აუდიო' : 'სურათი'})</small></label><select id="slot-${a.id}" data-slot="${a.id}"><option value="">— უცვლელი —</option>${b.media.filter(m => m.kind === a.kind && m.rights?.publicBroadcast).map(m => `<option value="${m.id}">${esc(m.title)}</option>`).join('')}</select>`).join(''); };

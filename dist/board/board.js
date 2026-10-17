@@ -183,7 +183,7 @@ function renderGuide() {
           <p lang="ka">შენს AI აგენტს შეუძლია ECHO-ს კითხვებს შენ ნაცვლად უპასუხოს — მხოლოდ იმით, რაც შენ უთხარი. ბრიფს, ფაილებს და უფლებებს მაინც შენ ადასტურებ.</p>
           <p lang="ka">მიეცი დავალება: „მოამზადე ჩემი ECHO-ს ბრიფი ECHO-ს ხელსაწყოებით“. შემდეგ გახსენი „ესაუბრე ECHO-ს“ და გადახედე.</p>
           <p class="fine">${esc(agent?.label || 'Your agent')}: ${on ? `connected (${esc(agent.client || 'MCP client')})` : agent?.lastSeenAt ? `last seen ${time(agent.lastSeenAt)}` : 'not connected yet'}</p>
-          <details class="fine"><summary>Technical details</summary>MCP (stdio) with the agent's own token, issued by the producer. Interview tools: start_interview, get_interview, answer_interview, skip_interview_question, review_creator_brief, list_my_library. No tool can approve, declare rights, upload, publish or move confirmed airtime.</details>
+          <details class="fine"><summary>Technical details</summary>MCP (stdio) with the agent's own token, issued by the producer. Interview tools: start_interview, get_interview, answer_interview, skip_interview_question, review_creator_brief, list_my_library, prepare_segment_from_brief (only after you approve the brief). No tool can approve, declare rights, upload, publish or move confirmed airtime.</details>
         </details>`;
     }
   }

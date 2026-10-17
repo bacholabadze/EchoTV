@@ -133,7 +133,7 @@ export class BroadcastDesk {
   libraryMedia(ownerId) { return Object.values(this.library(ownerId).media).filter(m => m.status !== 'withdrawn'); }
   interviewFor(actor, id) {
     const iv = this.state.interviews?.[id];
-    if (!iv || iv.ownerId !== this.ownerOf(actor)) fail('not_found', `No interview ${id}`);
+    if (!iv || iv.status === 'deleted' || iv.ownerId !== this.ownerOf(actor)) fail('not_found', `No interview ${id}`);
     return iv;
   }
   ivCtx(ownerId) { const lib = this.libraryMedia(ownerId); return {library: lib, mediaOwned: id => lib.some(m => m.id === id), person: this.state.people[ownerId]}; }
@@ -220,8 +220,10 @@ export class BroadcastDesk {
   }
   // Segment preparation: the creator turns their approved brief and authorised library files into their own segment.
   // A new revision that needs content review; only air-facing brief fields enter the (public) programme.
+  // The creator, or the creator's own agent, may prepare: every input (brief, files, uses) was approved or declared
+  // by the creator, and the result is a new revision the producer must review. Other people and agents: refused.
   prepareSegment(actor, {interviewId, segmentId, assets = {}}) {
-    const person = this.requireHuman(actor), iv = this.interviewFor(actor, interviewId), seg = this.segment(segmentId);
+    const person = this.person(this.ownerOf(actor)), iv = this.interviewFor(actor, interviewId), seg = this.segment(segmentId);
     if (seg.ownerId !== person.id) fail('forbidden', `Only ${this.state.people[seg.ownerId].name} can prepare ${seg.title}`);
     if (iv.status !== 'approved') fail('brief_not_approved', 'Approve your brief first');
     const briefMedia = new Set(iv.brief.media.map(m => m.id)), replaced = [];
@@ -245,7 +247,7 @@ export class BroadcastDesk {
     const b = iv.brief;
     seg.content = {...seg.content, brief: {interviewId: iv.id, version: b.version, hash: b.hash, displayName: b.creator.displayName, title: b.work.title, category: b.work.category, aiInvolvement: b.process.aiInvolvement, quotes: b.story.quotes}};
     seg.revision++; seg.state = 'submitted'; seg.approval = null;
-    this.log(actor, 'segment_prepared', `${person.name} prepared ${seg.title} from their approved brief (v${b.version})${replaced.length ? ` with ${replaced.length} authorised file(s)` : ''}; revision ${seg.revision} needs content review`, {segmentId, revision: seg.revision});
+    this.log(actor, 'segment_prepared', `${actor.type === 'agent' ? `${this.agent(actor.id).label} (for ${person.name})` : person.name} prepared ${seg.title} from ${person.name}'s approved brief (v${b.version})${replaced.length ? ` with ${replaced.length} authorised file(s)` : ''}; revision ${seg.revision} needs content review`, {segmentId, revision: seg.revision});
     this.contentChanged(actor, `${seg.title} prepared from a creator brief`, [segmentId]);
     return clone(seg);
   }
@@ -271,10 +273,30 @@ export class BroadcastDesk {
       this.withdrawIfPublished(actor, seg, 'rejected', 'creator withdrew the brief');
     }
   }
+  // Deletion (the creator only). Interview: answers, transcripts, history and the private brief are erased; a dated
+  // tombstone remains. A brief prepared into the programme is withdrawn first (the programme can no longer air it);
+  // fields that already went out in a publication stay only in that publication's record. Library file: removed with
+  // its bytes, unless it is part of a segment or publication (then: kept for audit, withdraw it instead).
+  deleteInterview(actor, id) {
+    this.requireHuman(actor);
+    const iv = this.interviewFor(actor, id);
+    if (iv.status !== 'withdrawn') { Interview.withdraw(iv, {by: actor.id, now: this.now(), reason: 'deleted by the creator'}); this.briefWithdrawn(actor, iv); }
+    this.state.interviews[id] = {id, ownerId: iv.ownerId, status: 'deleted', deletedAt: this.now(), deletedBy: actor.id};
+    this.log(actor, 'interview_deleted', `${this.state.people[iv.ownerId].name} deleted interview ${id}`, {private: true});
+    return {id, status: 'deleted'};
+  }
+  deleteLibraryMedia(actor, id) {
+    const m = this.mediaOf(actor, id), inUse = this.state.media?.[m.sha256] || Object.values(this.state.segments).some(s => s.assets.some(a => a.libraryMediaId === id));
+    if (inUse) fail('in_use', `${m.title} is part of a programme or publication and is kept for audit; withdraw it instead`);
+    delete this.library(m.ownerId).media[id];
+    this.log(actor, 'library_media_deleted', `${this.state.people[m.ownerId].name} deleted a library file`, {private: true});
+    const stillUsed = Object.values(this.state.library || {}).some(l => Object.values(l.media).some(x => x.file === m.file));
+    return {id, deleted: true, removeFile: stillUsed ? null : m.file};
+  }
   libraryView(actor) {
     const ownerId = this.ownerOf(actor);
     return {media: Object.values(this.library(ownerId).media).map(m => ({...clone(m), file: undefined})),
-      briefs: Object.values(this.state.interviews || {}).filter(iv => iv.ownerId === ownerId).map(iv => ({interviewId: iv.id, status: iv.status, brief: iv.brief && {version: iv.brief.version, status: iv.brief.status, displayName: iv.brief.creator.displayName, title: iv.brief.work.title, missing: iv.brief.missing}, lifecycle: this.briefLifecycle(iv)}))};
+      briefs: Object.values(this.state.interviews || {}).filter(iv => iv.ownerId === ownerId && iv.status !== 'deleted').map(iv => ({interviewId: iv.id, status: iv.status, brief: iv.brief && {version: iv.brief.version, status: iv.brief.status, displayName: iv.brief.creator.displayName, title: iv.brief.work.title, missing: iv.brief.missing}, lifecycle: this.briefLifecycle(iv)}))};
   }
   briefLifecycle(iv) {
     const seg = Object.values(this.state.segments).find(s => s.content?.brief?.interviewId === iv.id), b = this.state.broadcast;

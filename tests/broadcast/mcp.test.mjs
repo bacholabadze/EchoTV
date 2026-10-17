@@ -32,7 +32,7 @@ after(async () => { await agents.a?.close(); await agents.b?.close(); echo.serve
 test('gateway exposes collaboration tools and no privileged ones', async () => {
   const names = (await agents.a.listTools()).tools.map(t => t.name).sort();
   // 3.2 adds the creator-interview tools (answer/skip/review/read); still nothing that approves, publishes or overrides.
-  assert.deepEqual(names, ['answer_interview', 'get_change_history', 'get_interview', 'get_show_state', 'list_my_library', 'propose_change', 'request_slot', 'respond_to_request', 'review_creator_brief', 'revise_proposal', 'skip_interview_question', 'start_interview', 'wait_for_requests', 'withdraw_proposal']);
+  assert.deepEqual(names, ['answer_interview', 'get_change_history', 'get_interview', 'get_show_state', 'list_my_library', 'prepare_segment_from_brief', 'propose_change', 'request_slot', 'respond_to_request', 'review_creator_brief', 'revise_proposal', 'skip_interview_question', 'start_interview', 'wait_for_requests', 'withdraw_proposal']);
   for (const forbidden of ['approve', 'force', 'override', 'publish']) assert.ok(names.every(n => !n.includes(forbidden)));
 });
 

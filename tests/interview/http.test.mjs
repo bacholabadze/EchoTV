@@ -92,3 +92,23 @@ test('the approved brief carries the media and its declared uses; the lifecycle 
     assert.deepEqual(life.steps.filter(s => s.done).map(s => s.step), ['interview', 'draft', 'creator_approved']);
   } finally { await x.stop(); }
 });
+
+test('deletion: the creator erases an interview (tombstone only) or an unused file (record and bytes); files in a programme are kept for audit', async () => {
+  const x = await start();
+  try {
+    const keep = (await x.upload(x.T.B, MP3, 'used.mp3')).body, drop = (await x.upload(x.T.B, PNG, 'drop.png')).body;
+    await x.req('POST', `/api/library/media/${keep.id}/rights`, x.T.B, {publicBroadcast: true, confirm: true});
+    const {id, act} = await completeInterview(x, x.T.B, keep.id);
+    assert.equal((await x.req('POST', `/api/interviews/${id}/delete`, x.T.b)).status, 403, 'not by an agent');
+    const b = x.echo.desk.state.interviews[id].brief; await act('approve', {version: b.version, hash: b.hash});
+    await x.req('POST', `/api/briefs/${id}/prepare`, x.T.B, {segmentId: 'premiere', assets: {track: keep.id}});
+    assert.equal((await x.req('POST', `/api/library/media/${keep.id}/delete`, x.T.B)).status, 409, 'in the programme: kept for audit');
+    assert.equal((await x.req('POST', `/api/library/media/${drop.id}/delete`, x.T.B)).status, 200);
+    assert.equal((await x.req('GET', `/api/library/media/${drop.id}/file`, x.T.B)).status, 404);
+    assert.equal((await x.req('POST', `/api/interviews/${id}/delete`, x.T.B)).status, 200);
+    assert.deepEqual(Object.keys(x.echo.desk.state.interviews[id]).sort(), ['deletedAt', 'deletedBy', 'id', 'ownerId', 'status'], 'only a tombstone remains');
+    assert.ok(!JSON.stringify(x.echo.desk.state).includes(SECRET), 'answer text erased from the server state');
+    assert.equal((await x.req('GET', `/api/interviews/${id}`, x.T.B)).status, 404);
+    assert.equal((await x.req('POST', '/api/publish', x.T.P)).status, 409, 'the prepared segment can no longer air');
+  } finally { await x.stop(); }
+});

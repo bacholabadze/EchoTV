@@ -42,7 +42,7 @@ test('an approved brief and an authorised file become the creator\'s segment: ne
   } finally { await x.stop(); }
 });
 
-test('guards: unapproved brief, file outside the brief, no broadcast permission, wrong kind, someone else\'s segment, an agent', async () => {
+test('guards: unapproved brief, file outside the brief, no broadcast permission, wrong kind, someone else\'s segment, another creator\'s agent', async () => {
   const x = await start();
   try {
     const m = (await x.upload(x.T.B, MP3, 'a.mp3')).body, img = (await x.upload(x.T.B, PNG, 'c.png')).body, other = (await x.upload(x.T.B, MP3, 'b2.mp3', 'other')).body;
@@ -58,7 +58,7 @@ test('guards: unapproved brief, file outside the brief, no broadcast permission,
     assert.equal((await prep({track: m.id})).body.error, 'rights_required', 'public broadcast not declared');
     assert.match((await prep({track: img.id})).body.message, /needs an audio file/);
     assert.equal((await x.req('POST', `/api/briefs/${id}/prepare`, x.T.B, {segmentId: 'gallery', assets: {}})).status, 403, "Bacho's segment");
-    assert.equal((await x.req('POST', `/api/briefs/${id}/prepare`, x.T.b, {segmentId: 'premiere', assets: {}})).status, 403, 'an agent');
+    assert.equal((await x.req('POST', `/api/briefs/${id}/prepare`, x.T.a, {segmentId: 'premiere', assets: {}})).status, 404, "another creator's agent");
     assert.equal(x.echo.desk.state.segments.premiere.revision, 1, 'nothing changed');
   } finally { await x.stop(); }
 });
@@ -118,5 +118,20 @@ test('dependent updates: preparing content during a negotiation voids earlier ap
     assert.equal(after.baseRevision, x.echo.desk.state.showRevision, 'rebased on the new programme revision');
     assert.ok(x.echo.desk.state.audit.some(e => e.action === 'approvals_reset'));
     assert.equal((await call(`/api/proposals/${p.id}/decision`, x.T.A, {version: v, decision: 'approve'})).status, 409, 'the stale version cannot be approved');
+  } finally { await x.stop(); }
+});
+
+test("the creator's own agent may prepare from the approved brief; the result still needs the producer's review", async () => {
+  const x = await start();
+  try {
+    const m = (await x.upload(x.T.B, MP3, 'a.mp3')).body;
+    await x.req('POST', `/api/library/media/${m.id}/rights`, x.T.B, {publicBroadcast: true, confirm: true});
+    const {id, act} = await completeInterview(x, x.T.B, m.id);
+    assert.equal((await x.req('POST', `/api/briefs/${id}/prepare`, x.T.b, {segmentId: 'premiere', assets: {track: m.id}})).body.error, 'brief_not_approved', 'not before the creator approves');
+    const b = x.echo.desk.state.interviews[id].brief; await act('approve', {version: b.version, hash: b.hash});
+    const r = await x.req('POST', `/api/briefs/${id}/prepare`, x.T.b, {segmentId: 'premiere', assets: {track: m.id}});
+    assert.equal(r.status, 200); assert.equal(r.body.state, 'submitted');
+    assert.ok(x.echo.desk.state.audit.some(e => e.action === 'segment_prepared' && /agent \(for /.test(e.summary)));
+    assert.equal((await x.req('POST', `/api/segments/premiere/review`, x.T.b, {revision: r.body.revision, decision: 'approved'})).status, 403, 'the agent cannot review it');
   } finally { await x.stop(); }
 });

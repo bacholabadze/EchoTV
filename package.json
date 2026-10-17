@@ -24,7 +24,8 @@
     "test:episode": "node --test tests/episode/*.test.mjs",
     "test:guided-flow": "node tests/browser/guided-flow.mjs",
     "test:interview": "node --test --test-timeout=60000 tests/interview/*.test.mjs",
-    "test:interview-flow": "node tests/browser/interview-flow.mjs"
+    "test:interview-flow": "node tests/browser/interview-flow.mjs",
+    "e2e:creator": "node tests/e2e/creator-to-broadcast.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.31.0",
