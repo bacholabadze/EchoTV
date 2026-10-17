@@ -66,4 +66,4 @@ Reusable as is: room/actors/materials/blocking/performance, `Director`, `caption
 | M3 | done | MCP tests + `docs/evidence/2026-10-17-rehearsal-2-real-agents.md` (real Claude Code + Codex) |
 | M4 | done | `npm run test:browser` + board screenshots |
 | M5 | done | `npm run test:broadcast-browser` (full 2-min playout, two viewers, reconnect, audio sync, Piper outro) |
-| M6 | in progress | runbook `DEMO_RUNBOOK.md`; three consecutive clean real-agent runs (§17, §25) |
+| M6 | done (engineering) | `docs/evidence/2026-10-17-real-agent-series.md`: 3/3 consecutive clean real-agent runs + partial and NO AGREEMENT variants; `DEMO_RUNBOOK.md`. Human tasks remain: real names and media, organiser answers, recording |
