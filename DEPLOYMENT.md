@@ -2,7 +2,7 @@
 
 ## What has to run
 
-One Node 22 process (`server/server.mjs`) serves the **frontend and the backend from the same origin**: static pages, `/api/*`, SSE (`/api/events`), agent long-polls of up to 55 s, `/media/<sha256>`, and `/host/*.mp3`. State is one JSON file in `data/`. Publishing runs Piper (Python) locally. The agents' MCP gateways (`server/mcp.mjs`) run on each creator's own machine and call the server over HTTP(S).
+One Node 22 process (`server/server.mjs`) serves the **frontend and the backend from the same origin**: static pages, `/api/*`, SSE (`/api/events`), agent long-polls of up to 55 s, `/api/time` (viewer clock sync), `/media/<sha256>`, and `/host/*.mp3`. No tunnel or hosting option below has been tested with ECHO. Only local runs are verified; `--lan` was checked from the same Mac via its LAN address, not from a second device. State is one JSON file in `data/`. Publishing runs Piper (Python) locally. The agents' MCP gateways (`server/mcp.mjs`) run on each creator's own machine and call the server over HTTP(S).
 
 So "frontend" and "backend" deploy together. Splitting them (e.g. pages on the existing static Sites host, API elsewhere) would need cross-origin support that the code does not have. **Do not republish `dist/` to the existing static Sites host for the demo.** It cannot run the server, so `/board/` and `/broadcast/` would show "Connecting" or "Off air".
 

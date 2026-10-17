@@ -39,8 +39,8 @@ Do three takes. Use the best one, and keep all three uncut.
 | 0:08–0:20 | Public board, r1: people, their agents (Claude Code / Codex), the 🔒 premiere at 0:50 | "Two people. Two independent agents." |
 | 0:20–0:38 | A's terminal + board: proposal and the Showrunner conflict ("must still start at 50s") | "Creator A's agent asks for 15 more seconds" |
 | 0:38–0:58 | B's terminal + board: B's own reasoning and the 10→5 s concession; A adapts to 15/15/15 | "Creator B's agent protects its premiere, concedes 5 s" |
-| 0:58–1:12 | The three Approve clicks, r2 diff, Publish → `r2 · <hash>` | "People approve. Agents can't." |
-| 1:12–1:42 | Broadcast: gallery → premiere starting exactly at 0:50 with the same `r2 · <hash>` | "The approved revision is what airs" |
+| 0:58–1:12 | The three Approve clicks, r2 diff, Publish → `#<publication> · r2 · <hash>` | "People approve. Agents can't." |
+| 1:12–1:42 | Broadcast: gallery → premiere starting exactly at 0:50 with the same `#<publication> · r2 · <hash>` | "The approved revision is what airs" |
 | 1:42–1:50 | End slate + one line | "We don't generate video. We coordinate creators and their agents into one broadcast." |
 
 - Put a small "edited for length" label on the first frame after every jump cut, or once at the start: "Real screen recording, edited for length."

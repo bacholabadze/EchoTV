@@ -2,6 +2,8 @@
 
 Branch `echo-3.1`. Baseline commit `c7eb068` holds the unmodified ZIP source (plus `.gitignore`), separating pre-hackathon work from new work (Master Plan §2, §18.10).
 
+> **Status note.** §1 is the pre-implementation audit snapshot (historical; e.g. Piper is now installed in `.venv/`). The current state, QA status and next steps are in `docs/SESSION_HANDOFF.md`.
+
 ## 1. Audit — what exists and is verified (2026-10-17)
 
 | Area | Finding | Evidence |
@@ -31,8 +33,8 @@ Reusable as is: room/actors/materials/blocking/performance, `Director`, `caption
 ## 3. Architecture (minimal, free, local)
 
 - `server/domain.mjs`: pure, deterministic core. Three separate state machines: Booking (`available/held/confirmed/released`), Segment (`draft/submitted/approved/needs_changes/rejected`) and Broadcast (`queued/ready/on_air/completed/failed`). Also show revisions with `baseRevision` checks, change proposals, conflict detection, the Showrunner solver (time arithmetic and fixed-slot protection only), approvals bound to `segment revision + media sha256`, and the publish manifest. No LLM in this layer (§23.5).
-- `server/server.mjs`: `node:http`, no framework. One process serialises every mutation. State is persisted atomically to `data/state.json` plus an append-only audit log. SSE pushes live updates to the board and viewers. Role tokens are kept separate for creators, agents, producer and viewer.
-- `server/mcp.mjs`: MCP stdio gateway (official `@modelcontextprotocol/sdk`, MIT). Each agent runs its own gateway process with its own agent token. Planned tools: `get_show_state`, `get_schedule`, `propose_change`, `wait_for_requests`, `respond_to_request`, `get_change_history`, `get_review_feedback`. No `force_broadcast`, `approve_own_content` or `override_confirmed_booking` exist.
+- `server/server.mjs`: `node:http`, no framework. One process serialises every mutation. State is persisted atomically to `data/state.json` plus an append-only audit log. SSE pushes live updates to the board and viewers. Separate bearer tokens for each creator, each agent and the producer. Viewers need no token and get a read-only, credential-free state.
+- `server/mcp.mjs`: MCP stdio gateway (official `@modelcontextprotocol/sdk`, MIT). Each agent runs its own gateway process with its own agent token. Implemented tools: `get_show_state`, `propose_change`, `wait_for_requests`, `respond_to_request`, `revise_proposal`, `withdraw_proposal`, `request_slot`, `get_change_history` (the planned `get_schedule` and `get_review_feedback` were folded into `get_show_state`). No `force_broadcast`, `approve_own_content` or `override_confirmed_booking` exist.
 - **Agents = bring your own agent.** Creator A connects Claude Code and Creator B connects Codex (both already installed, no new paid service). Each human gives their agent their own policy in plain language. The server enforces bounds whatever the agent says. A clearly labelled rule-based fallback agent covers agent or network failure (§25).
 - `dist/board/`: live Production Board. Per-creator login, timeline with locked confirmed slots, requests and responses between agents, diffs, approvals, publish revision, broadcast status.
 - `dist/broadcast/`: renderer that plays the published manifest. It reuses the studio room and actors for host intro/outro, plus an Art Gallery module and a Music Premiere module (audio and visualiser, no video generation). The server clock syncs viewers and supports reconnect. The manifest revision shown on screen must match the board.
@@ -67,3 +69,11 @@ Reusable as is: room/actors/materials/blocking/performance, `Director`, `caption
 | M4 | done | `npm run test:browser` + board screenshots |
 | M5 | done | `npm run test:broadcast-browser` (full 2-min playout, two viewers, reconnect, audio sync, Piper outro) |
 | M6 | done (engineering) | `docs/evidence/2026-10-17-real-agent-series.md`: 3/3 consecutive clean real-agent runs + partial and NO AGREEMENT variants; `DEMO_RUNBOOK.md`. Human tasks remain: real names and media, organiser answers, recording |
+
+## 7. Independent release audit (Codex)
+
+| Commit | Verdict | Notes |
+|---|---|---|
+| `64d1dc5` | **NOT READY**: 10 PASS / 3 FAIL (as relayed by the project owner) | 3 P0 + 7 P1 findings; all reproduced and fixed in `7ee7394` (`docs/evidence/2026-10-17-audit-fixes.md`) |
+| `cec5fb2` | not audited | launcher and docs only; resolved no findings |
+| `7ee7394` | **pending** independent regression run | implementer's own tests pass; not independently verified |

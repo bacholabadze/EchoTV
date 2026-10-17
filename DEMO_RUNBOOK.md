@@ -2,7 +2,7 @@
 
 **Many creators. Many agents. One shared broadcast.** Two people each bring their own AI agent (Claude Code and Codex). The agents negotiate the shared programme with the deterministic ECHO Showrunner. People approve every change, and the approved revision plays out in the ECHO studio.
 
-Verified on 2026-10-17 from a fresh clone of commit `64d1dc5` (tag `echo-3.1-demo-candidate`): every step below was run as written. Recording guide: `RECORDING.md`. Public hosting options: `DEPLOYMENT.md`.
+The setup and launch steps were verified as written from a fresh clone of `64d1dc5` (tag `echo-3.1-demo-candidate`). The release-audit fixes in `7ee7394` changed behaviour described in §4 and §7; the automated tests pass there, but a human rehearsal on `7ee7394` is still pending. Current status and handoff: `docs/SESSION_HANDOFF.md`. Recording guide: `RECORDING.md`. Public hosting options: `DEPLOYMENT.md`.
 
 ## 0. Requirements
 
@@ -26,7 +26,7 @@ npm install                     # MCP SDK 1.31.0, zod 4.6.5, playwright 1.49.1 (
 .venv/bin/pip install piper-tts==1.8.0 onnx==1.23.0
 mkdir -p voices && for f in en_US-ljspeech-high.onnx en_US-ljspeech-high.onnx.json; do
   curl -L -o voices/$f https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ljspeech/high/$f; done
-npm test                        # expect: 27 broadcast tests + 5 studio suites pass
+npm test                        # expect: 36 broadcast tests + 5 studio suites pass (at 7ee7394)
 ```
 
 If `npm install` fails with an `~/.npm` permission error, run `npm install --cache /tmp/echo-npm-cache` (do not sudo).
@@ -51,6 +51,8 @@ Channel home                   http://127.0.0.1:8787/
 Nino's agent (Claude Code):    data/demo/agent-a.sh
 Giorgi's agent (Codex):        data/demo/agent-b.sh
 ```
+
+**Upgrading a running demo** (e.g. after pulling a fix): `scripts/demo.sh stop`, then `scripts/demo.sh start` with the **same two names**. State, links and agent tokens are kept. Then reload every board and broadcast tab and restart both agent sessions: the server, the pages and the MCP gateways all load code only at start. If port 8787 is busy, use `--port 8788`.
 
 Other commands: `scripts/demo.sh links` (print again) · `scripts/demo.sh reset` (back to r1; same people and tokens) · `scripts/demo.sh stop` · `scripts/demo.sh start … --fresh` (new names or new tokens; old data is moved to `data.<timestamp>`, not deleted) · `--port N`.
 
