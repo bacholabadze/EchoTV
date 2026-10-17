@@ -445,7 +445,8 @@ export class BroadcastDesk {
     const unplayable = [];
     for (const e of this.layout().filter(e => e.duration > 0)) {
       const seg = this.state.segments[e.segmentId];
-      for (const a of seg.assets) if (a.decodable === false) unplayable.push(`${seg.title}: ${a.id} could not be decoded`);
+      // Fail closed: only media positively verified as decodable can be published.
+      for (const a of seg.assets) if (a.decodable !== true) unplayable.push(`${seg.title}: ${a.id} ${a.decodable === false ? 'could not be decoded' : 'has not been verified as playable'}`);
       const audio = seg.module === 'music' && seg.assets.find(a => a.id === seg.content?.assetId);
       if (audio?.durationSec !== undefined && audio.durationSec + .05 < (seg.content.offset || 0) + e.duration)
         unplayable.push(`${seg.title}: audio is ${audio.durationSec.toFixed(1)}s but the slot needs ${(seg.content.offset || 0) + e.duration}s`);

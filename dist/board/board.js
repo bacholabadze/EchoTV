@@ -6,9 +6,12 @@ if (fromHash) { try { sessionStorage.setItem('echo-token', fromHash); } catch {}
 let token = fromHash; try { token ||= sessionStorage.getItem('echo-token'); } catch {}
 let me = null, state = null, clockOffset = 0, seenSeq = 0;
 
+// 128-bit random request key. crypto.randomUUID exists only in secure contexts (HTTPS/localhost); a plain-HTTP
+// LAN board falls back to crypto.getRandomValues, which every context provides.
+const requestKey = () => crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
 // Every click gets one Idempotency-Key; a network retry of that click reuses it, so it can never act twice.
 async function api(method, path, body) {
-  const key = method === 'POST' ? crypto.randomUUID() : null;
+  const key = method === 'POST' ? requestKey() : null;
   for (let attempt = 0; ; attempt++) {
     try {
       const res = await fetch(path, {method, headers: {'content-type': 'application/json', ...(token ? {authorization: `Bearer ${token}`} : {}), ...(key ? {'idempotency-key': key} : {})}, body: body && JSON.stringify(body)});
@@ -130,7 +133,7 @@ async function upload(segmentId, file) {
   if (!file) return;
   const seg = state.segments[segmentId], assetId = seg.assets.find(a => a.kind === (file.type.startsWith('audio') ? 'audio' : 'image'))?.id || seg.assets[0].id;
   if (!confirm(`Replace ${assetId} in “${seg.title}” with ${file.name}?\n\nConfirm you own or are licensed to broadcast this media. The segment will need editorial approval again.`)) return;
-  const res = await fetch(`/api/segments/${segmentId}/media/${assetId}`, {method: 'POST', body: file, headers: {authorization: `Bearer ${token}`, 'idempotency-key': crypto.randomUUID(), 'x-filename': file.name, 'x-rights-declared': 'yes', 'x-title': encodeURIComponent(file.name)}});
+  const res = await fetch(`/api/segments/${segmentId}/media/${assetId}`, {method: 'POST', body: file, headers: {authorization: `Bearer ${token}`, 'idempotency-key': requestKey(), 'x-filename': file.name, 'x-rights-declared': 'yes', 'x-title': encodeURIComponent(file.name)}});
   if (!res.ok) throw new Error((await res.json()).message);
 }
 

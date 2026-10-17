@@ -13,7 +13,8 @@ The setup and launch steps were verified as written from a fresh clone of `64d1d
 | Google Chrome | any current | viewer and boards |
 | Claude Code (Creator A's agent) | 2.1.302, signed in | `claude --version` |
 | Codex CLI (Creator B's agent) | 0.160.1, signed in | `codex --version` |
-| Python 3.13 + ffmpeg | only for the spoken outro | `python3.13 -V`, `ffmpeg -version` |
+| ffmpeg (includes ffprobe) | **required to accept creator uploads**: every upload is fully decoded first; without it uploads are refused (the shipped demo media still work, verified by recorded fingerprints) | `ffmpeg -version` |
+| Python 3.13 | only for the spoken outro (Piper) | `python3.13 -V` |
 
 No paid services or API keys beyond the two agent subscriptions the creators already use.
 
@@ -30,7 +31,7 @@ npm test                        # expect: 36 broadcast tests + 5 studio suites p
 ```
 
 If `npm install` fails with an `~/.npm` permission error, run `npm install --cache /tmp/echo-npm-cache` (do not sudo).
-Without the Python and voice steps, everything works, but the outro shows captions only.
+Without the Python and voice steps, everything works, but the outro shows captions only. Without ffmpeg, creator uploads are refused (fail closed).
 
 ## 2. Launch (founder)
 

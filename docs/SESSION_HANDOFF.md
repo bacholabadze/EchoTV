@@ -10,12 +10,12 @@ Written 2026-10-17 ~18:30 (Tbilisi) to continue in a fresh session. Hackathon su
 |---|---|
 | Repo | `/Users/apple/Bridge/Projects/Hacktoberfest/echo-stage` (git, local only, no remote) |
 | Branch | `echo-3.1` (`main` = untouched baseline) |
-| **Implementation commit under Codex review** | **`7ee73943b3bd6ec95810b092b7cf81a6d444e268`** (`7ee7394`) |
-| Docs-only commit on top | recorded in the commit message that adds this file (`git log -1 -- docs/SESSION_HANDOFF.md`). It changes no code. |
+| **Latest implementation commit (for Codex re-validation)** | the commit that adds `docs/evidence/2026-10-17-regression-7ee7394-fixes.md` (`git log -1 --format=%H -- docs/evidence/2026-10-17-regression-7ee7394-fixes.md`) |
+| Previously validated | `7ee73943…` (`7ee7394`): **AUTOMATED QA FAIL** (Codex, `../echo-stage-qa/qa/REGRESSION-7ee7394.md`). `733f3e5` = docs-only on top of it |
 | Baseline (original ZIP, pre-hackathon code) | `c7eb068` |
 | Tag | `echo-3.1-demo-candidate` → `64d1dc5` (the commit audited as NOT READY) |
 | Offline bundles (parent dir) | `echo-3.1-64d1dc5.bundle`, `echo-3.1-cec5fb2.bundle` (pre-fix). `git bundle verify` passes on both. |
-| Codex QA worktree | `../echo-stage-qa`. **Off-limits: do not read, list or modify it.** Codex findings arrive as text from the project owner. |
+| Codex QA worktree | `../echo-stage-qa`. **Never modify it or run its scripts** (they write evidence into it). Read its reports only when the owner asks. |
 | Parent dir | Master Plan, `roadmap.md` (mojibake copy of `ECHO_TV_ROADMAP.md`), original ZIP |
 
 **Running process, not ours to stop:** a demo server, `node server/server.mjs` from this repo on **port 8787**, was started at 16:53 via `scripts/demo.sh start "Bacho" "Keti"` (pid in `data/demo/server.pid`). It runs **pre-fix code** in memory. Before any rehearsal on the fixed code, run `scripts/demo.sh stop && scripts/demo.sh start "Bacho" "Keti"` (same names keep links and tokens), then reload all tabs and restart both agent sessions. `data/` holds live credentials (git-ignored); never print or commit them.
@@ -82,11 +82,25 @@ Written 2026-10-17 ~18:30 (Tbilisi) to continue in a fresh session. Hackathon su
 | Audio stall handling (P0-3) | `npm run test:audio-stall` PASS (interrupted at 2.6 s, unavailable at 8.1 s, 3 retries, recovery) | pending |
 | Studio pilot unchanged | `npm run test:studio` 5/5 | n/a |
 
-**Fresh run at `7ee7394` (18:2x):** `npm test` → 36/36 + 5/5. `test:browser` PASS. `test:audio-stall` PASS. The full playout configs were last run on the committed code at about 17:3x and all passed.
+**Fresh run at `7ee7394` (18:2x):** `npm test` → 36/36 + 5/5. `test:browser` PASS. `test:audio-stall` PASS.
+
+**On the fix commit after Codex's 7ee7394 regression (19:0x):**
+- `npm test`: 41/41 + 5/5.
+- Browser: `test:browser`, `test:board-lan`, `test:audio-stall`, `test:art-fault` and `test:broadcast-browser` (normal / SSE delayed 1.5 s / no Piper) all PASS. Segment onsets were at most +31 ms.
+- A real-agent run was clean. The full playout configs were last run on the committed code at about 17:3x and all passed.
 
 Regression proof: `tests/broadcast/regression.test.mjs` passes 9/9 on `7ee7394` and **fails 9/9 on `64d1dc5`**, each for the reported defect.
 
 ## 5. Codex QA status
+
+**Update (19:20):** Codex's regression run on `7ee7394` = **AUTOMATED QA FAIL**. The three original P0s passed. New: P0 N02 (header-only PNG published, blank gallery under "Live"); P1 N01 (board actions broken on plain-HTTP LAN origins); N05 (no decoder = fail open); N03 (retry identity ignored upload metadata); P1-11 (one late outro onset, +289 ms); N04 (reject-after-publish policy). The fixes are in the next implementation commit (`docs/evidence/2026-10-17-regression-7ee7394-fixes.md`):
+- N02, N01, N05, N03: FIXED.
+- P1-11: mitigated, not reproduced here.
+- N04: **awaiting the owner's decision** (`docs/proposals/N04-withdrawing-published-content.md`).
+
+That commit is **not yet independently validated**.
+
+Earlier history:
 
 - `64d1dc5`: **NOT READY**, 10 PASS / 3 FAIL. P0: published asset 404 after a new draft; stale owner approvals after a media change; silent "Live" on stalled audio. P1: booking intervals, reused publication numbers, go-live precondition, retry identity, undecodable media, SSE skew, Piper-dependent tests.
 - **All 10 were reproduced and fixed in `7ee7394`**; per-finding before/after is in `docs/evidence/2026-10-17-audit-fixes.md`.
@@ -97,6 +111,9 @@ Regression proof: `tests/broadcast/regression.test.mjs` passes 9/9 on `7ee7394` 
 - **Not done by humans yet:** an observed rehearsal with two real people approving on their own boards, the real creator names and media, and the recording.
 - **Organiser answers outstanding:** prior-code eligibility (baseline `c7eb068` separates old from new) and the submission video spec.
 - **No public link.** Cloudflare Quick Tunnels don't support SSE (official docs). The options needing owner approval are a named Cloudflare Tunnel or Tailscale Funnel (`DEPLOYMENT.md`). LAN mode is untested from a second device; venue Wi-Fi may isolate devices.
+- **ffmpeg is now required to accept creator uploads** (fail closed). The shipped demo media are trusted by their recorded SHA-256 without it.
+- **N04 policy undecided:** today, rejecting a segment after publishing does not stop that publication from going live.
+- **P1-11:** onset lateness was not reproduced here (≤ +34 ms on 7ee7394, ≤ +31 ms now); Codex should re-measure.
 - **Dev-only advisory:** Playwright 1.49.1 (fixed in 1.55.1). It only affects `playwright install`, which we don't use. The bump is deferred.
 - **Platform limits:** single process, JSON state, no rate limiting, tokens in URL hash, plain HTTP on LAN.
 - **Content limits:** one English synthetic voice; the cast is three styled variants of one base rig.
@@ -113,6 +130,9 @@ npm install                                   # if node_modules is missing
 npm test                                      # 36 broadcast + 5 studio suites (~1 min)
 npm run test:browser                          # board, 3 sessions (Chrome)
 npm run test:audio-stall                      # P0-3 regression (Chrome, ~15 s)
+npm run test:board-lan                        # board actions on a plain-HTTP non-localhost origin (Chrome)
+npm run test:art-fault                        # broken published artwork shown as a fault (Chrome, ~45 s)
+npm run test:browser-all                      # all browser tests in sequence
 npm run test:broadcast-browser                # full 2-min playout (Chrome)
 ECHO_SSE_DELAY_MS=1500 npm run test:broadcast-browser   # skew regression
 ECHO_HOST_VOICE=off   npm run test:broadcast-browser    # no-Piper path
@@ -136,7 +156,7 @@ URLs: `/broadcast/` (viewer, click "Watch with sound"), `/board/` (public, read-
 
 ## 9. Next priorities (in order)
 
-1. Act on Codex's verdict for `7ee7394`. If FAIL: reproduce each finding independently, fix minimally, add a regression test that fails on `7ee7394`, and commit with the new SHA. No feature work.
+1. Get the owner's decision on N04 (`docs/proposals/N04-withdrawing-published-content.md`). Then get Codex's verdict on the latest implementation commit; for any finding, reproduce it independently, fix it minimally, and add a regression test that fails on the previous commit. No feature work.
 2. Restart the demo on the fixed code and run the observed two-human rehearsal; record what actually happens.
 3. Recording and submission package before 11:30.
 4. After the hackathon (not before):

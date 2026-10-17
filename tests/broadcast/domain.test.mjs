@@ -5,7 +5,9 @@ import {seedState} from '../../server/seed.mjs';
 
 const A = {type: 'agent', id: 'agent-a'}, B = {type: 'agent', id: 'agent-b'};
 const creatorA = {type: 'person', id: 'creator-a'}, creatorB = {type: 'person', id: 'creator-b'}, producer = {type: 'person', id: 'producer'};
-function desk() { let t = 1000; const d = new BroadcastDesk(seedState(), {now: () => (t += 10)}); d.advance = ms => (t += ms); return d; }
+// Domain-level fixtures stand in for media the server has already decoded and verified (see probeMedia).
+function verifiedSeed() { const s = seedState(); for (const seg of Object.values(s.segments)) for (const a of seg.assets) Object.assign(a, {decodable: true, probed: true}); return s; }
+function desk() { let t = 1000; const d = new BroadcastDesk(verifiedSeed(), {now: () => (t += 10)}); d.advance = ms => (t += ms); return d; }
 const code = c => e => e instanceof DomainError && e.code === c;
 const openRequest = (d, agentId) => Object.values(d.state.requests).find(r => r.toAgentId === agentId && r.status === 'open');
 const starts = d => Object.fromEntries(d.layout().map(e => [e.segmentId, [e.start, e.duration]]));
@@ -136,7 +138,7 @@ test('two simultaneous bookings of the same interval: at most one is confirmed',
 
 test('old approval does not carry over to changed media', () => {
   const d = desk();
-  d.replaceAsset(creatorB, {segmentId: 'premiere', assetId: 'track', sha256: 'new-hash', meta: {rightsDeclared: true, kind: 'audio'}});
+  d.replaceAsset(creatorB, {segmentId: 'premiere', assetId: 'track', sha256: 'new-hash', meta: {rightsDeclared: true, kind: 'audio', decodable: true, probed: true, durationSec: 62}});
   assert.equal(d.approvalValid(d.state.segments.premiere), false);
   assert.throws(() => d.publish(producer), code('not_publishable'));
   assert.throws(() => d.reviewSegment(producer, {segmentId: 'premiere', revision: 1, decision: 'approved'}), code('stale_revision'));

@@ -85,6 +85,20 @@ try {
     console.log('outro: captions only (no Piper), caption visible');
   }
   assert.equal(outroState.faultVisible, false, 'no audio fault during a healthy run');
+  // Onsets on the authoritative clock (P1-11): every segment switch, and premiere audio actually playing, within 250 ms.
+  for (const [name, page] of [['viewer-1', one], ['viewer-2', two]]) {
+    const x = await state(page);
+    for (const seg of manifest.segments) {
+      if (name === 'viewer-2' && seg.start < 24) continue; // viewer 2 reloaded at 0:24; its first onset is the rejoin, not a switch
+      const late = x.onsets[seg.id] - seg.start;
+      assert.ok(late >= -0.05 && late < 0.25, `${name}: ${seg.id} switched ${late.toFixed(3)}s after its start`);
+    }
+  }
+  const premiere = manifest.segments.find(x => x.id === 'premiere');
+  const playing = (await state(one)).playing.find(p => p.t >= premiere.start - 1);
+  assert.ok(playing && playing.t - premiere.start < 0.25, `premiere audio playing ${playing && (playing.t - premiere.start).toFixed(3)}s after 0:50`);
+  const onsets = (await state(one)).onsets;
+  console.log(`onsets (viewer 1, s late): ${manifest.segments.map(x => `${x.id} +${(onsets[x.id] - x.start).toFixed(3)}`).join(', ')}; premiere audio playing +${(playing.t - premiere.start).toFixed(3)}`);
   await at(121.5);
   const end = await state(one);
   assert.equal(end.module, 'slate'); assert.equal(end.live, false);

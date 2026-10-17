@@ -29,6 +29,8 @@ async function loadStudio() {
     const room = createRoom(gltf.scene, {cast: conversationSeats, practicalPositions: conversationPracticals, actorFactory: (base, i) => makeEditorialCharacter(base, i, {hairLibrary: hair.scene})});
     lightEditorialRoom(room.scene);
     Object.assign(studio, {renderer, camera, scene: room.scene, actors: room.actors, ready: true});
+    // Compile shaders and upload geometry now, so the first host frame on air is not a long frame.
+    try { renderer.compile(room.scene, camera); frameShot('wide'); renderer.render(room.scene, camera); } catch {}
     canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); studio.failed = true; studio.ready = false; });
   } catch (error) { studio.failed = true; console.warn('Studio unavailable:', error.message); }
 }
@@ -57,6 +59,7 @@ function renderHost(host, local, ms) {
 const STALL_MS = 2500, FAIL_MS = 8000, MAX_RETRIES = 3;
 const health = {src: null, state: 'ok', since: 0, lastTime: -1, retries: 0, lastRetry: 0, errored: false, recoveries: 0};
 audio.addEventListener('error', () => { health.errored = true; });
+audio.addEventListener('playing', () => { const b = state?.broadcast; if (b?.onAirAt) (view.playing ??= []).push({src: audio.dataset.src, t: +((now() - b.onAirAt) / 1000).toFixed(4)}); });
 function resetHealth(src) { Object.assign(health, {src, state: 'ok', since: performance.now(), lastTime: audio.currentTime, retries: 0, lastRetry: 0, errored: false}); }
 function watchAudio(src, expected) {
   const t = performance.now();
@@ -88,10 +91,10 @@ function syncAudio(src, expected, volume = 1, end = Infinity) {
   audio.volume = Math.max(0, Math.min(1, volume));
   const t = performance.now();
   if (audio.dataset.src !== src) { audio.dataset.src = src; audio.src = src; seekTo(expected); audio.play().catch(() => {}); lastSync = t; return; }
+  if (audio.paused && health.state === 'ok') { if (Math.abs(audio.currentTime - expected) > .1) seekTo(expected); audio.play().catch(() => {}); lastSync = t; return; }
   if (t - lastSync < 400 || health.state !== 'ok') return;
   lastSync = t;
-  if (audio.paused) { seekTo(expected); audio.play().catch(() => {}); }
-  else if (Math.abs(audio.currentTime - expected) > .35) seekTo(expected);
+  if (Math.abs(audio.currentTime - expected) > .35) seekTo(expected);
 }
 // A deliberate stop ends watching: the next segment that needs audio (even the same file) starts a fresh watch.
 function stopAudio() { if (!audio.paused) audio.pause(); health.src = null; }
@@ -107,16 +110,32 @@ function slate(eyebrow, title, text, meta = '') {
 }
 const assetOf = (seg, id) => seg.assets.find(a => a.id === id) || seg.assets[0];
 
+// Required-image check: every slide must load and decode. A broken or missing artwork is shown as a visible
+// fault with its credits, never as a blank frame under a plain "Live". Bounded: undecided after 8 s = failed.
+const IMAGE_SLOW_MS = 1500, IMAGE_FAIL_MS = 8000, images = new Map();
+function checkImage(url) {
+  if (!images.has(url)) {
+    images.set(url, 'loading');
+    const img = new Image(); img.src = url;
+    img.decode().then(() => images.set(url, img.naturalWidth > 0 ? 'ok' : 'failed'), () => images.set(url, 'failed'));
+    setTimeout(() => { if (images.get(url) === 'loading') images.set(url, 'failed'); }, IMAGE_FAIL_MS);
+  }
+  return images.get(url);
+}
 function playArt(seg, local) {
   const slides = seg.content.slides || [];
   let at = 0, index = 0;
   for (let i = 0; i < slides.length; i++) { if (local >= at && local < at + slides[i].seconds) { index = i; break; } at += slides[i].seconds; index = i; }
   const slide = slides[index], asset = assetOf(seg, slide?.assetId), progress = slide ? Math.min(1, (local - at) / slide.seconds) : 0;
   if (view.artKey !== `${seg.id}:${index}`) {
-    view.artKey = `${seg.id}:${index}`;
+    view.artKey = `${seg.id}:${index}`; view.slideAt = performance.now();
     const [on, off] = $('#art-a').classList.contains('on') ? [$('#art-b'), $('#art-a')] : [$('#art-a'), $('#art-b')];
     on.src = asset.url; on.alt = `${asset.title || ''}, ${asset.credit || ''}`; on.classList.add('on'); off.classList.remove('on');
   }
+  const status = checkImage(asset.url), slow = status === 'loading' && performance.now() - view.slideAt > IMAGE_SLOW_MS;
+  view.artFault = status === 'failed' ? {state: 'failed', asset} : slow ? {state: 'stalled', asset} : null;
+  $('#art-missing').hidden = status !== 'failed';
+  if (status === 'failed') { setText('#art-missing-title', asset.title || 'Untitled'); setText('#art-missing-credit', [asset.credit, asset.license].filter(Boolean).join(' · ')); }
   const img = document.querySelector('#art img.on');
   if (img && !reduced) img.style.transform = `scale(${1.02 + .06 * progress}) translate(${(index % 2 ? -1 : 1) * progress * 1.2}%, ${-progress * .8}%)`;
   lower(`Art gallery · curated by ${seg.owner} · ${index + 1}/${slides.length}`, asset.title, [asset.credit, asset.license].filter(Boolean).join(' · '), seg.ownerId);
@@ -178,18 +197,35 @@ function tick(ms) {
   setText('#clock', `${fmt(t)} / ${fmt(m.durationSec)}`);
   setText('#next', next ? `Next · ${next.title} at ${fmt(next.start)}${next.confirmed ? ' · confirmed' : ''}` : 'Final segment');
   view.segment = seg.id; view.local = local; view.t = t;
+  view.onsets ??= {}; if (!(seg.id in view.onsets)) view.onsets[seg.id] = +t.toFixed(4);
   if (seg.module !== 'host') $('#caption').hidden = true;
   screen.dataset.module = seg.module;
   view.audioNeeded = false; // set again by syncAudio when this segment requires sound
   if (seg.module === 'art') playArt(seg, local);
   else if (seg.module === 'music') playMusic(seg, local);
   else if (seg.module === 'host') playHost(seg, local, ms);
-  // Never a plain "Live" while required audio is stuck.
-  const fault = view.audioNeeded && health.src === audio.dataset.src && health.state !== 'ok' ? health.state : null;
-  screen.dataset.audio = fault || 'ok';
-  setText('#onair-label', fault === 'stalled' ? 'Live · audio interrupted' : fault === 'failed' ? 'Live · audio unavailable' : 'Live');
-  $('#fault').hidden = !fault; $('#fault-retry').hidden = fault !== 'failed';
-  if (fault) setText('#fault-text', fault === 'stalled' ? `Audio interrupted — reconnecting (attempt ${health.retries} of ${MAX_RETRIES})` : `Audio unavailable for “${seg.title}” — the programme continues without sound`);
+  // Never a plain "Live" while required audio or a required image is not actually playing.
+  const audioFault = view.audioNeeded && health.src === audio.dataset.src && health.state !== 'ok' ? health.state : null;
+  const imageFault = seg.module === 'art' ? view.artFault : null;
+  const fault = audioFault ? {kind: 'audio', state: audioFault} : imageFault ? {kind: 'image', ...imageFault} : null;
+  screen.dataset.audio = fault?.state || 'ok';
+  setText('#onair-label', !fault ? 'Live' : fault.kind === 'audio' ? (fault.state === 'stalled' ? 'Live · audio interrupted' : 'Live · audio unavailable') : (fault.state === 'stalled' ? 'Live · artwork loading' : 'Live · artwork unavailable'));
+  $('#fault').hidden = !fault; $('#fault-retry').hidden = !(fault?.kind === 'audio' && fault.state === 'failed');
+  if (fault) setText('#fault-text', fault.kind === 'audio'
+    ? (fault.state === 'stalled' ? `Audio interrupted — reconnecting (attempt ${health.retries} of ${MAX_RETRIES})` : `Audio unavailable for “${seg.title}” — the programme continues without sound`)
+    : (fault.state === 'stalled' ? `Artwork “${fault.asset.title || 'untitled'}” is still loading` : `Artwork “${fault.asset.title || 'untitled'}” could not be displayed — the programme continues`));
+  // Get the next segment ready so it starts on time: pre-seek its audio and pre-render the studio.
+  if (next && next.start - t <= 1.5) prepare(next, ms);
+}
+function prepare(next, ms) {
+  const src = next.module === 'music' ? assetOf(next, next.content.assetId).url : next.module === 'host' ? next.content.host?.audio : null;
+  if (src && soundOn && !view.audioNeeded) {
+    const at = next.module === 'music' ? next.content.offset || 0 : 0;
+    if (audio.dataset.src !== src) { audio.dataset.src = src; audio.src = src; seekTo(at); }
+    else if (audio.paused && Math.abs(audio.currentTime - at) > .05) seekTo(at);
+  }
+  if (next.module === 'host' && studio.ready && view.warmed !== next.id) { view.warmed = next.id; renderHost(next.content.host, 0, ms); }
+  if (next.module === 'art') for (const slide of next.content.slides || []) checkImage(assetOf(next, slide.assetId).url);
 }
 
 $('#sound').onclick = () => {
@@ -205,7 +241,7 @@ $('#sound').onclick = () => {
 const events = new EventSource('/api/events');
 const preloaded = new Set();
 // Fetch every image of the published manifest up front so a slide never appears blank.
-function preload(m) { for (const seg of m?.segments || []) for (const a of seg.assets) if (a.kind === 'image' && !preloaded.has(a.url)) { preloaded.add(a.url); new Image().src = a.url; } }
+function preload(m) { for (const seg of m?.segments || []) for (const a of seg.assets) if (a.kind === 'image' && !preloaded.has(a.url)) { preloaded.add(a.url); checkImage(a.url); } }
 // Clock: round-trip-corrected samples of /api/time (lowest-latency sample wins). SSE delivery can be delayed or
 // buffered, so its timestamps are only used until the first real sample arrives.
 let clockSamples = [], clockSynced = false;
@@ -221,6 +257,6 @@ setInterval(syncClock, 10000);
 events.addEventListener('state', e => { state = JSON.parse(e.data); if (!clockSynced) offset = state.serverTime - Date.now(); preload(state.broadcast?.manifest); });
 $('#fault-retry').onclick = () => { if (health.src) { resetHealth(health.src); audio.dataset.src = ''; } };
 const audioLevel = () => { if (!analyser) return null; const d = new Uint8Array(analyser.fftSize); analyser.getByteTimeDomainData(d); let m = 0; for (const v of d) m = Math.max(m, Math.abs(v - 128)); return m / 128; };
-window.EchoBroadcast = {getState: () => ({audioHealth: {state: health.state, retries: health.retries, recoveries: health.recoveries, needed: !!view.audioNeeded}, onAirLabel: $('#onair-label').textContent, faultVisible: !$('#fault').hidden, clockSynced, clockOffsetMs: Math.round(offset), publicationId: state?.broadcast?.manifest?.publicationId, viz: view.viz, audioLevel: audioLevel(), module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
+window.EchoBroadcast = {getState: () => ({onsets: view.onsets || {}, playing: view.playing || [], artFault: view.artFault ? {state: view.artFault.state, assetId: view.artFault.asset.id} : null, audioHealth: {state: health.state, retries: health.retries, recoveries: health.recoveries, needed: !!view.audioNeeded}, onAirLabel: $('#onair-label').textContent, faultVisible: !$('#fault').hidden, clockSynced, clockOffsetMs: Math.round(offset), publicationId: state?.broadcast?.manifest?.publicationId, viz: view.viz, audioLevel: audioLevel(), module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
 loadStudio();
 requestAnimationFrame(tick);

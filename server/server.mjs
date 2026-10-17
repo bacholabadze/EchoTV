@@ -23,23 +23,27 @@ const MAGIC = {
   '.wav': b => b.toString('latin1', 0, 4) === 'RIFF' && b.toString('latin1', 8, 12) === 'WAVE',
   '.ogg': b => b.toString('latin1', 0, 4) === 'OggS', '.m4a': b => b.toString('latin1', 4, 8) === 'ftyp',
 };
-let ffprobeAvailable;
-// Media must actually decode before it can be approved or published. ffprobe (ships with ffmpeg) decodes the
-// stream when present; otherwise only the file signature is checked, and probed=false says so.
+let decoderAvailable;
+const hasDecoder = () => decoderAvailable ??= ['ffprobe', 'ffmpeg'].every(cmd => spawnSync(cmd, ['-version'], {stdio: 'ignore'}).status === 0);
+// Media must actually decode before it can be approved or published: ffprobe reads the stream metadata and
+// ffmpeg decodes every frame/sample (-xerror stops at the first decoder error). Without a decoder nothing is
+// verified, so nothing is accepted (fail closed).
 export function probeMedia(file) {
   const ext = extname(file).toLowerCase(), head = readFileSync(file).subarray(0, 16), kind = /png|jpe?g|webp/.test(ext) ? 'image' : 'audio';
   if (!MAGIC[ext]?.(head)) return {kind, decodable: false, probed: false, reason: `not a valid ${ext.slice(1)} file`};
-  ffprobeAvailable ??= spawnSync('ffprobe', ['-version'], {stdio: 'ignore'}).status === 0;
-  if (!ffprobeAvailable) return {kind, decodable: true, probed: false};
+  if (!hasDecoder()) return {kind, decodable: false, probed: false, reason: 'no media decoder on this server (install ffmpeg, which includes ffprobe)'};
   const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration:stream=codec_type,width,height', '-of', 'json', file], {encoding: 'utf8', timeout: 15000});
   let info; try { info = JSON.parse(r.stdout); } catch { info = {}; }
   const stream = (info.streams || []).find(x => x.codec_type === (kind === 'image' ? 'video' : 'audio'));
   if (r.status !== 0 || !stream) return {kind, decodable: false, probed: true, reason: (r.stderr || 'no decodable stream').trim().split('\n')[0].slice(0, 160)};
+  const decode = spawnSync('ffmpeg', ['-v', 'error', '-xerror', '-i', file, '-f', 'null', '-'], {encoding: 'utf8', timeout: 30000});
+  if (decode.status !== 0 || decode.stderr.trim()) return {kind, decodable: false, probed: true, reason: `decoding failed: ${(decode.stderr || 'decoder error').trim().split('\n').pop().slice(0, 160)}`};
   if (kind === 'audio') {
     const durationSec = +info.format?.duration;
     if (!(durationSec > 0)) return {kind, decodable: false, probed: true, reason: 'audio has no playable duration'};
     return {kind, decodable: true, probed: true, durationSec: Math.round(durationSec * 1000) / 1000};
   }
+  if (!(stream.width > 0 && stream.height > 0)) return {kind, decodable: false, probed: true, reason: 'image has no pixels'};
   return {kind, decodable: true, probed: true, width: stream.width, height: stream.height};
 }
 
@@ -48,9 +52,12 @@ export function demoMedia(mediaDir) {
   const manifestPath = join(mediaDir, 'media.json');
   if (!existsSync(manifestPath)) return {};
   const list = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  return Object.fromEntries(Object.entries(list).map(([id, meta]) => {
-    const file = join(mediaDir, meta.file), {reason, ...probe} = probeMedia(file);
-    return [id, {...meta, ...probe, sha256: sha256(readFileSync(file))}];
+  return Object.fromEntries(Object.entries(list).map(([id, {verified, ...meta}]) => {
+    const file = join(mediaDir, meta.file), hash = sha256(readFileSync(file));
+    let {reason, ...probe} = probeMedia(file);
+    // Without a decoder, a shipped file is trusted only if its bytes are exactly the ones verified when it was authored.
+    if (!probe.probed && verified?.sha256 === hash) probe = {kind: meta.kind, decodable: true, probed: false, verifiedRecord: verified.by, ...verified.metadata};
+    return [id, {...meta, ...probe, sha256: hash}];
   }));
 }
 
@@ -64,6 +71,14 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
   for (const a of [...Object.values(desk.state.segments).flatMap(seg => seg.assets), ...(desk.state.broadcast.manifest?.segments || []).flatMap(seg => seg.assets)])
     if (a.file) desk.indexMedia(a.sha256, a);
   desk.state.idempotency ??= {};
+  // State written by earlier versions has assets without a verification result: check them now (fail closed).
+  const demo = demoMedia(mediaDir), demoByHash = Object.fromEntries(Object.values(demo).map(m => [m.sha256, m]));
+  for (const seg of Object.values(desk.state.segments)) for (const a of seg.assets) {
+    if (a.decodable !== undefined) continue;
+    const known = demoByHash[a.sha256], path = a.upload ? join(dataDir, 'uploads', a.file || '') : join(mediaDir, a.file || '');
+    const {reason, ...probe} = known ? {decodable: known.decodable, probed: known.probed, durationSec: known.durationSec, width: known.width, height: known.height} : existsSync(path) && a.file ? probeMedia(path) : {decodable: false, probed: false};
+    Object.assign(a, probe);
+  }
   const clients = new Set();
   const persist = () => { const tmp = statePath + '.tmp'; writeFileSync(tmp, JSON.stringify(desk.state)); renameSync(tmp, statePath); };
   persist();
@@ -266,7 +281,9 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       if (key && route[0] === 'POST') {
         if (!/^[\w.:-]{8,120}$/.test(key)) throw new DomainError('bad_request', 'Idempotency-Key must be 8–120 characters [A-Za-z0-9_.:-]');
         replayKey = `${actor.type}:${actor.id}:${key}`;
-        const fingerprint = sha256(Buffer.concat([Buffer.from(`${req.method} ${url.pathname}\n`), raw])), seen = desk.state.idempotency[replayKey];
+        // Identity = method, path, the metadata headers that change meaning (upload title/credit/licence/rights), body.
+        const meta = ['content-type', 'x-filename', 'x-title', 'x-credit', 'x-license', 'x-rights-declared'].map(h => `${h}:${req.headers[h] ?? ''}`).join('\n');
+        const fingerprint = sha256(Buffer.concat([Buffer.from(`${req.method} ${url.pathname}\n${meta}\n`), raw])), seen = desk.state.idempotency[replayKey];
         if (seen) {
           if (seen.fingerprint !== fingerprint) throw new DomainError('idempotency_conflict', 'This Idempotency-Key was already used for a different request');
           res.setHeader('idempotent-replay', 'true'); return send(res, seen.status, seen.body);

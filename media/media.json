@@ -6,7 +6,15 @@
   "credit": "Katsushika Hokusai, ca. 1830–32",
   "license": "Public domain (CC0) — The Met Open Access",
   "source": "https://www.metmuseum.org/art/collection/search/45434",
-  "rightsDeclared": true
+  "rightsDeclared": true,
+  "verified": {
+   "sha256": "f507259116869aa57a050c08788474700f29a10b386bbaaf89af30b7a0f039c6",
+   "by": "ffprobe + full ffmpeg 8.1 decode, 2026-10-17",
+   "metadata": {
+    "width": 1920,
+    "height": 1290
+   }
+  }
  },
  "art-2": {
   "file": "art-2.jpg",
@@ -15,7 +23,15 @@
   "credit": "Vincent van Gogh, 1889",
   "license": "Public domain (CC0) — The Met Open Access",
   "source": "https://www.metmuseum.org/art/collection/search/436535",
-  "rightsDeclared": true
+  "rightsDeclared": true,
+  "verified": {
+   "sha256": "cfaf224f548733bced2e033d9e9ff120108a2e39160e4cc0a7ffc3933ca7c5f0",
+   "by": "ffprobe + full ffmpeg 8.1 decode, 2026-10-17",
+   "metadata": {
+    "width": 1920,
+    "height": 1528
+   }
+  }
  },
  "art-3": {
   "file": "art-3.jpg",
@@ -24,7 +40,15 @@
   "credit": "Georges Seurat, 1887–88",
   "license": "Public domain (CC0) — The Met Open Access",
   "source": "https://www.metmuseum.org/art/collection/search/437654",
-  "rightsDeclared": true
+  "rightsDeclared": true,
+  "verified": {
+   "sha256": "1b516c7dd3a37ffd5e54a603402e8bc1fbd2ea9c13f5d55100025073d3153c49",
+   "by": "ffprobe + full ffmpeg 8.1 decode, 2026-10-17",
+   "metadata": {
+    "width": 1920,
+    "height": 1284
+   }
+  }
  },
  "track": {
   "file": "demo-track.mp3",
@@ -32,6 +56,13 @@
   "title": "First Light (rehearsal track)",
   "credit": "ECHO demo track, synthesised in code (tools/make-demo-track.py)",
   "license": "CC0 — authored for ECHO",
-  "rightsDeclared": true
+  "rightsDeclared": true,
+  "verified": {
+   "sha256": "1cc8d7aa42f524ad66d6b44dc8210cb2ac11f1bf29a2bf7630cb96a6f6eea0d8",
+   "by": "ffprobe + full ffmpeg 8.1 decode, 2026-10-17",
+   "metadata": {
+    "durationSec": 60
+   }
+  }
  }
 }
