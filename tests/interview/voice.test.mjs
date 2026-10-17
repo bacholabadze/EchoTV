@@ -97,6 +97,7 @@ test('only the creator transcribes; agents and other people cannot; unsupported 
 test('spoken questions: rendered once and cached when a voice is configured; captions only otherwise', async () => {
   const t = await setup();
   try {
+    await t.x.req('POST', `/api/interviews/${t.iv.id}/consent`, t.x.T.B, {voice: true}); // spoken questions start with voice consent (H6)
     const q1 = (await t.x.req('GET', `/api/interviews/${t.iv.id}/question-audio`, t.x.T.B)).body;
     assert.equal(q1.text, 'ვინ ხარ და რა შექმენი?'); assert.match(q1.audio, /^\/voice\/[0-9a-f]{64}\.mp3$/); assert.equal(q1.provider, 'elevenlabs');
     assert.ok(q1.captions.length >= 1); assert.equal(t.mock.calls[0].body.language_code, 'ka'); assert.equal(t.mock.calls[0].path, '/v1/text-to-speech/voice-interviewer/with-timestamps');
@@ -106,6 +107,7 @@ test('spoken questions: rendered once and cached when a voice is configured; cap
   } finally { await t.stop(); }
   const n = await setup({voices: false});
   try {
+    await n.x.req('POST', `/api/interviews/${n.iv.id}/consent`, n.x.T.B, {voice: true});
     const q = (await n.x.req('GET', `/api/interviews/${n.iv.id}/question-audio`, n.x.T.B)).body;
     assert.equal(q.audio, null); assert.equal(q.provider, 'captions'); assert.match(q.reason, /no ElevenLabs API key/); assert.equal(q.text, 'ვინ ხარ და რა შექმენი?');
   } finally { await n.stop(); }

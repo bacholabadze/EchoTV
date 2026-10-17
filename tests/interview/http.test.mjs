@@ -97,7 +97,7 @@ test('deletion: the creator erases an interview (tombstone only) or an unused fi
   const x = await start();
   try {
     const keep = (await x.upload(x.T.B, MP3, 'used.mp3')).body, drop = (await x.upload(x.T.B, PNG, 'drop.png')).body;
-    await x.req('POST', `/api/library/media/${keep.id}/rights`, x.T.B, {publicBroadcast: true, confirm: true});
+    await x.req('POST', `/api/library/media/${keep.id}/rights`, x.T.B, {publicBroadcast: true, editing: true, confirm: true});
     const {id, act} = await completeInterview(x, x.T.B, keep.id);
     assert.equal((await x.req('POST', `/api/interviews/${id}/delete`, x.T.b)).status, 403, 'not by an agent');
     const b = x.echo.desk.state.interviews[id].brief; await act('approve', {version: b.version, hash: b.hash});

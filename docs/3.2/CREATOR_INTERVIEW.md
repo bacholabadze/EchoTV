@@ -40,7 +40,7 @@ Interview → Draft brief → **Creator approval** (exact version + hash) → Se
 
 **Retention and deletion:**
 - Answers and briefs are kept until the creator deletes the interview. Deletion leaves a dated tombstone only.
-- Withdrawing or deleting a brief makes any prepared segment unairable and withdraws a ready publication.
+- Withdrawing, correcting or deleting a brief, or changing the declared uses of one of its files, makes any prepared segment unairable and withdraws a ready or counting-down publication.
 - Library files can be deleted with their bytes unless they are part of a programme or publication, in which case they are kept for audit and withdrawn instead.
 - **Voice recordings are never stored by ECHO** (temporary file, deleted after transcription). ElevenLabs' own retention applies, since zero-retention is enterprise-only; the consent text says so.
 - Participation implies **no** consent to model training (stated on the page).
@@ -92,7 +92,7 @@ A new file, a changed brief, a withdrawn file, or loss of broadcast permission i
 
 ## 6. Tests
 
-`npm test` covers 54 broadcast, 14 voice, 3 episode, 26 interview tests and 5 studio suites. The interview tests:
+`npm test` covers 54 broadcast, 14 voice, 3 episode, 34 interview tests and 5 studio suites. The interview tests:
 
 | File | Covers |
 |---|---|
@@ -101,6 +101,7 @@ A new file, a changed brief, a withdrawn file, or loss of broadcast permission i
 | `mcp` (3) | real gateway processes, isolation, call log |
 | `production` (6) | preparation, guards, withdrawal/restore, re-preparation, the owner's agent preparing, dependent updates for other agents' proposals |
 | `voice` (5) | consent, transcript not stored, budgets, failures, spoken questions |
+| `hardening` (8) | independent-audit findings H1–H9: trimming needs `editing`, a corrected brief cancels a countdown, rights changes reopen the brief, explicit clear, budget reserved before sending, spoken questions only with consent, no transcripts in the retry cache, library files private until published, reset keeps creator data |
 
 Browser tests:
 - `npm run test:interview-flow` (Chrome, fake microphone).

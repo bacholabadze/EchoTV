@@ -81,7 +81,7 @@ function mediaPicker(selected) {
   const items = ui.lib.media.filter(m => m.status !== 'withdrawn');
   return `<label>${KA.fields.mediaIds} <small>(აირჩიე, რისი გამოყენების უფლებასაც გვაძლევ)</small></label>
     <ul class="media">${items.map(m => `<li><label style="display:flex;gap:8px;font-weight:600;margin:0"><input type="checkbox" name="media" value="${m.id}"${selected.includes(m.id) ? ' checked' : ''}> ${esc(m.title)} <span class="tag">${esc({audio: 'აუდიო', image: 'სურათი', video: 'ვიდეო', document: 'დოკუმენტი'}[m.kind] || m.kind)}</span></label>
-      <div class="meta">${m.technical?.decodable ? '<span class="ok">ტექნიკური შემოწმება გაიარა</span>' : `<span class="bad">ტექნიკური შემოწმება ვერ გაიარა</span> <small>${esc(m.technical?.reason || '')}</small>`}${m.kind === 'video' ? ' · ვიდეოს ეთერში ჩვენება ჯერ არ არის ხელმისაწვდომი' : m.kind === 'document' ? ' · დამხმარე დოკუმენტი, ეთერში არ გავა' : ''}</div>
+      <div class="meta">${m.kind === 'document' ? (m.technical?.decodable ? '<span class="ok">მიღებულია</span> <small>(შემოწმდა მხოლოდ PDF ფორმატის ნიშანი; შიგთავსი არ მოწმდება)</small>' : `<span class="bad">მიუღებელია</span> <small>${esc(m.technical?.reason || '')}</small>`) : m.technical?.decodable ? '<span class="ok">ტექნიკური შემოწმება გაიარა</span>' : `<span class="bad">ტექნიკური შემოწმება ვერ გაიარა</span> <small>${esc(m.technical?.reason || '')}</small>`}${m.kind === 'video' ? ' · ვიდეოს ეთერში ჩვენება ჯერ არ არის ხელმისაწვდომი' : m.kind === 'document' ? ' · დამხმარე დოკუმენტი, ეთერში არ გავა' : ''}</div>
       ${rightsEditor(m)}<div class="row"><button data-delete-media="${m.id}">ფაილის წაშლა</button></div></li>`).join('') || '<li class="meta">ბიბლიოთეკა ცარიელია.</li>'}</ul>
     <label for="upload">ახალი ფაილის ატვირთვა <small>(აუდიო, სურათი, ვიდეო ან PDF; არსებული ნამუშევარი — არაფერს ვაგენერირებთ)</small></label>
     <input id="upload" type="file" accept="audio/*,image/*,video/mp4,video/quicktime,video/webm,application/pdf">`;
@@ -108,7 +108,8 @@ function questionView(p) {
   $('#next').onclick = () => run(async () => {
     const fields = Object.fromEntries(p.fields.map(f => [f.key, f.kind === 'mediaIds' ? [...document.querySelectorAll('input[name=media]:checked')].map(x => x.value) : f.kind === 'seconds' ? ($(`#f-${f.key}`).value ? +$(`#f-${f.key}`).value : null) : $(`#f-${f.key}`).value || null]));
     const voice = ui.mode === 'voice' && ui.transcript;
-    ui.iv = await api('POST', `/api/interviews/${iv.id}/answer`, {stepId: p.stepId, text: voice ? $('#transcript').value : $('#answer')?.value || '', fields, source: voice ? 'voice' : 'typed', ...(voice ? {transcript: {provider: ui.transcript.provider, recognised: ui.transcript.recognised}} : {})});
+    const typed = voice ? $('#transcript').value : $('#answer')?.value || '';
+    ui.iv = await api('POST', `/api/interviews/${iv.id}/answer`, {stepId: p.stepId, text: typed, clear: !typed.trim() && !!p.current?.text, fields, source: voice ? 'voice' : 'typed', ...(voice ? {transcript: {provider: ui.transcript.provider, recognised: ui.transcript.recognised}} : {})});
     ui.transcript = null; ui.editing = null;
   }, 'პასუხი ვერ შეინახა.');
   if ($('#skip')) $('#skip').onclick = () => run(async () => { ui.iv = await api('POST', `/api/interviews/${iv.id}/skip`, {stepId: p.stepId}); ui.transcript = null; }, 'ვერ გამოვტოვე.');

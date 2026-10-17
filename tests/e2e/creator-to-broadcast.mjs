@@ -35,9 +35,9 @@ let browser;
 try {
   note(`ENTRY=${ENTRY}; server ${BASE}; evidence ${out}`);
   // 1. The creator uploads authorised music and declares its uses (human-only actions).
-  stand('Keti uploads her track and declares public broadcast + replays');
+  stand('Keti uploads her track and declares public broadcast, short edits and replays');
   const m = (await req('POST', '/api/library/media', T.B, readFileSync(join(ROOT, 'tests/fixtures/tone-62s.mp3')), {'x-filename': 'zghva.mp3', 'x-title': encodeURIComponent('ზღვის სიმღერა (სატესტო ჩანაწერი)')})).body;
-  await req('POST', `/api/library/media/${m.id}/rights`, T.B, {publicBroadcast: true, replays: true, confirm: true});
+  await req('POST', `/api/library/media/${m.id}/rights`, T.B, {publicBroadcast: true, editing: true, replays: true, confirm: true}); // 60 of 62 s airs: needs 'editing'
   check('upload passed the technical check; rights declared', m.technical.decodable === true);
   browser = await chromium.launch({channel: 'chrome', args: ['--autoplay-policy=no-user-gesture-required']});
   let interviewId;

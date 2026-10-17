@@ -12,7 +12,7 @@ const MP3 = readFileSync(join(ROOT, 'tests/fixtures/tone-62s.mp3')), PNG = readF
 
 async function prepared(x) {
   const m = (await x.upload(x.T.B, MP3, 'premiere.mp3', 'სატესტო ტრეკი')).body;
-  await x.req('POST', `/api/library/media/${m.id}/rights`, x.T.B, {publicBroadcast: true, replays: true, confirm: true});
+  await x.req('POST', `/api/library/media/${m.id}/rights`, x.T.B, {publicBroadcast: true, editing: true, replays: true, confirm: true}); // 60 of 62 s airs: editing needed
   const {id, act} = await completeInterview(x, x.T.B, m.id);
   const b = (await act('review')).body.brief;
   await act('approve', {version: b.version, hash: b.hash});
@@ -75,9 +75,13 @@ test('withdrawing broadcast permission or the brief withdraws a ready publicatio
     assert.equal(g.status, 409); assert.equal(g.body.error, 'withdrawn');
     const again = await x.req('POST', '/api/publish', x.T.P);
     assert.equal(again.status, 409); assert.match(again.body.message, /track has no public-broadcast permission/);
-    await x.req('POST', `/api/library/media/${m.id}/rights`, x.T.B, {publicBroadcast: true, replays: true, confirm: true});
+    // Restoring permission is a new declaration: the brief must be approved and the segment prepared again (H3).
+    await x.req('POST', `/api/library/media/${m.id}/rights`, x.T.B, {publicBroadcast: true, editing: true, replays: true, confirm: true});
+    assert.match((await x.req('POST', '/api/publish', x.T.P)).body.message, /brief changed since this segment was prepared/);
+    const b2 = x.echo.desk.state.interviews[id].brief; await act('approve', {version: b2.version, hash: b2.hash});
+    await x.req('POST', `/api/briefs/${id}/prepare`, x.T.B, {segmentId: 'premiere', assets: {track: m.id}}); await approveContent(x, 'premiere');
     const pub2 = await x.req('POST', '/api/publish', x.T.P);
-    assert.equal(pub2.status, 200); assert.equal(pub2.body.publicationId, pub.publicationId + 1, 'a new publication number');
+    assert.equal(pub2.status, 200, JSON.stringify(pub2.body)); assert.equal(pub2.body.publicationId, pub.publicationId + 1, 'a new publication number');
     // Withdrawing the brief during the countdown cancels the start (N04 path).
     await x.req('POST', '/api/golive', x.T.P, {delayMs: 5000, publicationId: pub2.body.publicationId, hash: pub2.body.hash});
     await act('withdraw', {reason: 'changed my mind'});
@@ -125,7 +129,7 @@ test("the creator's own agent may prepare from the approved brief; the result st
   const x = await start();
   try {
     const m = (await x.upload(x.T.B, MP3, 'a.mp3')).body;
-    await x.req('POST', `/api/library/media/${m.id}/rights`, x.T.B, {publicBroadcast: true, confirm: true});
+    await x.req('POST', `/api/library/media/${m.id}/rights`, x.T.B, {publicBroadcast: true, editing: true, confirm: true});
     const {id, act} = await completeInterview(x, x.T.B, m.id);
     assert.equal((await x.req('POST', `/api/briefs/${id}/prepare`, x.T.b, {segmentId: 'premiere', assets: {track: m.id}})).body.error, 'brief_not_approved', 'not before the creator approves');
     const b = x.echo.desk.state.interviews[id].brief; await act('approve', {version: b.version, hash: b.hash});

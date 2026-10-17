@@ -49,6 +49,9 @@ export function createLedger(path, limitChars, {what = 'Voice budget', unit = 'c
       if (!(limitChars > 0)) throw new BudgetError(unset, {limitChars});
       if (l.billedChars + chars > limitChars) throw new BudgetError(`${what}: ${chars} ${unit} requested, ${Math.round((limitChars - l.billedChars) * 10) / 10} of ${limitChars} left`, {chars, billedChars: l.billedChars, limitChars});
     },
-    record(call) { const l = read(); l.billedChars += call.chars; l.calls.push({...call, at: new Date().toISOString()}); writeAtomic(path, JSON.stringify(l, null, 1)); },
+    // Check and charge in one synchronous step before anything is sent, so concurrent calls cannot pass the limit.
+    // A failed paid call still counts (conservative: the provider may have billed it).
+    reserve(chars, call = {}) { this.check(chars); const l = read(); l.billedChars += chars; l.calls.push({...call, chars, at: new Date().toISOString()}); writeAtomic(path, JSON.stringify(l, null, 1)); },
+    record(call) { this.reserve(call.chars, call); },
   };
 }

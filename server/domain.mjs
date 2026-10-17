@@ -25,6 +25,8 @@ const OPEN_PROPOSAL = new Set(['negotiating', 'awaiting_proposer', 'awaiting_app
 // files without a decoder) the fingerprint recorded when they were verified. Bare flags from older checks count for nothing.
 export const MEDIA_CHECKS = ['ffmpeg-full-decode/2', 'recorded-fingerprint/1'];
 export const playable = a => a.decodable === true && !!a.verification && a.verification.sha256 === a.sha256 && MEDIA_CHECKS.includes(a.verification.method);
+// A file airs only in part when its segment starts inside it or ends before it does (needs the 'editing' use).
+const trims = (seg, durationSec) => durationSec > 0 && ((seg.content?.offset || 0) > 0 || durationSec - ((seg.content?.offset || 0) + seg.duration) > .5);
 const whyUnplayable = a => `${a.id} ${a.decodable === false ? `could not be decoded${a.unplayableReason ? ` (${a.unplayableReason})` : ''}` : 'has not been verified as playable'}`;
 
 export class BroadcastDesk {
@@ -152,11 +154,11 @@ export class BroadcastDesk {
     return {id: iv.id, status: iv.status, step: iv.step, prompt: Interview.nextPrompt(iv), questions: Interview.STEPS.map(st => Interview.promptFor(iv, st.id)), consent: iv.consent || {voice: false}, answers: iv.answers, brief: iv.brief, history: iv.history, briefRevisions: iv.briefRevisions, updatedAt: iv.updatedAt};
   }
   interviewAct(actor, id, action, body = {}) {
-    const iv = this.interviewFor(actor, id), by = actor.id, now = this.now(), ctx = this.ivCtx(iv.ownerId);
+    const iv = this.interviewFor(actor, id), by = actor.id, now = this.now(), ctx = this.ivCtx(iv.ownerId), wasApproved = iv.status === 'approved';
     const human = actor.type === 'person';
     if (['approve', 'withdraw', 'quotes'].includes(action) && !human) fail('forbidden', 'Only the creator can approve, choose quotes or withdraw; an agent can prepare answers');
     this.ivCall(() => {
-      if (action === 'answer') Interview.answer(iv, {stepId: body.stepId, text: body.text, fields: body.fields, source: human ? (body.source === 'voice' ? 'voice' : 'typed') : 'agent', by, now, transcript: human && body.source === 'voice' ? body.transcript : null}, ctx);
+      if (action === 'answer') Interview.answer(iv, {stepId: body.stepId, text: body.text, fields: body.fields, clear: body.clear === true, source: human ? (body.source === 'voice' ? 'voice' : 'typed') : 'agent', by, now, transcript: human && body.source === 'voice' ? body.transcript : null}, ctx);
       else if (action === 'skip') Interview.skip(iv, {stepId: body.stepId, by, now}, ctx);
       else if (action === 'goto') Interview.goTo(iv, {stepId: body.stepId, by, now});
       else if (action === 'review') Interview.review(iv, ctx, {now});
@@ -171,6 +173,7 @@ export class BroadcastDesk {
     if (action === 'review') this.log(actor, 'brief_drafted', `${this.state.people[iv.ownerId].name}: creator brief ${id} draft v${iv.brief?.version}`, {interviewId: id, private: true});
     if (action === 'approve' || action === 'withdraw') this.log(actor, `brief_${action === 'approve' ? 'approved' : 'withdrawn'}`, `${this.state.people[iv.ownerId].name}: creator brief ${id} ${action === 'approve' ? `v${iv.brief.version} approved by the creator` : 'withdrawn by the creator'}`, {interviewId: id});
     if (action === 'withdraw') this.briefWithdrawn(actor, iv);
+    else if (wasApproved && iv.status !== 'approved') this.briefWithdrawn(actor, iv, 'the creator changed the approved brief');
     return this.interviewView(actor, id);
   }
   // Spoken answers need the creator's explicit consent, per interview, revocable. The text shown is versioned.
@@ -198,9 +201,16 @@ export class BroadcastDesk {
     if (confirm !== true) fail('rights_required', 'Confirm that you own this work or are licensed to grant these uses');
     const rights = {publicBroadcast: publicBroadcast === true, editing: editing === true, replays: replays === true, promoExcerpts: promoExcerpts === true, statement: Interview.cleanText(statement, 500), declaredBy: actor.id, at: this.now(), verified: false};
     const lostBroadcast = m.rights?.publicBroadcast && !rights.publicBroadcast;
+    const changed = ['publicBroadcast', 'editing', 'replays', 'promoExcerpts'].some(k => !!m.rights?.[k] !== rights[k]);
     m.rights = rights; m.history.push({at: this.now(), by: actor.id, action: 'rights_declared', rights: {...rights, statement: undefined}});
     this.log(actor, 'rights_declared', `${this.state.people[m.ownerId].name} declared uses for a library file: ${['publicBroadcast', 'editing', 'replays', 'promoExcerpts'].filter(k => rights[k]).join(', ') || 'none'}`, {private: true});
     if (lostBroadcast) this.mediaPermissionLost(actor, m, 'broadcast permission withdrawn by the creator');
+    // A brief records the uses of its files: a changed declaration reopens it (its approval no longer counts).
+    if (changed) for (const iv of Object.values(this.state.interviews || {}).filter(i => i.ownerId === m.ownerId && ['approved', 'review'].includes(i.status) && i.brief?.media.some(x => x.id === m.id))) {
+      const was = iv.status;
+      Interview.refresh(iv, {by: actor.id, now: this.now(), reason: 'declared uses of a file changed'}, this.ivCtx(iv.ownerId));
+      if (was === 'approved' && iv.status !== 'approved') this.briefWithdrawn(actor, iv, 'the declared uses of a file in the brief changed');
+    }
     return clone(m);
   }
   withdrawLibraryMedia(actor, id) {
@@ -235,6 +245,7 @@ export class BroadcastDesk {
       if (!m.technical?.decodable) fail('undecodable_media', `${m.title} did not pass the technical check: ${m.technical?.reason}`);
       if (!m.rights?.publicBroadcast) fail('rights_required', `${m.title}: public broadcast is not among the uses you declared`);
       if (m.kind !== slot.kind) fail('bad_request', `${assetId} needs ${slot.kind === 'audio' ? 'an audio file' : 'an image'}`);
+      if (trims(seg, m.technical?.durationSec) && !m.rights.editing) fail('rights_required', `${m.title}: only part of it would air (${seg.duration} s of ${Math.round(m.technical.durationSec)} s); that needs your "editing" permission`);
       replaced.push([assetId, m]);
     }
     for (const [assetId, m] of replaced) {
@@ -242,7 +253,7 @@ export class BroadcastDesk {
         license: `Creator-declared uses: ${['publicBroadcast', 'editing', 'replays', 'promoExcerpts'].filter(k => m.rights[k]).join(', ')}`, rightsDeclared: true,
         decodable: true, verification: {method: m.technical.method, sha256: m.sha256}, ...(m.technical.durationSec ? {durationSec: m.technical.durationSec} : {}), ...(m.technical.width ? {width: m.technical.width, height: m.technical.height} : {})};
       seg.assets = [...seg.assets.filter(a => a.id !== assetId), asset];
-      this.indexMedia(m.sha256, asset); // from now on servable by hash: it is going to the programme
+      this.indexMedia(m.sha256, {...asset, ownerId: person.id}); // private (owner, producer) until it is published
     }
     const b = iv.brief;
     seg.content = {...seg.content, brief: {interviewId: iv.id, version: b.version, hash: b.hash, displayName: b.creator.displayName, title: b.work.title, category: b.work.category, aiInvolvement: b.process.aiInvolvement, quotes: b.story.quotes}};
@@ -264,13 +275,14 @@ export class BroadcastDesk {
       const m = this.state.library?.[seg.ownerId]?.media[a.libraryMediaId];
       if (!m || m.status === 'withdrawn') out.push(`${seg.title}: ${a.id} was withdrawn by its creator`);
       else if (!m.rights?.publicBroadcast) out.push(`${seg.title}: ${a.id} has no public-broadcast permission`);
+      else if (a.kind === 'audio' && a.id === seg.content?.assetId && trims(seg, a.durationSec) && !m.rights.editing) out.push(`${seg.title}: only part of ${a.id} would air and its creator did not allow editing`);
     }
     return out;
   }
-  briefWithdrawn(actor, iv) {
+  briefWithdrawn(actor, iv, why = 'the creator withdrew the brief') {
     for (const seg of Object.values(this.state.segments)) if (seg.content?.brief?.interviewId === iv.id) {
-      this.log(actor, 'segment_unauthorised', `${seg.title}: the creator withdrew its brief; it cannot be published or aired`, {segmentId: seg.id});
-      this.withdrawIfPublished(actor, seg, 'rejected', 'creator withdrew the brief');
+      this.log(actor, 'segment_unauthorised', `${seg.title}: ${why}; it cannot be published or aired until it is approved and prepared again`, {segmentId: seg.id});
+      this.withdrawIfPublished(actor, seg, 'rejected', why);
     }
   }
   // Deletion (the creator only). Interview: answers, transcripts, history and the private brief are erased; a dated
@@ -342,9 +354,10 @@ export class BroadcastDesk {
     }
   }
   indexMedia(hash, meta = {}) {
-    // Append-only: a published manifest can always fetch the exact bytes it was approved with.
+    // Append-only: a published manifest can always fetch the exact bytes it was approved with. A creator's library
+    // file stays private (owner and producer only) until it is part of a publication.
     this.state.media ??= {};
-    this.state.media[hash] ??= {file: meta.file, upload: !!meta.upload, kind: meta.kind, at: this.now()};
+    this.state.media[hash] ??= {file: meta.file, upload: !!meta.upload, kind: meta.kind, at: this.now(), ...(meta.libraryMediaId ? {private: true, ownerId: meta.ownerId} : {})};
   }
   segmentRevisions(proposal) {
     const ids = new Set([...proposal.changes, ...proposal.concessions, ...proposal.houseChanges].map(c => c.segmentId));
@@ -699,6 +712,7 @@ export class BroadcastDesk {
     this.state.counters.publication = (this.state.counters.publication || 0) + 1;
     const body = {episodeId: this.episode.id, title: this.episode.title, durationSec: this.episode.durationSec, publicationId: this.state.counters.publication, publishRevision: this.state.showRevision, segments};
     const manifest = {...body, hash: sha256(canonical(body)), publishedAt: this.now(), publishedBy: actor.id};
+    for (const seg of segments) for (const a of seg.assets) if (this.state.media?.[a.sha256]?.private) this.state.media[a.sha256].private = false; // published: public by hash
     this.state.broadcast = {state: 'ready', publicationId: manifest.publicationId, publishRevision: this.state.showRevision, manifest, onAirAt: null};
     this.log(actor, 'published', `Publication #${manifest.publicationId} of revision ${this.state.showRevision} published (${manifest.hash.slice(0, 12)})`, {revision: this.state.showRevision});
     return clone(manifest);

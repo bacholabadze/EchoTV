@@ -204,6 +204,10 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
   // Media is served from an append-only index, so a published manifest keeps working after newer drafts arrive.
   function serveMedia(req, res, hash) {
     const entry = /^[0-9a-f]{64}$/.test(hash) && desk.state.media?.[hash];
+    if (entry?.private) {
+      const who = actorFor((req.headers.authorization || '').replace(/^Bearer\s+/i, '')), person = who?.type === 'person' && desk.state.people[who.id];
+      if (!person || (person.id !== entry.ownerId && person.role !== 'producer')) return send(res, 404, {error: 'not_found'});
+    }
     const file = entry?.file && (entry.upload ? join(dataDir, 'uploads', entry.file) : join(mediaDir, entry.file));
     if (file && existsSync(file)) return serveFile(req, res, file);
     send(res, 404, {error: 'not_found'});
@@ -338,18 +342,19 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
         if (seconds > 60) throw new DomainError('bad_request', `Answers can be up to 60 seconds (this one is ${Math.round(seconds)} s)`);
         const ok = speech.provider.available();
         if (ok !== true) throw new DomainError('voice_unavailable', `Spoken answers are not available: ${ok}. Type your answer instead.`);
-        try { speech.ledger.check(Math.ceil(seconds)); } catch (e) { if (e instanceof BudgetError) throw new DomainError('voice_unavailable', `${e.message}. Type your answer instead.`); throw e; }
+        try { speech.ledger.reserve(Math.ceil(seconds), {provider: speech.provider.name, model: speech.provider.model}); } catch (e) { if (e instanceof BudgetError) throw new DomainError('voice_unavailable', `${e.message}. Type your answer instead.`); throw e; }
         let r;
         try { r = await speech.provider.transcribe({bytes: raw, filename: `answer${ext}`, mime, lang: 'ka'}); }
         catch (e) { if (e instanceof ProviderError) throw new DomainError('transcription_failed', `Speech recognition failed (${e.message.replace(/^[\w-]+: /, '')}). Try again or type your answer.`); throw e; }
-        speech.ledger.record({provider: speech.provider.name, model: speech.provider.model, chars: Math.ceil(seconds), requestIds: [r.requestId].filter(Boolean)});
         return {recognised: r.text, provider: speech.provider.name, model: speech.provider.model, languageCode: r.languageCode, confidence: r.languageProbability, durationSec: Math.round(seconds * 10) / 10, stored: false};
       } finally { rmSync(dir, {recursive: true, force: true}); }
     }],
     ['GET', /^\/api\/interviews\/(\w+)\/question-audio$/, async ({actor, m}) => {
       if (!actor) throw new DomainError('unauthorized', 'Sign in');
-      const prompt = desk.interviewView(actor, m[1]).prompt;
+      const view = desk.interviewView(actor, m[1]), prompt = view.prompt;
       if (!prompt) throw new DomainError('not_found', 'No open question');
+      // Spoken questions are part of the voice interview: only for the creator, after their voice consent.
+      if (actor.type !== 'person' || !view.consent?.voice) return {stepId: prompt.stepId, text: prompt.question.ka, audio: null, captions: [{start: 0, end: 4, text: prompt.question.ka}], cues: [], provider: 'captions', reason: 'spoken questions start after the creator allows voice answers'};
       const r = await voices.synthesize({lines: [{presenter: 'interviewer', text: prompt.question.ka}], lang: 'ka', order: ['elevenlabs', 'captions']});
       return {stepId: prompt.stepId, text: prompt.question.ka, audio: r.audioFile ? `/voice/${r.key}.mp3` : null, duration: r.duration, captions: r.captions, cues: r.cues, provider: r.provider,
         ...(r.audioFile ? {} : {reason: r.attempts.map(a => a.skipped || a.error).join('; ') || 'captions only'})};
@@ -389,10 +394,12 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     // Rehearsal reset keeps identities and tokens so connected agents stay valid.
     ['POST', /^\/api\/reset$/, ({actor}) => {
       desk.requireProducer(actor);
-      const keep = {people: desk.state.people, agents: desk.state.agents};
+      const keep = {people: desk.state.people, agents: desk.state.agents, interviews: desk.state.interviews, library: desk.state.library};
       const next = fresh(); next.people = keep.people; next.agents = keep.agents;
       // Publication numbers are never reused and old media stays reachable across rehearsals.
       next.counters.publication = desk.state.counters.publication || 0; next.media = {...desk.state.media, ...next.media}; next.idempotency = {};
+      // Creators' private interviews and libraries are not rehearsal data: they survive a reset (ids keep counting).
+      next.interviews = keep.interviews; next.library = keep.library; next.counters.interview = desk.state.counters.interview || 0; next.counters.media = desk.state.counters.media || 0;
       desk = new BroadcastDesk(next, {now});
       desk.log(actor, 'reset', 'Rehearsal reset to the seeded programme');
       persist(); broadcast(true); return {ok: true};
@@ -451,7 +458,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       }
       const result = await route[2]({actor, req, res, url, raw, json: () => parseJson(raw), m: url.pathname.match(route[1])});
       if (result === SENT) return; // the route streamed its own response (owner-only file)
-      if (replayKey) remember(replayKey, 200, result);
+      if (replayKey && !url.pathname.endsWith('/transcribe')) remember(replayKey, 200, result); // transcripts are never kept for retries
       send(res, 200, result);
     } catch (error) {
       if (error instanceof DomainError) {

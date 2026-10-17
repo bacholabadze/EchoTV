@@ -15,7 +15,7 @@ export const DEFAULT_ORDER = {en: ['piper', 'captions'], ka: ['elevenlabs', 'pip
 const MAX_CHARS = 2000; // ElevenLabs recommends ≤ 2,000 characters per dialogue request
 
 export function createVoiceService({providers, cacheDir, ledger, probe, log = () => {}}) {
-  const cache = createCache(cacheDir);
+  const cache = createCache(cacheDir), inflight = new Map();
   const prepare = lines => {
     const out = (lines || []).map(l => ({presenter: String(l.presenter || 'echo'), text: normalizeText(l.text)})).filter(l => l.text);
     if (!out.length) throw new ProviderError('voice', 'nothing to say');
@@ -37,18 +37,23 @@ export function createVoiceService({providers, cacheDir, ledger, probe, log = ()
       return order.map(name => { const x = plan(name, clean, lang); return {provider: name, usable: x.usable, reason: x.reason, cached: !!(x.key && cache.get(x.key)), billedChars: x.paid && x.usable && !(x.key && cache.get(x.key)) ? x.chars : 0}; });
     },
     budget: () => ledger.status(),
-    async synthesize({lines, lang = 'en', order = DEFAULT_ORDER[lang] || ['captions']}) {
+    // Identical concurrent requests share one render (and one charge).
+    synthesize(request) {
+      const key = JSON.stringify([request.lines, request.lang, request.order]);
+      if (!inflight.has(key)) inflight.set(key, this.render(request).finally(() => inflight.delete(key)));
+      return inflight.get(key);
+    },
+    async render({lines, lang = 'en', order = DEFAULT_ORDER[lang] || ['captions']}) {
       const clean = prepare(lines), attempts = [];
       for (const name of order) {
         const x = plan(name, clean, lang);
         if (!x.usable) { attempts.push({provider: name, skipped: x.reason}); continue; }
         const hit = cache.get(x.key);
         if (hit) return {...hit, key: x.key, cacheHit: true, attempts};
-        if (x.paid) { try { ledger.check(x.chars); } catch (e) { if (!(e instanceof BudgetError)) throw e; attempts.push({provider: name, skipped: e.message}); continue; } }
+        if (x.paid) { try { ledger.reserve(x.chars, {provider: name, model: x.p.model, lang, lines: clean.length}); } catch (e) { if (!(e instanceof BudgetError)) throw e; attempts.push({provider: name, skipped: e.message}); continue; } }
         const tmp = join(cache.dir, `${x.key}.render.mp3`);
         try {
           const r = await x.p.render({lines: clean, lang, outPath: tmp});
-          if (x.paid) ledger.record({provider: name, model: x.p.model, chars: x.chars, lang, lines: clean.length, requestIds: r.requestIds});
           let audio = null, duration = r.duration, timing = r;
           if (existsSync(tmp)) {
             const check = probe(tmp);

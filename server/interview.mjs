@@ -100,14 +100,15 @@ function advance(iv, ctx) {
 
 // Answer (or correct) one question. source: 'typed' | 'voice' | 'agent'. Rights are never taken from an answer:
 // they are declared per file in the creator's library, by the creator.
-export function answer(iv, {stepId, text, fields, source, by, now, transcript}, ctx = {}) {
+export function answer(iv, {stepId, text, fields, source, by, now, transcript, clear = false}, ctx = {}) {
   if (iv.status === 'withdrawn') fail('closed', 'This interview was withdrawn');
   const step = STEP[stepId] || fail('bad_request', `Unknown question ${stepId}`);
   if (!['typed', 'voice', 'agent'].includes(source)) fail('bad_request', 'source must be typed, voice or agent');
   const parsed = parseFields(step, fields, {source, mediaOwned: ctx.mediaOwned || (() => false)});
   const prev = iv.answers[step.id], clean = cleanText(text);
   const merged = {...(prev && !prev.skipped ? prev.fields : {}), ...parsed};
-  iv.answers[step.id] = {text: clean || (prev && !prev.skipped ? prev.text : ''), fields: merged, source, by, at: now, revision: (prev?.revision || 0) + 1,
+  // Empty text keeps the earlier words (e.g. a follow-up that only fills a field); clear: true removes them.
+  iv.answers[step.id] = {text: clear ? '' : clean || (prev && !prev.skipped ? prev.text : ''), fields: merged, source, by, at: now, revision: (prev?.revision || 0) + 1,
     ...(transcript ? {transcript: {provider: transcript.provider, recognised: cleanText(transcript.recognised), corrected: clean !== cleanText(transcript.recognised)}} : {})};
   iv.history.push({at: now, by, action: prev ? 'corrected' : 'answered', step: step.id, source});
   iv.updatedAt = now;
@@ -133,6 +134,7 @@ export function goTo(iv, {stepId, by, now}) {
   return iv;
 }
 // After review or approval, any change rebuilds the brief. If its content changed, an approval no longer counts.
+export function refresh(iv, {by, now, reason}, ctx) { reopen(iv, {by, now, reason}, ctx); return iv; }
 function reopen(iv, {by, now, reason}, ctx) {
   if (iv.status !== 'approved' && iv.status !== 'review') return;
   const brief = buildBrief(iv, ctx, {now});

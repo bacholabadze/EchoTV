@@ -77,9 +77,9 @@ try {
   const mid = await page.getAttribute('input[name=media]', 'value');
   await page.check(`[data-use="publicBroadcast"][data-media="${mid}"]`); await page.check(`[data-use="replays"][data-media="${mid}"]`);
   await page.click(`[data-save-rights="${mid}"]`); await page.waitForSelector('#error:not([hidden])'); // not confirmed: refused
-  await page.check(`[data-use="publicBroadcast"][data-media="${mid}"]`); await page.check(`[data-use="replays"][data-media="${mid}"]`); await page.check(`[data-confirm="${mid}"]`);
+  await page.check(`[data-use="publicBroadcast"][data-media="${mid}"]`); await page.check(`[data-use="editing"][data-media="${mid}"]`); await page.check(`[data-use="replays"][data-media="${mid}"]`); await page.check(`[data-confirm="${mid}"]`);
   await page.click(`[data-save-rights="${mid}"]`);
-  await page.waitForFunction(() => /დაშვებული: საჯარო ეთერი, განმეორებითი ჩვენება და არქივი/.test(document.querySelector('.media').textContent));
+  await page.waitForFunction(() => /დაშვებული: საჯარო ეთერი, მოკლე მონტაჟი, განმეორებითი ჩვენება და არქივი/.test(document.querySelector('.media').textContent));
   await page.check('input[name=media]'); await page.fill('#answer', 'მხოლოდ ეს ტრეკი.');
   await page.screenshot({path: join(out, 'interview-2-media-rights.png')});
   await page.click('#next');
