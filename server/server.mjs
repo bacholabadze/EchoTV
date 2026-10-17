@@ -98,7 +98,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
   for (const a of [...Object.values(desk.state.segments).flatMap(seg => seg.assets), ...(desk.state.broadcast.manifest?.segments || []).flatMap(seg => seg.assets)])
     if (a.file) desk.indexMedia(a.sha256, a);
   desk.state.idempotency ??= {};
-  const clients = new Set();
+  const clients = new Set(), agentCalls = []; // agentCalls: in memory only, newest last
   const persist = () => { const tmp = statePath + '.tmp'; writeFileSync(tmp, JSON.stringify(desk.state)); renameSync(tmp, statePath); };
   // Stored verification results are never trusted on their own (state from earlier versions carries flags from a
   // weaker check): the actual bytes of every asset are checked again at startup and before every approval,
@@ -133,6 +133,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     delete s.idempotency; delete s.media; // internal: retry records and the storage index
     delete s.interviews; delete s.library;   // private, owner-scoped (served only by /api/interviews and /api/library)
     s.audit = s.audit.filter(e => !e.private);
+    s.agentCalls = agentCalls.slice(-120);
     s.serverTime = now();
     s.layout = desk.layout();
     s.segmentsValid = Object.fromEntries(Object.keys(s.segments).map(id => [id, desk.approvalValid(desk.state.segments[id])]));
@@ -377,6 +378,10 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     if (actor?.type === 'agent') {
       const agent = desk.state.agents[actor.id];
       agent.lastSeenAt = now(); if (req.headers['x-echo-client']) agent.client = String(req.headers['x-echo-client']).slice(0, 60);
+      // Technical view: which tool each agent called and what the server answered. Ids of private items are generalised.
+      const call = {at: now(), agentId: actor.id, client: agent.client || null, tool: String(req.headers['x-echo-tool'] || '').replace(/[^\w-]/g, '').slice(0, 60) || null, method: req.method,
+        path: url.pathname.replace(/^\/api\/(interviews|library\/media)\/\w+/, '/api/$1/…')};
+      res.on('finish', () => { call.status = res.statusCode; agentCalls.push(call); if (agentCalls.length > 300) agentCalls.shift(); });
     }
     let replayKey = null;
     try {
