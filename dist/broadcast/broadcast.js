@@ -114,14 +114,17 @@ function drawViz(local) {
   c.clearRect(0, 0, w, h);
   const bars = 64, gap = w * .002, bw = (w * .88) / bars - gap;
   if (analyser && soundOn) analyser.getByteFrequencyData(levels);
+  let active = 0, peak = 0;
   for (let i = 0; i < bars; i++) {
     // Bars span ~0–3.5 kHz on a curved scale with a gentle high-frequency tilt, so the whole spectrum moves.
     const bin = levels ? 1 + Math.floor(Math.pow(i / (bars - 1), 1.7) * (levels.length * .16)) : 0;
     const level = analyser && soundOn ? Math.min(1, levels[bin] / 255 * (.8 + i / bars * .9)) : (.25 + .2 * Math.sin(local * 2 + i * .35)) * (reduced ? .5 : 1);
+    if (level > .08) active++; peak = Math.max(peak, level);
     const bh = Math.max(2, level * h * .42);
     c.fillStyle = `rgba(143,195,216,${.35 + level * .6})`;
     c.fillRect(w * .06 + i * (bw + gap), h * .9 - bh, bw, bh);
   }
+  view.viz = {active, peak: +peak.toFixed(3), live: !!(analyser && soundOn)};
 }
 
 // ---------- programme clock ----------
@@ -166,6 +169,7 @@ const preloaded = new Set();
 function preload(m) { for (const seg of m?.segments || []) for (const a of seg.assets) if (a.kind === 'image' && !preloaded.has(a.url)) { preloaded.add(a.url); new Image().src = a.url; } }
 events.addEventListener('state', e => { state = JSON.parse(e.data); offset = state.serverTime - Date.now(); preload(state.broadcast?.manifest); });
 events.addEventListener('clock', e => { offset = +e.data - Date.now(); });
-window.EchoBroadcast = {getState: () => ({module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
+const audioLevel = () => { if (!analyser) return null; const d = new Uint8Array(analyser.fftSize); analyser.getByteTimeDomainData(d); let m = 0; for (const v of d) m = Math.max(m, Math.abs(v - 128)); return m / 128; };
+window.EchoBroadcast = {getState: () => ({viz: view.viz, audioLevel: audioLevel(), module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
 loadStudio();
 requestAnimationFrame(tick);

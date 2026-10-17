@@ -41,7 +41,8 @@ try {
   await post('/api/golive', s.people.producer.token, {delayMs: 2000});
   const onAir = echo.desk.state.broadcast.onAirAt;
   const at = async seconds => { const wait = onAir + seconds * 1000 - Date.now(); if (wait > 0) await new Promise(r => setTimeout(r, wait)); };
-  const checks = [[3, 'intro', 'music'], [24, 'gallery', 'art'], [70, 'premiere', 'music'], [113, 'outro', 'host']];
+  const checks = [[3, 'intro', 'music'], [12, 'gallery', 'art'], [24, 'gallery', 'art'], [40, 'gallery', 'art'], [70, 'premiere', 'music'], [113, 'outro', 'host']];
+  const slideAt = {12: 'art-1', 24: 'art-2', 40: 'art-3'};
   for (const [t, segment, module] of checks) {
     await at(t);
     const [a, b] = await Promise.all([state(one), state(two)]);
@@ -50,16 +51,23 @@ try {
     if (module === 'music') {
       const seg = manifest.segments.find(x => x.id === segment), expected = seg.content.offset + a.programmeTime - seg.start;
       assert.ok(Math.abs(a.audioTime - expected) < .6, `audio in sync at t=${t}: ${a.audioTime} vs ${expected}`);
+      assert.ok(a.viz.live && a.viz.peak > .2, `visualiser driven by decoded audio at t=${t}: ${JSON.stringify(a.viz)}`);
+      assert.ok(a.viz.active >= 16, `visualiser spreads across bars at t=${t}: ${a.viz.active}/64 active`);
+      console.log(`t=${t} ${segment}: audio ${a.audioTime.toFixed(2)}s (expected ${expected.toFixed(2)}s), visualiser ${a.viz.active}/64 bars active, peak ${a.viz.peak}`);
     }
     if (module === 'art') {
       const img = await one.evaluate(() => { const i = document.querySelector('#art img.on'); return {src: new URL(i.src).pathname, loaded: i.complete && i.naturalWidth > 0, opacity: +getComputedStyle(i).opacity}; });
-      assert.equal(img.src, manifest.segments.find(x => x.id === 'gallery').assets.find(a => a.id === 'art-2').url, 'second slide shown at 0:24 (5s + 15s + 4s)');
+      assert.equal(img.src, manifest.segments.find(x => x.id === 'gallery').assets.find(a => a.id === slideAt[t]).url, `${slideAt[t]} shown at ${t}s`);
       assert.ok(img.loaded && img.opacity === 1, 'slide image loaded and fully visible');
     }
     await one.screenshot({path: join(out, `broadcast-t${t}-${segment}.png`)});
     if (t === 24) { await two.reload(); await two.waitForFunction(() => window.EchoBroadcast.getState().segment === 'gallery'); }
   }
-  assert.ok((await state(one)).audioSrc.startsWith('/host/'), 'host voice playing in the outro');
+  const outroState = await state(one);
+  assert.ok(outroState.audioSrc.startsWith('/host/'), 'host voice playing in the outro');
+  let speech = 0; for (let i = 0; i < 10; i++) { speech = Math.max(speech, (await state(one)).audioLevel); await new Promise(r => setTimeout(r, 100)); }
+  assert.ok(speech > .02, `outro speech signal present: peak ${speech}`);
+  console.log(`outro: ${outroState.audioSrc}, speech signal peak ${speech.toFixed(3)}`);
   await at(121.5);
   const end = await state(one);
   assert.equal(end.module, 'slate'); assert.equal(end.live, false);
