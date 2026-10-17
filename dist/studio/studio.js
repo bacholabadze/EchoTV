@@ -76,7 +76,7 @@ async function init(){
       legacy?Promise.resolve(null):new GLTFLoader().loadAsync('lookdev/assets/hair-clean-v6.glb')
     ]);
     const room=createRoom(gltf.scene,legacy?{}:{cast:conversationSeats,practicalPositions:conversationPracticals,actorFactory:(base,index)=>makeEditorialCharacter(base,index,{hairLibrary:hair.scene})});scene=room.scene;actors=room.actors;
-    if(!legacy)lightEditorialRoom(scene);
+    if(!legacy){scene.addEventListener('visualchange',requestFrame);lightEditorialRoom(scene);}
     $('#loading').hidden=true;resize();resizeObserver=new ResizeObserver(resize);resizeObserver.observe(stage);
     canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();adapter.pause();fallback('The 3D connection was lost. Audio and transcript remain available. Reload to restore the room.');});
   }catch(error){fallback('The 3D room could not load. You can still play the recorded conversation and read its transcript.');console.warn('Studio renderer unavailable:',error.message);}

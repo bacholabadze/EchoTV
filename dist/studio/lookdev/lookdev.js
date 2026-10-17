@@ -30,7 +30,7 @@ async function init(){
   camera=new THREE.PerspectiveCamera(32,1,.05,25);
   const [gltf,hair]=await Promise.all([new GLTFLoader().loadAsync('assets/cast-clean-v6.glb',e=>{if(e.total)text('#load-detail','Character · '+Math.round(e.loaded/e.total*100)+'%');}),new GLTFLoader().loadAsync('assets/hair-clean-v6.glb')]);
   const room=createRoom(gltf.scene,{actorFactory:(base,index)=>makeEditorialCharacter(base,index,{hairLibrary:hair.scene}),cast:[{id:'nova',variant:0,x:0,z:-.20,yaw:.12}]});scene=room.scene;actor=room.actors[0];
-  lightEditorialRoom(scene);
+  {scene.addEventListener('visualchange',requestFrame);lightEditorialRoom(scene);}
   $('#loading').hidden=true;resize();observer=new ResizeObserver(resize);observer.observe(stage);
   canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();adapter.pause();fallback('3D was interrupted. The recorded clip is still available; reload to restore the scene.');});
  }catch(error){console.warn('Nova study:',error.message);fallback('3D is unavailable. You can still play the recorded clip and read the captions.');}

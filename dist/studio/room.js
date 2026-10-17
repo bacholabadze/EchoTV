@@ -54,15 +54,17 @@ export function createRoom(base,{actorFactory=makeCharacter,cast=seats,practical
   // Soft authored grounding, without shadow-map passes or screen-space effects.
   const contactMaterial=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{opacity:{value:.26}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'varying vec2 vUv;uniform float opacity;void main(){float d=length((vUv-.5)*2.0);gl_FragColor=vec4(.035,.052,.035,(1.0-smoothstep(.08,1.0,d))*opacity);}'});
   function contact(x,y,z,w,d){const m=mesh(new THREE.PlaneGeometry(w,d),contactMaterial,x,y,z);m.rotation.x=-Math.PI/2;return m;}
-  box(14,.1,12,mats.forest,0,-.065,0);box(12,5,.15,mats.forest,0,2.1,-2.1);
+  box(14,.1,12,mats.forest,0,-.065,0);
+  const backdrop=new THREE.Group();backdrop.name='ECHO original backdrop';scene.add(backdrop);
+  box(12,5,.15,mats.forest,0,2.1,-2.1,backdrop);
   const slats=new THREE.InstancedMesh(new THREE.BoxGeometry(.038,3.6,.055),mats.wood,49),transform=new THREE.Matrix4();
-  for(let i=0;i<49;i++){transform.makeTranslation((i-24)*.15,1.75,-2);slats.setMatrixAt(i,transform);}scene.add(slats);
+  for(let i=0;i<49;i++){transform.makeTranslation((i-24)*.15,1.75,-2);slats.setMatrixAt(i,transform);}slats.name='ECHO original slats';scene.add(slats);
   // Deep architectural arch replaces the flat panel and luminous ring.
   const arch=new THREE.Shape();arch.moveTo(-1.48,.1);arch.lineTo(-1.48,1.7);arch.absarc(0,1.7,1.48,Math.PI,0,true);arch.lineTo(1.48,.1);arch.closePath();
-  mesh(new THREE.ExtrudeGeometry(arch,{depth:.14,bevelEnabled:true,bevelSize:.035,bevelThickness:.025,bevelSegments:3,steps:1,curveSegments:32}),mats.forest,0,0,-1.94);
-  for(const x of [-1.62,1.62]){box(.012,2.7,.025,mats.brass,x,1.35,-1.86);box(.05,2.7,.06,mats.dark,x+.035,1.35,-1.92);}
+  mesh(new THREE.ExtrudeGeometry(arch,{depth:.14,bevelEnabled:true,bevelSize:.035,bevelThickness:.025,bevelSegments:3,steps:1,curveSegments:32}),mats.forest,0,0,-1.94,backdrop);
+  for(const x of [-1.62,1.62]){box(.012,2.7,.025,mats.brass,x,1.35,-1.86,backdrop);box(.05,2.7,.06,mats.dark,x+.035,1.35,-1.92,backdrop);}
   const canvas=typeof document!=='undefined'?document.createElement('canvas'):null;
-  if(canvas){canvas.width=1024;canvas.height=256;const c=canvas.getContext('2d');c.clearRect(0,0,1024,256);c.fillStyle='#d3dbc5';c.font='500 120px Arial';c.textAlign='center';c.fillText('E C H O',512,145);c.font='22px Arial';c.fillText('T H E   T A B L E',512,205);const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;mesh(new THREE.PlaneGeometry(1.6,.4),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}),0,1.78,-1.77);}
+  if(canvas){canvas.width=1024;canvas.height=256;const c=canvas.getContext('2d');c.clearRect(0,0,1024,256);c.fillStyle='#d3dbc5';c.font='500 120px Arial';c.textAlign='center';c.fillText('E C H O',512,145);c.font='22px Arial';c.fillText('T H E   T A B L E',512,205);const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;mesh(new THREE.PlaneGeometry(1.6,.4),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}),0,1.78,-1.77,backdrop);}
   const rug=cyl(2.35,.012,mats.sage,0,.001,.3);rug.scale.z=.68;
   const rugBorder=cyl(2.39,.006,mats.dark,0,-.002,.3);rugBorder.scale.z=.68;
   contact(0,.012,.57,3.6,2.2);

@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import * as THREE from '../../dist/lab/vendor/three.module.js';
+import {GLTFLoader} from '../../dist/lab/vendor/GLTFLoader.js';
+import {attachFestivalSet,loadFestivalSet} from '../../dist/studio/visual-upgrade/festival-set.js';
+globalThis.self=globalThis;
+const bytes=fs.readFileSync(new URL('../../dist/studio/visual-upgrade/festival-set.glb',import.meta.url));
+assert(bytes.length<1100000,'Asset stays within its 1.1 MB budget');
+const json=JSON.parse(bytes.subarray(20,20+bytes.readUInt32LE(12)));
+assert(!json.images?.length&&!json.textures?.length,'No textures or remote image dependencies');
+assert(!json.animations?.length&&!json.cameras?.length&&!json.extensions?.KHR_lights_punctual,'Static scenery only');
+const gltf=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
+let meshes=0,triangles=0;gltf.scene.traverse(o=>{if(o.isMesh){meshes++;triangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;}});
+assert(meshes<=8,'At most eight material batches');assert(triangles<20000,'Below 20k added triangles');
+const bounds=new THREE.Box3().setFromObject(gltf.scene);assert(bounds.min.z<-2&&bounds.max.z<-.6,'Scenery behind the seated cast');
+function scene(){const s=new THREE.Scene();for(const name of ['ECHO original backdrop','ECHO original slats']){const g=new THREE.Group();g.name=name;s.add(g);}return s;}
+const fallback=scene();let attempts=0;
+loadFestivalSet(fallback,{load(url,ok,progress,fail){attempts++;fail(new Error('offline'));}});
+assert.equal(fallback.userData.festivalSet,'unavailable');assert(fallback.children.every(o=>o.visible),'Download failure retains original set');
+loadFestivalSet(fallback,{load(){attempts++;}});assert.equal(attempts,1,'No unbounded retry loop');
+const success=scene();let changes=0;success.addEventListener('visualchange',()=>changes++);
+loadFestivalSet(success,{load(url,ok){ok(gltf);}});assert.equal(success.userData.festivalSet,'ready');assert.equal(changes,1,'Paused studio can redraw on scenery readiness');
+assert.equal(success.getObjectByName('ECHO original backdrop').visible,false);assert.equal(success.getObjectByName('ECHO original slats').visible,false);
+attachFestivalSet(success,gltf.scene.clone());assert.equal(changes,1,'Idempotent attachment');
+console.log(JSON.stringify({result:'PASS',bytes:bytes.length,meshes,triangles,bounds:bounds.toArray?.()||{min:bounds.min.toArray(),max:bounds.max.toArray()},checks:['size/geometry budgets','no external textures','scenery behind cast','load failure fallback','no retry storm','ready redraw event','idempotence']},null,2));

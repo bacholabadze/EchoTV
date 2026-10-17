@@ -1,3 +1,4 @@
+import {loadFestivalSet} from './visual-upgrade/festival-set.js';
 import * as THREE from 'three';
 // Edition 06: authored colors are absolute sRGB colors, not multipliers over an atlas.
 export const materialPalettes={
@@ -23,14 +24,15 @@ export function characterMaterial(source,index){
  return material;
 }
 // Stable lighting without image-based exposure shifts or baked skin shadows.
-export function lightEditorialRoom(scene){
+export function lightEditorialRoom(scene,{festival=true}={}){
  scene.environment=null;
  for(const o of scene.children){
-  if(o.isHemisphereLight){o.color.set(0xf3eee3);o.groundColor.set(0x788476);o.intensity=1.2;}
+  if(o.isHemisphereLight){o.color.set(0xE9EEE8);o.groundColor.set(0x34443E);o.intensity=.78;}
   if(o.isDirectionalLight){
    const rear=o.position.z<0;
-   o.color.set(rear?0xe5ebdf:0xfff4e5);
-   o.intensity=rear?.55:o.position.x<0?2.0:.95;
+   o.color.set(rear?0xCFDBF2:o.position.x<0?0xFFF0D9:0xDCE7F0);
+   o.intensity=rear?1.05:o.position.x<0?2.35:.68;
   }
  }
+ if(festival && typeof document!=='undefined')loadFestivalSet(scene);
 }

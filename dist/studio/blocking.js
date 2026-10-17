@@ -24,7 +24,7 @@ export function conversationGaze(actor,state){
 export function conversationFrame(shot,aspect){
  const portrait=aspect<1.15;
  const frames={
- wide:portrait?[.10,1.60,Math.max(4.5,4.8*.82/aspect),0,.95,.02,36]:[.20,1.48,3.75,0,.94,.03,38],
+ wide:portrait?[0,1.65,Math.max(4.8,5.6*.82/aspect),0,1.22,-.20,36]:[.16,1.58,4.65,0,1.28,-.22,35],
  echo:[.12,1.30,.64,-.02,1.20,-.30,30],
  nova:[-.28,1.31,.78,-1.11,1.20,.09,30],
  atlas:[.28,1.31,.78,1.11,1.20,.09,30],
