@@ -200,6 +200,30 @@ function drawViz(local) {
   view.viz = {active, peak: +peak.toFixed(3), live: !!(analyser && soundOn)};
 }
 
+// ---------- start authorisation (N04) ----------
+// A scheduled publication starts on this viewer only after the server confirms that this exact publication may start.
+// The server answers once its own clock has reached onAirAt, after which a rejection can no longer withdraw it, so the
+// answer is final. The event stream alone never authorises playback: it can arrive late or not at all. The check is
+// sent ~2 s early so the answer arrives right at onAirAt. A confirmed start is kept: a running programme is never
+// re-checked or interrupted (on air, only the producer's Stop ends it). No answer = nothing plays (fail closed).
+const VERIFY_TIMEOUT_MS = 2000, VERIFY_RETRY_MS = 1000, starts = new Map();
+function startCheck(b, m) {
+  const key = `${m.publicationId}:${m.hash}:${b.onAirAt}`, prev = starts.get(key), t = performance.now();
+  if (prev && !(prev.state === 'error' && t - prev.at > VERIFY_RETRY_MS) && !(prev.state === 'pending' && t > prev.retryAt)) return prev;
+  const check = {state: prev?.state === 'error' ? 'retrying' : 'checking', at: t, attempts: (prev?.attempts || 0) + 1};
+  starts.set(key, check);
+  const params = new URLSearchParams({publicationId: m.publicationId, hash: m.hash, onAirAt: b.onAirAt});
+  fetch(`/api/broadcast/activation?${params}`, {cache: 'no-store', signal: AbortSignal.timeout(Math.max(0, b.onAirAt - now()) + VERIFY_TIMEOUT_MS)})
+    .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+    .then(x => {
+      if (starts.get(key) !== check) return;
+      if (x.pending) Object.assign(check, {state: 'pending', retryAt: performance.now() + Math.min(x.retryInMs, 3000)});
+      else Object.assign(check, {state: x.permitted ? 'permitted' : 'denied', reason: x.reason || '', answeredAt: Date.now()});
+    })
+    .catch(e => { if (starts.get(key) === check) Object.assign(check, {state: 'error', at: performance.now(), reason: e.name === 'TimeoutError' ? 'no answer in time' : 'network error'}); });
+  return check;
+}
+
 // ---------- programme clock ----------
 function tick(ms) {
   requestAnimationFrame(tick);
@@ -211,9 +235,18 @@ function tick(ms) {
   setText('#manifest', `publication #${m.publicationId ?? '–'} · r${m.publishRevision} · ${m.hash.slice(0, 10)}`);
   if (b.state === 'failed') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Technical break'); return slate('ECHO TV', 'We’ll be right back.', 'Playout was stopped by the producer. Approved programme r' + m.publishRevision + ' is safe.'); }
   if (b.state === 'ready') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Standby'); setText('#clock', `0:00 / ${fmt(m.durationSec)}`); setText('#next', ''); return slate('Next on ECHO', m.title, `${m.segments.map(s => s.title).join(' · ')}`, `Approved revision r${m.publishRevision} · waiting for the producer to go live`); }
-  const t = (now() - b.onAirAt) / 1000;
-  if (t < 0) { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Starting'); return slate('ECHO TV', `On air in ${Math.ceil(-t)}`, m.title, `Approved revision r${m.publishRevision} · ${m.hash.slice(0, 10)}`); }
+  const t = (now() - b.onAirAt) / 1000, startKey = `${m.publicationId}:${m.hash}:${b.onAirAt}`;
+  if (t < 0) { if (t > -2) startCheck(b, m); view.start = starts.get(startKey)?.state; $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Starting'); return slate('ECHO TV', `On air in ${Math.ceil(-t)}`, m.title, `Approved revision r${m.publishRevision} · ${m.hash.slice(0, 10)}`); }
+  // The server refused this start: it was withdrawn before air, whatever the (possibly stale) event stream still says.
+  if (starts.get(startKey)?.state === 'denied') { view.start = 'denied'; $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#next', ''); setText('#clock', ''); setText('#onair-label', 'Off air'); return slate('ECHO TV', 'Off air', 'This programme was withdrawn before air and will not be shown.', starts.get(startKey).reason); }
   if (t >= m.durationSec) { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Ended'); setText('#next', ''); setText('#clock', `${fmt(m.durationSec)} / ${fmt(m.durationSec)}`); return slate('That was', m.title, `Made by ${[...new Set(m.segments.filter(s => s.ownerId !== 'producer').map(s => s.owner))].sort().join(' and ')} with their agents, coordinated by the ECHO Showrunner.`, `Aired revision r${m.publishRevision} · ${m.hash.slice(0, 10)} · ${fmt(m.durationSec)}`); }
+  const start = startCheck(b, m); view.start = start.state;
+  if (start.state !== 'permitted') {
+    $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#next', ''); setText('#clock', '');
+    const unable = start.state === 'error' || start.state === 'retrying';
+    setText('#onair-label', unable ? 'Unable to verify' : 'Waiting');
+    return slate('ECHO TV', unable ? 'Waiting for the studio' : 'Starting…', unable ? `Unable to verify this programme with the studio (${start.reason || 'retrying'}). Nothing plays until the start is confirmed; retrying.` : 'Confirming the start with the studio.', `Approved revision r${m.publishRevision} · ${m.hash.slice(0, 10)}`);
+  }
   screen.dataset.live = 'yes';
   const seg = m.segments.find(s => t >= s.start && t < s.start + s.duration), next = m.segments[m.segments.indexOf(seg) + 1], local = t - seg.start;
   setText('#clock', `${fmt(t)} / ${fmt(m.durationSec)}`);
@@ -279,6 +312,6 @@ setInterval(syncClock, 10000);
 events.addEventListener('state', e => { state = JSON.parse(e.data); if (!clockSynced) offset = state.serverTime - Date.now(); preload(state.broadcast?.manifest); });
 $('#fault-retry').onclick = () => { if (health.src) { resetHealth(health.src); audio.dataset.src = ''; } };
 const audioLevel = () => { if (!analyser) return null; const d = new Uint8Array(analyser.fftSize); analyser.getByteTimeDomainData(d); let m = 0; for (const v of d) m = Math.max(m, Math.abs(v - 128)); return m / 128; };
-window.EchoBroadcast = {getState: () => ({onsets: view.onsets || {}, playing: view.playing || [], artFault: view.artFault ? {state: view.artFault.state, assetId: view.artFault.asset.id} : null, audioHealth: {state: health.state, retries: health.retries, recoveries: health.recoveries, needed: !!view.audioNeeded}, onAirLabel: $('#onair-label').textContent, faultVisible: !$('#fault').hidden, clockSynced, clockOffsetMs: Math.round(offset), publicationId: state?.broadcast?.manifest?.publicationId, viz: view.viz, audioLevel: audioLevel(), module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
+window.EchoBroadcast = {getState: () => ({start: view.start, onsets: view.onsets || {}, playing: view.playing || [], artFault: view.artFault ? {state: view.artFault.state, assetId: view.artFault.asset.id} : null, audioHealth: {state: health.state, retries: health.retries, recoveries: health.recoveries, needed: !!view.audioNeeded}, onAirLabel: $('#onair-label').textContent, faultVisible: !$('#fault').hidden, clockSynced, clockOffsetMs: Math.round(offset), publicationId: state?.broadcast?.manifest?.publicationId, viz: view.viz, audioLevel: audioLevel(), module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
 loadStudio();
 requestAnimationFrame(tick);

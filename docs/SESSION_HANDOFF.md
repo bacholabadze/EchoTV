@@ -10,8 +10,8 @@ Written 2026-10-17 ~18:30 (Tbilisi), updated ~20:45 after Codex's 3e0c846 verdic
 |---|---|
 | Repo | `/Users/apple/Bridge/Projects/Hacktoberfest/echo-stage` (git, local only, no remote) |
 | Branch | `echo-3.1` (`main` = untouched baseline) |
-| **Latest implementation commit (for Codex re-validation)** | the commit that adds `tests/broadcast/regression-3e0c846.test.mjs` (fixes R1/R2/R3): `git log -1 --format=%H -- tests/broadcast/regression-3e0c846.test.mjs`. Evidence: `docs/evidence/2026-10-17-regression-3e0c846-fixes.md` |
-| Previously validated | `3e0c846e…` (N04): **AUTOMATED QA FAIL** (Codex, `../echo-stage-qa/qa/REGRESSION-3e0c846.md`): R1 P0, R2 P1, R3 P1/N04; all other gates PASS. Earlier: `7ee7394` AUTOMATED QA FAIL, `64d1dc5` NOT READY |
+| **Latest implementation commit (for Codex re-validation)** | the commit that adds `tests/broadcast/activation.test.mjs` (server-authorised start, N04 delayed-SSE race): `git log -1 --format=%H -- tests/broadcast/activation.test.mjs`. Evidence: `docs/evidence/2026-10-17-regression-d0e5ae5-fixes.md` |
+| Previously validated | `d0e5ae50…`: **AUTOMATED QA FAIL**, one P1/N04 blocker (delayed viewer started a withdrawn publication for 1,022 ms); every other gate PASS incl. R1/R2 closure and 3/3 real-agent runs. Before it: `3e0c846e…` (N04): **AUTOMATED QA FAIL** (Codex, `../echo-stage-qa/qa/REGRESSION-3e0c846.md`): R1 P0, R2 P1, R3 P1/N04; all other gates PASS. Earlier: `7ee7394` AUTOMATED QA FAIL, `64d1dc5` NOT READY |
 | Baseline (original ZIP, pre-hackathon code) | `c7eb068` |
 | Tag | `echo-3.1-demo-candidate` → `64d1dc5` (the commit audited as NOT READY) |
 | Offline bundles (parent dir) | `echo-3.1-64d1dc5.bundle`, `echo-3.1-cec5fb2.bundle`, `echo-3.1-733f3e5.bundle`, `echo-3.1-3e0c846.bundle`. Make a new one for each nominated SHA. |
@@ -76,7 +76,7 @@ Written 2026-10-17 ~18:30 (Tbilisi), updated ~20:45 after Codex's 3e0c846 verdic
 | Claim | Implementer evidence (this repo) | Independent QA |
 |---|---|---|
 | A → B → A with two real, independent LLM agents (Claude Code + Codex) | 5 runs + 1 post-fix run, all clean (`docs/evidence/2026-10-17-real-agent-series.md`). Approvals in those runs were issued **by a script standing in for the humans**. | Not yet. The human approval rehearsal is pending. |
-| Rules (bookings, approvals, revisions, publish, go-live, idempotency, media) | 50/50 `npm run test:broadcast` (domain, HTTP, MCP, regression, withdrawal) | `64d1dc5` NOT READY; `7ee7394` FAIL; `3e0c846` FAIL (R1–R3, all other gates PASS); latest: **pending** |
+| Rules (bookings, approvals, revisions, publish, go-live, idempotency, media) | 50/50 `npm run test:broadcast` (domain, HTTP, MCP, regression, withdrawal) | `64d1dc5` NOT READY; `7ee7394` FAIL; `3e0c846` FAIL (R1–R3); `d0e5ae5` FAIL (one P1/N04, all else PASS); latest: **pending** |
 | Board: three separate sessions approve with their own identity | `npm run test:browser` PASS | pending |
 | Full 2-minute playout, two viewers in sync, reconnect, audio sync, outro | `npm run test:broadcast-browser` PASS in 3 configs: normal / SSE delayed 1.5 s / `ECHO_HOST_VOICE=off` | pending |
 | Audio stall handling (P0-3) | `npm run test:audio-stall` PASS (interrupted at 2.6 s, unavailable at 8.1 s, 3 retries, recovery) | pending |
@@ -93,7 +93,11 @@ Regression proof: `tests/broadcast/regression.test.mjs` passes 9/9 on `7ee7394` 
 
 **On the fix commit after Codex's 3e0c846 regression (~21:00):** `npm test` 50/50 + 5/5; all 7 browser tests PASS (incl. new `test:art-display-fault`, `test:countdown-reject`); full playout normal / SSE 1.5 s / no Piper PASS, onsets ≤ +26 ms; one real Claude Code + Codex run CLEAN (approvals scripted as stand-ins). The new tests fail on `3e0c846` for the reported defects. Details: `docs/evidence/2026-10-17-regression-3e0c846-fixes.md`.
 
+**On the fix commit after Codex's d0e5ae5 regression (~22:30):** `npm test` 54/54 + 5/5. All 8 browser tests PASS, incl. the new `test:activation-race` 7/7: exact −493 ms with SSE +1,500 ms gives 0 Live and 0 native audio. Full playout normal / SSE 1.5 s / no Piper PASS, onsets ≤ +25 ms; start confirmation +3 ms after onAirAt. One real Claude Code + Codex run CLEAN (approvals scripted). Details: `docs/evidence/2026-10-17-regression-d0e5ae5-fixes.md`.
+
 ## 5. Codex QA status
+
+**Update (~22:00):** Codex's run on `d0e5ae5` = **AUTOMATED QA FAIL** with one P1/N04 blocker. With SSE delayed 1,500 ms and a rejection 493 ms before start, the server withdrew correctly, but the delayed viewer played the withdrawn programme for 1,022 ms. All other gates passed (R1/R2 closed, persisted media 5/5, timing 3/3, real agents 3/3, playback replay). Fixed in the next implementation commit: viewers start only after `GET /api/broadcast/activation` permits that exact publication, answered at `onAirAt` on the server clock (`docs/evidence/2026-10-17-regression-d0e5ae5-fixes.md`). **Not yet independently validated.**
 
 **Update (20:4x):** Codex's run on `3e0c846` = **AUTOMATED QA FAIL** with three blockers; every other gate passed (original P0s, fresh corrupt uploads, LAN, idempotency, decoder, timing, real-agent exchange and playback, three N04 cases):
 - **R1 P0:** an artwork that preloaded fine but failed on screen stayed blank under plain "Live".
@@ -136,13 +140,14 @@ Earlier history:
 ```bash
 cd /Users/apple/Bridge/Projects/Hacktoberfest/echo-stage
 npm install                                   # if node_modules is missing
-npm test                                      # 50 broadcast + 5 studio suites (~1 min)
+npm test                                      # 54 broadcast + 5 studio suites (~1 min)
 npm run test:browser                          # board, 3 sessions (Chrome)
 npm run test:audio-stall                      # P0-3 regression (Chrome, ~15 s)
 npm run test:board-lan                        # board actions on a plain-HTTP non-localhost origin (Chrome)
 npm run test:art-fault                        # broken published artwork shown as a fault (Chrome, ~45 s)
 npm run test:art-display-fault                # artwork that preloaded but fails on screen: fault + automatic recovery (Chrome, ~35 s)
 npm run test:countdown-reject                 # reject during the Starting countdown: never airs (Chrome, ~10 s)
+npm run test:activation-race                  # delayed/cut SSE vs near-start rejection, on-air rejection, unverified start, reconnect (Chrome, ~2 min)
 npm run test:browser-all                      # all browser tests in sequence
 npm run test:broadcast-browser                # full 2-min playout (Chrome)
 ECHO_SSE_DELAY_MS=1500 npm run test:broadcast-browser   # skew regression

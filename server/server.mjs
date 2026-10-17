@@ -193,6 +193,25 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     ['GET', /^\/api\/state$/, () => publicState()],
     // Viewers estimate their clock offset from this (round-trip corrected), not from SSE delivery times.
     ['GET', /^\/api\/time$/, () => ({serverTime: now()})],
+    // Playback activation (N04): viewers start a scheduled publication only on this answer, never on the event stream
+    // alone (it can be delayed or cut). The answer is given once the server's clock has reached onAirAt, the moment
+    // after which a rejection can no longer withdraw the publication, so it is final. Asked early, it waits (≤ 5 s).
+    ['GET', /^\/api\/broadcast\/activation$/, ({url}) => new Promise(resolve => {
+      const publicationId = +url.searchParams.get('publicationId'), hash = url.searchParams.get('hash'), onAirAt = +url.searchParams.get('onAirAt');
+      const answer = () => {
+        const b = desk.state.broadcast, m = b.manifest, withdrawn = desk.state.withdrawals?.[publicationId];
+        const permitted = ['on_air', 'completed'].includes(b.state) && m?.publicationId === publicationId && m.hash === hash && b.onAirAt === onAirAt;
+        resolve({permitted, publicationId, serverTime: now(), state: b.state,
+          ...(permitted ? {} : {reason: withdrawn ? `Publication #${publicationId} was withdrawn before air: ${withdrawn.reason}` : b.state === 'failed' ? 'Playout was stopped by the producer' : `Publication #${publicationId} is not scheduled to start`})});
+      };
+      const check = () => {
+        const wait = onAirAt - now();
+        if (!(wait > 0)) return answer();
+        if (wait > 5000) return resolve({permitted: false, pending: true, serverTime: now(), retryInMs: wait - 4000});
+        setTimeout(check, Math.min(wait, 250));
+      };
+      check();
+    })],
     ['GET', /^\/api\/me$/, ({actor}) => {
       if (!actor) throw new DomainError('unauthorized', 'Sign in with your link');
       const who = actor.type === 'agent' ? desk.state.agents[actor.id] : desk.state.people[actor.id];

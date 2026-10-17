@@ -13,11 +13,12 @@
     "test:browser": "node tests/browser/board.mjs",
     "test:broadcast-browser": "node tests/browser/broadcast.mjs",
     "test:audio-stall": "node tests/browser/audio-stall.mjs",
-    "test:browser-all": "npm run test:browser && npm run test:board-lan && npm run test:audio-stall && npm run test:art-fault && npm run test:art-display-fault && npm run test:countdown-reject && npm run test:broadcast-browser",
+    "test:browser-all": "npm run test:browser && npm run test:board-lan && npm run test:audio-stall && npm run test:art-fault && npm run test:art-display-fault && npm run test:countdown-reject && npm run test:activation-race && npm run test:broadcast-browser",
     "test:board-lan": "node tests/browser/board-lan.mjs",
     "test:art-fault": "node tests/browser/art-fault.mjs",
     "test:art-display-fault": "node tests/browser/art-display-fault.mjs",
-    "test:countdown-reject": "node tests/browser/countdown-reject.mjs"
+    "test:countdown-reject": "node tests/browser/countdown-reject.mjs",
+    "test:activation-race": "node tests/browser/activation-race.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.31.0",

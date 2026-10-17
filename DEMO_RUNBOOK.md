@@ -27,7 +27,7 @@ npm install                     # MCP SDK 1.31.0, zod 4.6.5, playwright 1.49.1 (
 .venv/bin/pip install piper-tts==1.8.0 onnx==1.23.0
 mkdir -p voices && for f in en_US-ljspeech-high.onnx en_US-ljspeech-high.onnx.json; do
   curl -L -o voices/$f https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ljspeech/high/$f; done
-npm test                        # expect: 50 broadcast tests + 5 studio suites pass
+npm test                        # expect: 54 broadcast tests + 5 studio suites pass
 ```
 
 If `npm install` fails with an `~/.npm` permission error, run `npm install --cache /tmp/echo-npm-cache` (do not sudo).
@@ -124,6 +124,7 @@ Optional proofs: **NO AGREEMENT** (see §5). **Stale approval**: B uses *Replace
 - **An AI agent fails:** run `data/demo/fallback-b.sh` (or the equivalent for A, per `server/fallback-agent.mjs`). The board shows the agent's client as "ECHO fallback (rule-based)".
 - **An agent stays silent for 3 minutes:** its request expires as *no change*, never as consent.
 - **Piper missing:** the outro shows captions only; the activity feed says so.
+- **A viewer cannot confirm the start with the server** (network problem): it shows **Unable to verify** and plays nothing until the server confirms the exact publication, retrying every second; then it joins in sync. Each viewer asks the server at the scheduled start, so a programme withdrawn just before air never starts, even on a viewer whose live updates are late.
 - **An artwork fails to display on a viewer** (even after it preloaded): within about 1.5 s the broadcast shows **Live · artwork loading** or **Live · artwork unavailable** with a banner and the work's credits card instead of a blank frame. The same approved image is retried automatically (up to 3 times, every 2 s) and the fault clears when it appears. The programme continues on time.
 - **Audio stalls on a viewer:** after about 2.5 s the broadcast shows **Live · audio interrupted** and retries up to 3 times. After about 8 s it shows **Live · audio unavailable** with a **Retry audio** button, and the programme continues without sound. It never shows a plain "Live" while required audio is stuck.
 - **WebGL unavailable:** the outro shows a text slate; the programme continues.
