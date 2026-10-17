@@ -117,3 +117,20 @@ test('static site and range requests are served', async () => {
   assert.equal((await audio.arrayBuffer()).byteLength, 100);
   assert.equal((await fetch(base + '/../package.json')).status, 404);
 });
+
+test('owner media upload: hashed, served by hash, approval invalidated until re-reviewed', async () => {
+  const bytes = Buffer.from('ID3 fake audio for upload test');
+  const up = await fetch(`${base}/api/segments/premiere/media/track`, {method: 'POST', body: bytes, headers: {authorization: `Bearer ${tokens.creatorB}`, 'x-filename': 'new.mp3', 'x-rights-declared': 'yes', 'x-title': 'New%20take'}});
+  assert.equal(up.status, 200);
+  const seg = (await up.json());
+  const hash = seg.assets.find(a => a.id === 'track').sha256;
+  assert.equal(seg.state, 'submitted');
+  assert.equal((await call('POST', '/api/publish', tokens.producer)).body.error, 'not_publishable');
+  const served = await fetch(`${base}/media/${hash}`);
+  assert.equal(served.status, 200);
+  assert.deepEqual(Buffer.from(await served.arrayBuffer()), bytes);
+  const wrongOwner = await fetch(`${base}/api/segments/premiere/media/track`, {method: 'POST', body: bytes, headers: {authorization: `Bearer ${tokens.creatorA}`, 'x-filename': 'x.mp3', 'x-rights-declared': 'yes'}});
+  assert.equal(wrongOwner.status, 403);
+  assert.equal((await call('POST', '/api/segments/premiere/review', tokens.producer, {revision: seg.revision, decision: 'approved'})).status, 200);
+  assert.equal((await call('POST', '/api/publish', tokens.producer)).status, 200);
+});

@@ -157,9 +157,9 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       const body = await readBody(req, MAX_UPLOAD), hash = sha256(body), file = `${hash}${ext}`;
       const meta = {upload: true, file, rightsDeclared: req.headers['x-rights-declared'] === 'yes', kind: ext.match(/png|jpe?g|webp/) ? 'image' : 'audio',
         title: decodeURIComponent(req.headers['x-title'] || ''), credit: decodeURIComponent(req.headers['x-credit'] || ''), license: decodeURIComponent(req.headers['x-license'] || '')};
-      const segment = mutate(d => d.replaceAsset(actor, {segmentId: m[1], assetId: m[2], sha256: hash, meta}));
+      // Bytes are on disk before the state can reference them (same hash, so a rejected change leaves a harmless orphan).
       writeFileSync(join(dataDir, 'uploads', file), body);
-      return segment;
+      return mutate(d => d.replaceAsset(actor, {segmentId: m[1], assetId: m[2], sha256: hash, meta}));
     }],
     // House host lines are written from the programme and voiced offline with Piper; captions-only if unavailable.
     ['POST', /^\/api\/publish$/, async ({actor}) => {
