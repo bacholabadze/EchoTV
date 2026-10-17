@@ -163,6 +163,14 @@ export class BroadcastDesk {
       for (const slide of change.content.slides) if (!seg.assets.find(a => a.id === slide.assetId)) fail('bad_content', `Unknown asset ${slide.assetId} in ${seg.title}`);
     }
   }
+  // A request can state intent ("I need 45s"); what humans approve must be complete content.
+  requireCompleteContent(changes) {
+    for (const c of changes) {
+      const seg = this.segment(c.segmentId);
+      if (seg.content?.slides && c.duration !== undefined && c.duration !== seg.duration && !c.content?.slides)
+        fail('bad_content', `${seg.title} shows timed slides: include slide timings that add up to ${c.duration}s`);
+    }
+  }
   describe(changes) {
     return changes.map(c => { const seg = this.state.segments[c.segmentId]; return c.duration !== undefined && c.duration !== seg.duration ? `${seg.title} ${seg.duration}s→${c.duration}s` : `${seg.title} content update`; }).join(', ');
   }
@@ -203,7 +211,7 @@ export class BroadcastDesk {
       for (const seg of flexible.filter(s => s.house && slack(s) > 0)) {
         const delta = Math.min(slack(seg), remaining); if (!delta) continue;
         const duration = seg.duration + (need > 0 ? -delta : delta);
-        proposal.houseChanges.push({segmentId: seg.id, duration, offered: duration});
+        proposal.houseChanges.push({segmentId: seg.id, from: seg.duration, duration, offered: duration});
         remaining -= delta;
         this.log(showrunner, 'showrunner_house_change', `Showrunner offers ECHO house time: ${seg.title} ${seg.duration}s→${duration}s (needs producer approval)`, {proposalId: proposal.id});
       }
@@ -216,7 +224,10 @@ export class BroadcastDesk {
         }
       }
     }
-    if (!proposal.conflicts.length) return this.toApproval(proposal, 'No conflict: the programme still fits and every confirmed slot is unchanged.');
+    if (!proposal.conflicts.length) {
+      try { this.requireCompleteContent(proposal.changes); } catch (e) { return this.askProposer(proposal); }
+      return this.toApproval(proposal, 'No conflict: the programme still fits and every confirmed slot is unchanged.');
+    }
     if (!Object.values(this.state.requests).some(r => r.proposalId === proposal.id && r.status === 'open')) return this.askProposer(proposal);
     proposal.status = 'negotiating';
   }
@@ -242,7 +253,7 @@ export class BroadcastDesk {
         const delta = request.direction === 'shorten' ? seg.duration - duration : duration - seg.duration;
         if (delta <= 0) fail('bad_request', `To ${request.direction} ${seg.title}, the duration must ${request.direction === 'shorten' ? 'go below' : 'go above'} ${seg.duration}s`);
         if (delta > request.maxConcession) fail('bad_request', `Only ${request.maxConcession}s is needed`);
-        proposal.concessions.push({...change, offered: duration, accepted: true, agentId: agent.id, requestId});
+        proposal.concessions.push({...change, from: seg.duration, offered: duration, accepted: true, agentId: agent.id, requestId});
       }
       request.status = 'answered'; request.response = {decision, duration, message, at: this.now()};
       this.log(actor, 'request_answered', `${agent.label}: ${decision === 'accept' ? `accepts ${seg.title} ${seg.duration}s→${duration}s` : `declines to change ${seg.title}`}${message ? ` — “${message}”` : ''}`, {proposalId: proposal.id, requestId});
@@ -279,6 +290,7 @@ export class BroadcastDesk {
     if (proposal.agentId !== agent.id) fail('forbidden', 'Only the proposing agent can revise its proposal');
     if (proposal.status !== 'awaiting_proposer') fail('closed', `Proposal is ${proposal.status}`);
     for (const c of changes) { const seg = this.segment(c.segmentId); if (seg.ownerId !== agent.ownerId) fail('forbidden', `Cannot change ${seg.title}`); this.checkChange(seg, c); }
+    this.requireCompleteContent(changes);
     for (const r of Object.values(this.state.requests)) if (r.proposalId === proposal.id && r.status === 'open') { r.status = 'answered'; r.response = {decision: 'revised', message: note, at: this.now()}; }
     proposal.history.push({version: proposal.version, changes: proposal.changes});
     proposal.changes = clone(changes); proposal.version++; proposal.approvals = {};

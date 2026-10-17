@@ -179,3 +179,10 @@ test('every change is in the audit log with actor and sequence', () => {
   assert.deepEqual(d.state.audit.map(e => e.seq), d.state.audit.map((_, i) => i + 1));
   assert.ok(d.state.revisions.at(-1).diff.length >= 3);
 });
+
+test('an art duration change must carry slide timings that fill it', () => {
+  const d = desk();
+  const p = d.proposeChange(A, {baseRevision: 1, changes: [{segmentId: 'gallery', duration: 45}]});
+  d.respondToRequest(B, {requestId: openRequest(d, 'agent-b').id, decision: 'accept', duration: 5});
+  assert.throws(() => d.reviseProposal(A, {proposalId: p.id, changes: [{segmentId: 'gallery', duration: 45}]}), code('bad_content'));
+});

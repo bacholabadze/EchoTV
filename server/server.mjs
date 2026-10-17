@@ -202,10 +202,11 @@ export function credentialsText(state, base) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const port = +process.env.PORT || 8787, host = process.env.HOST || '127.0.0.1';
   const people = process.env.ECHO_PEOPLE ? JSON.parse(process.env.ECHO_PEOPLE) : {};
-  const echo = createEchoServer({seedOptions: {people}});
+  const dataDir = process.env.ECHO_DATA_DIR || join(ROOT, 'data');
+  const echo = createEchoServer({dataDir, seedOptions: {people}});
   echo.server.listen(port, host, () => {
     const base = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`;
-    writeFileSync(join(ROOT, 'data', 'credentials.txt'), credentialsText(echo.desk.state, base), {mode: 0o600});
-    console.log(`ECHO broadcast server on ${base}\n  Board:     ${base}/board/\n  Broadcast: ${base}/broadcast/\n  Credentials written to data/credentials.txt`);
+    writeFileSync(join(dataDir, 'credentials.txt'), credentialsText(echo.desk.state, base), {mode: 0o600});
+    console.log(`ECHO broadcast server on ${base}\n  Board:     ${base}/board/\n  Broadcast: ${base}/broadcast/\n  Credentials written to ${join(dataDir, 'credentials.txt')}`);
   });
 }
