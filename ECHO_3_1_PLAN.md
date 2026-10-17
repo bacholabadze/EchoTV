@@ -49,8 +49,21 @@ Reusable as is: room/actors/materials/blocking/performance, `Director`, `caption
 | M5 | Broadcast renderer | Browser test: published manifest plays Intro → Art → Music → Outro; on-screen revision = board revision; two viewers in sync; reconnect |
 | M6 | Real-agent rehearsal ×3, honest channel copy, recording guide | Logs of three clean runs with Claude Code + Codex; uncut screen recording plan |
 
-## 5. Open decisions (do not block M0–M3)
+## 5. Decisions taken (defaults, reversible) and still open
 
-- **Demo media:** the creators' own art and music (preferred, with rights declared), or labelled demo assets (public-domain artworks / a track synthesised for the demo).
-- **Host voice:** install Piper locally again (free, offline, same voice as the pilot) for intro/outro lines generated from the manifest at publish time.
-- **Public link:** local-only demo, or a free tunnel.
+- **Demo media (default taken):** curated public-domain artworks (The Met, CC0, credited to the original artists) and a track synthesised in code (CC0). They are labelled as rehearsal media in `media/ATTRIBUTION.md`. **Open:** the real creators upload their own work from the board before the recording.
+- **Host voice (done):** Piper 1.8.0 + `en_US-ljspeech-high` installed locally (free, offline). House lines are written from the approved programme by a template (no LLM) and voiced at publish time. Captions-only fallback.
+- **Public link (open):** demo runs on a local or LAN server. Static Sites hosting cannot run it.
+- **Organiser answers (open, human):** prior-code eligibility; video spec.
+
+## 6. Status
+
+| # | Status | Evidence |
+|---|---|---|
+| M0 | done | `npm run test:studio` 5/5 |
+| M1 | done | domain tests |
+| M2 | done | HTTP tests (race, roles, restart, SSE) |
+| M3 | done | MCP tests + `docs/evidence/2026-10-17-rehearsal-2-real-agents.md` (real Claude Code + Codex) |
+| M4 | done | `npm run test:browser` + board screenshots |
+| M5 | done | `npm run test:broadcast-browser` (full 2-min playout, two viewers, reconnect, audio sync, Piper outro) |
+| M6 | in progress | runbook `DEMO_RUNBOOK.md`; three consecutive clean real-agent runs (§17, §25) |

@@ -13,7 +13,7 @@ export function seedState({people = {}, media = {}} = {}) {
   const gallery = ['art-1', 'art-2', 'art-3'].map(id => asset(id, {kind: 'image'}));
   const segments = {
     intro: {id: 'intro', module: 'music', title: 'Music intro', ownerId: b.id, duration: 10, minDuration: 5, maxDuration: 10,
-      assets: [asset('track', {kind: 'audio'})], content: {assetId: 'track', offset: 0, role: 'teaser'}},
+      assets: [asset('track', {kind: 'audio'})], content: {assetId: 'track', offset: 40, role: 'teaser'}},
     gallery: {id: 'gallery', module: 'art', title: 'Art gallery', ownerId: a.id, duration: 30, minDuration: 20, maxDuration: 45,
       assets: gallery, content: {slides: gallery.map(g => ({assetId: g.id, seconds: 10}))}},
     interstitial: {id: 'interstitial', module: 'host', title: 'ECHO interstitial', ownerId: producer.id, house: true, duration: 10, minDuration: 0, maxDuration: 10,

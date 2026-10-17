@@ -395,7 +395,8 @@ export class BroadcastDesk {
   }
 
   // ---------- publish & broadcast ----------
-  publish(actor, {assetUrl = id => `/media/${id}`} = {}) {
+  // Media URLs are content-addressed, so viewers always receive exactly the approved bytes.
+  publish(actor, {host = {}} = {}) {
     this.requireProducer(actor);
     if (Object.values(this.state.proposals).some(p => OPEN_PROPOSAL.has(p.status))) fail('busy', 'Finish or withdraw open proposals before publishing');
     if (this.state.broadcast.state === 'on_air') fail('on_air', 'A broadcast is on air');
@@ -405,8 +406,8 @@ export class BroadcastDesk {
     const segments = this.layout().filter(e => e.duration > 0).map(e => {
       const seg = this.state.segments[e.segmentId];
       return {id: seg.id, module: seg.module, title: seg.title, owner: this.state.people[seg.ownerId].name, ownerId: seg.ownerId, start: e.start, duration: e.duration, revision: seg.revision,
-        confirmed: this.state.bookings[seg.id]?.state === 'confirmed', content: clone(seg.content || {}),
-        assets: seg.assets.map(a => ({id: a.id, sha256: a.sha256, url: assetUrl(a.id), title: a.title, credit: a.credit, license: a.license, kind: a.kind}))};
+        confirmed: this.state.bookings[seg.id]?.state === 'confirmed', content: {...clone(seg.content || {}), ...(host[seg.id] ? {host: clone(host[seg.id])} : {})},
+        assets: seg.assets.map(a => ({id: a.id, sha256: a.sha256, url: `/media/${a.sha256}`, title: a.title, credit: a.credit, license: a.license, source: a.source, kind: a.kind}))};
     });
     const body = {episodeId: this.episode.id, title: this.episode.title, durationSec: this.episode.durationSec, publishRevision: this.state.showRevision, segments};
     const manifest = {...body, hash: sha256(canonical(body)), publishedAt: this.now(), publishedBy: actor.id};

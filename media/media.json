@@ -1,0 +1,37 @@
+{
+ "art-1": {
+  "file": "art-1.jpg",
+  "kind": "image",
+  "title": "Under the Wave off Kanagawa (The Great Wave)",
+  "credit": "Katsushika Hokusai, ca. 1830–32",
+  "license": "Public domain (CC0) — The Met Open Access",
+  "source": "https://www.metmuseum.org/art/collection/search/45434",
+  "rightsDeclared": true
+ },
+ "art-2": {
+  "file": "art-2.jpg",
+  "kind": "image",
+  "title": "Wheat Field with Cypresses",
+  "credit": "Vincent van Gogh, 1889",
+  "license": "Public domain (CC0) — The Met Open Access",
+  "source": "https://www.metmuseum.org/art/collection/search/436535",
+  "rightsDeclared": true
+ },
+ "art-3": {
+  "file": "art-3.jpg",
+  "kind": "image",
+  "title": "Circus Sideshow (Parade de cirque)",
+  "credit": "Georges Seurat, 1887–88",
+  "license": "Public domain (CC0) — The Met Open Access",
+  "source": "https://www.metmuseum.org/art/collection/search/437654",
+  "rightsDeclared": true
+ },
+ "track": {
+  "file": "demo-track.mp3",
+  "kind": "audio",
+  "title": "First Light (rehearsal track)",
+  "credit": "ECHO demo track, synthesised in code (tools/make-demo-track.py)",
+  "license": "CC0 — authored for ECHO",
+  "rightsDeclared": true
+ }
+}

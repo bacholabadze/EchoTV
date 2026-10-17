@@ -5,6 +5,7 @@ import {readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, statSync
 import {join, normalize, extname, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {timingSafeEqual} from 'node:crypto';
+import {spawn} from 'node:child_process';
 import {BroadcastDesk, DomainError, sha256} from './domain.mjs';
 import {seedState} from './seed.mjs';
 
@@ -97,14 +98,30 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     if (!existsSync(file)) return send(res, 404, {error: 'not_found'});
     serveFile(req, res, file);
   }
-  function serveMedia(req, res, id) {
+  function serveMedia(req, res, hash) {
     for (const seg of Object.values(desk.state.segments)) {
-      const asset = seg.assets.find(a => a.id === id);
+      const asset = seg.assets.find(a => a.sha256 === hash);
       if (!asset) continue;
       const file = asset.upload ? join(dataDir, 'uploads', asset.file) : join(mediaDir, asset.file || '');
       if (asset.file && existsSync(file)) return serveFile(req, res, file);
     }
     send(res, 404, {error: 'not_found'});
+  }
+
+  async function hostVoice(lines) {
+    const fallback = Object.fromEntries(lines.map(l => [l.id, {text: l.text, captions: [{start: 0, end: 6, text: l.text}], cues: [], duration: 6, audio: null}]));
+    if (!lines.length || !existsSync(join(ROOT, '.venv/bin/python')) || !existsSync(join(ROOT, 'voices/en_US-ljspeech-high.onnx'))) return fallback;
+    try {
+      const out = await new Promise((resolve, reject) => {
+        const child = spawn(join(ROOT, '.venv/bin/python'), ['-I', join(ROOT, 'tools/host-voice.py')], {stdio: ['pipe', 'pipe', 'pipe']});
+        let stdout = '', stderr = '';
+        child.stdout.on('data', d => stdout += d); child.stderr.on('data', d => stderr += d);
+        const timer = setTimeout(() => { child.kill(); reject(new Error('host voice timed out')); }, 60000);
+        child.on('close', code => { clearTimeout(timer); code === 0 ? resolve(JSON.parse(stdout)) : reject(new Error(stderr.slice(-300))); });
+        child.stdin.end(JSON.stringify({outDir: join(dataDir, 'host'), lines}));
+      });
+      return Object.fromEntries(lines.map(l => [l.id, out[l.id] ? {text: l.text, audio: `/host/${out[l.id].file}`, duration: out[l.id].duration, cues: out[l.id].cues, captions: out[l.id].captions} : fallback[l.id]]));
+    } catch (error) { if (!quiet) console.error('Host voice failed:', error.message); return fallback; }
   }
 
   const routes = [
@@ -144,7 +161,17 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       writeFileSync(join(dataDir, 'uploads', file), body);
       return segment;
     }],
-    ['POST', /^\/api\/publish$/, ({actor}) => mutate(d => d.publish(actor))],
+    // House host lines are written from the programme and voiced offline with Piper; captions-only if unavailable.
+    ['POST', /^\/api\/publish$/, async ({actor}) => {
+      desk.requireProducer(actor);
+      const host = await hostVoice(hostLines(desk.state));
+      return mutate(d => {
+        const manifest = d.publish(actor, {host});
+        const silent = Object.entries(host).filter(([, h]) => !h.audio).map(([id]) => d.state.segments[id].title);
+        if (silent.length) d.log({type: 'system', id: 'playout'}, 'host_voice_unavailable', `Host voice unavailable for ${silent.join(', ')}: captions only`);
+        return manifest;
+      });
+    }],
     ['POST', /^\/api\/golive$/, async ({actor, req}) => { const body = await json(req); return mutate(d => d.goLive(actor, {delayMs: body.delayMs ?? 3000})); }],
     ['POST', /^\/api\/broadcast\/fail$/, async ({actor, req}) => { const body = await json(req); return mutate(d => d.failBroadcast(actor, body)); }],
     // Rehearsal reset keeps identities and tokens so connected agents stay valid.
@@ -167,6 +194,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       return;
     }
     if (url.pathname.startsWith('/media/')) return serveMedia(req, res, url.pathname.slice(7));
+    if (/^\/host\/[\w-]+\.mp3$/.test(url.pathname) && existsSync(join(dataDir, 'host', url.pathname.slice(6)))) return serveFile(req, res, join(dataDir, 'host', url.pathname.slice(6)));
     if (!url.pathname.startsWith('/api/')) return serveStatic(req, res, url.pathname);
     const route = routes.find(([method, re]) => method === req.method && re.test(url.pathname));
     if (!route) return send(res, 404, {error: 'not_found'});
@@ -191,6 +219,19 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
 }
 
 // Local links for the people and MCP settings for the agents. Never published.
+// What ECHO's moderator says in house segments, written from the current programme (no LLM).
+export function hostLines(state) {
+  const creators = Object.values(state.people).filter(p => p.role === 'creator').map(p => p.name);
+  const names = creators.length > 1 ? `${creators.slice(0, -1).join(', ')} and ${creators.at(-1)}` : creators[0];
+  const premiere = Object.values(state.segments).find(s => state.bookings[s.id]?.state === 'confirmed');
+  const lines = {
+    interstitial: `You're watching ECHO. Coming up, a confirmed premiere from ${premiere ? state.people[premiere.ownerId].name : 'our creators'}.`,
+    outro: `That was ${state.episode.title}. Made by ${names}, and their agents, together. See you at the next premiere.`,
+  };
+  return state.order.map(id => state.segments[id]).filter(s => s.module === 'host' && s.duration > 0 && lines[s.content?.line])
+    .map(s => ({id: s.id, text: lines[s.content.line]}));
+}
+
 export function credentialsText(state, base) {
   const lines = ['ECHO local credentials — keep private', ''];
   for (const p of Object.values(state.people)) lines.push(`${p.name} (${p.role}) board: ${base}/board/#token=${p.token}`);

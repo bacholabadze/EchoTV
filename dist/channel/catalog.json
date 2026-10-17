@@ -23,5 +23,17 @@
       "audio": "recorded synthetic voices",
       "rendering": "real-time 3D"
     }
+  ],
+  "broadcasts": [
+    {
+      "id": "one-premiere-three-roles",
+      "title": "One premiere, three roles",
+      "durationSeconds": 120,
+      "status": "live-playout-prototype",
+      "url": "/broadcast/",
+      "board": "/board/",
+      "requires": "ECHO broadcast server (server/server.mjs); not available on static hosting",
+      "media": "creator-supplied or ECHO rehearsal media; no generated video"
+    }
   ]
 }

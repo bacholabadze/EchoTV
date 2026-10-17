@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1712">
+<title>ECHO TV — Broadcast</title><meta name="description" content="ECHO TV live playout of the approved programme built by creators and their agents.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%23142b23%22/%3E%3Ccircle cx=%228%22 cy=%228%22 r=%224%22 fill=%22%23e08b78%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="broadcast.css?v=1">
+<script type="importmap">{"imports":{"three":"/lab/vendor/three.module.js"}}</script></head>
+<body>
+<main id="screen" data-module="standby" aria-live="polite">
+  <canvas id="studio" aria-label="ECHO moderator in the 3D studio"></canvas>
+  <section id="art" class="layer" aria-label="Art gallery"><img id="art-a" alt=""><img id="art-b" alt=""></section>
+  <section id="music" class="layer" aria-label="Music"><canvas id="viz"></canvas><div class="music-title"><span id="music-badge" class="badge">Premiere</span><h2 id="music-name"></h2><p id="music-credit"></p></div></section>
+  <section id="slate" class="layer" aria-label="Status"><div><p class="eyebrow" id="slate-eyebrow">ECHO TV</p><h1 id="slate-title">Off air</h1><p id="slate-text">The next programme is being prepared on the Production Board.</p><p id="slate-meta" class="meta"></p></div></section>
+
+  <div class="bug"><b>ECHO</b><span>TV</span></div>
+  <div class="onair"><span id="onair-label" class="dot-label">Standby</span><span id="manifest" class="meta"></span></div>
+  <div class="lower" id="lower" hidden><p class="lower-kicker" id="lower-kicker"></p><p class="lower-title" id="lower-title"></p><p class="lower-credit" id="lower-credit"></p></div>
+  <p class="caption" id="caption" hidden></p>
+  <div class="ticker"><span id="clock">0:00 / 0:00</span><span id="next"></span></div>
+  <button id="sound" class="sound">▶ Watch with sound</button>
+</main>
+<footer class="disclosure">Live playout of an approved programme. Media is supplied by creators or ECHO and played back on schedule; host speech is synthesised offline (Piper). No AI video is generated. <a href="/board/">Production Board</a></footer>
+<script type="module" src="broadcast.js?v=1"></script>
+</body></html>
