@@ -6,6 +6,7 @@
   "scripts": {
     "test": "npm run test:studio && npm run test:broadcast",
     "test:studio": "node tests/studio-transport.mjs > /dev/null && node tests/studio-expressions.mjs && node --no-warnings --experimental-loader=./tests/three-loader.mjs tests/studio-rig.mjs && node --no-warnings --experimental-loader=./tests/three-loader.mjs tests/studio-materials.mjs && node --no-warnings --experimental-loader=./tests/three-loader.mjs tests/nova-study.mjs",
-    "test:broadcast": "node --test tests/broadcast/*.test.mjs"
+    "test:broadcast": "node --test --test-timeout=20000 tests/broadcast/*.test.mjs",
+    "start": "node server/server.mjs"
   }
 }
