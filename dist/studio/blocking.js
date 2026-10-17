@@ -28,7 +28,7 @@ export function conversationFrame(shot,aspect){
  echo:[.12,1.30,.64,-.02,1.20,-.30,30],
  nova:[-.28,1.31,.78,-1.11,1.20,.09,30],
  atlas:[.28,1.31,.78,1.11,1.20,.09,30],
- two:portrait?[-.65,1.42,Math.max(3.25,3.25*.82/aspect),-.61,1.05,-.10,34]:[-.61,1.34,2.4,-.61,1.08,-.10,33]
+ two:portrait?[-.35,1.48,Math.max(3.8,4.0*.82/aspect),-.30,1.32,-.10,34]:[-.61,1.48,3.3,-.40,1.35,-.10,33]
  };
  return frames[shot]||frames.wide;
 }
