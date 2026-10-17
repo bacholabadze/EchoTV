@@ -1,0 +1,23 @@
+ECHO Character Lab — attribution
+
+BASE AVATAR
+mpfb.glb from https://github.com/met4citizen/TalkingHead
+Original asset: https://github.com/met4citizen/TalkingHead/blob/main/avatars/mpfb.glb
+The source README identifies this MPFB/Blender model as CC0.
+This lab resizes textures and replaces clothing material and eye geometry at runtime.
+The underlying base character is not original commissioned ECHO artwork.
+TalkingHead runtime code is not included.
+
+RENDERING
+Three.js r170, MIT license. Full license: ../vendor/THREE-LICENSE.txt
+https://github.com/mrdoob/three.js
+
+AUDIO
+Original ECHO dialogue synthesized offline using Piper, en_US-ljspeech-high.
+Voice model card: https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/ljspeech/high/MODEL_CARD
+Dataset identified by the model card: LJSpeech, public domain.
+Repository: https://huggingface.co/rhasspy/piper-voices (MIT).
+Only generated recordings and sample-aligned phoneme cues are distributed here;
+no voice model or synthesis runtime is bundled. No voice API is called.
+
+Custom lab interface, shaders and performance choreography created for this prototype.

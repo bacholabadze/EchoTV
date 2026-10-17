@@ -1,0 +1,27 @@
+{
+  "channel": {
+    "name": "ECHO TV",
+    "mode": "on-demand prototype"
+  },
+  "shows": [
+    {
+      "id": "the-table",
+      "title": "The Table",
+      "url": "/shows/the-table/",
+      "description": "One question. Three perspectives. Room to change your mind."
+    }
+  ],
+  "episodes": [
+    {
+      "id": "room-for-doubt",
+      "showId": "the-table",
+      "title": "Room for doubt",
+      "question": "Would you trust a perfect answer?",
+      "durationSeconds": 70.57,
+      "status": "scripted-demo",
+      "url": "/studio/",
+      "audio": "recorded synthetic voices",
+      "rendering": "real-time 3D"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+ECHO Studio — scripted demonstration audio
+
+Ten original English dialogue turns, written for this prototype. They are a fixed
+script, not a live AI debate. ECHO, Nova and Atlas share one synthetic source voice;
+this demonstration does not provide distinct cloned or actor voices.
+
+Generated offline with official piper-tts 1.8.0 and en_US-ljspeech-high.
+Runtime: https://github.com/OHF-Voice/piper1-gpl (GPL-3.0; not distributed here).
+Model: https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/ljspeech/high
+Model card: https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/ljspeech/high/MODEL_CARD
+Dataset: https://keithito.com/LJ-Speech-Dataset/ — public domain, per model card.
+The model card was retrieved and checked on 2026-10-16. Existing prototype voice
+configuration identifies the same LJSpeech high-quality, 22,050Hz model.
+
+Only generated MP3 recordings and sample-aligned phoneme-to-viseme cues are shipped.
+No synthesis runtime, model, API credentials or paid service is included.
+Cues come from Piper's synthesis alignments and are mapped to the avatar's standard
+viseme keys. Mapping and coarticulation are approximate; these are not measured
+human performance or a claim of perfectly accurate lip synchronization.
+No amplitude-only lip-sync is presented as phoneme-accurate.

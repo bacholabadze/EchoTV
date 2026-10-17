@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nova — production notes</title><style>body{max-width:820px;margin:48px auto;padding:24px;background:#f5f3e9;color:#183229;font:16px/1.7 system-ui}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}a{color:inherit}</style><a href="./">Return to Nova study</a> · <a href="/studio/">Open full Studio</a><pre># Nova character study
+
+A separate, 15.008-second visual proof at `/studio/lookdev/`. It preserves Current, Original and Studio V2. The shared room accepts an optional actor factory; its default cast and mouth strength remain unchanged.
+
+## Implemented
+
+- Derived Blender-authored GLB from the existing CC0 MPFB base: softer cheek/jaw contour, reshaped nose, sculpted bob, brows, integrated eyes, brass earrings and ivory clothing.
+- Retained skeleton and 66 facial morph targets; corrected blink deformation. Baked ambient occlusion is exported in the GLB material.
+- One shared room, one renderer and a fixed camera with portrait-specific distance. HDR environment processed through PMREM, capped pixel ratio 1.5, rendering stops while paused/hidden.
+- Two existing Nova recordings, captions and existing speech cues. Authored small head/arm beats. This is scripted animation, not live emotion inference or newly generated speech.
+- Existing provider-neutral mock adapter for playback, pause, resume, replay, interruption and mute. Audio-only caption fallback for unavailable WebGL.
+
+## Credits and provenance
+
+- MPFB / MakeHuman base assets: CC0. https://static.makehumancommunity.org/mpfb.html and https://static.makehumancommunity.org/about/license.html . Adapted from the project&#x27;s existing `dist/lab/assets/nova.glb`; no external character marketplace asset added.
+- Studio Small 06 by Greg Zaal / Poly Haven: CC0. https://polyhaven.com/a/studio_small_06 and https://polyhaven.com/license . Downloaded original 1K Radiance HDR from https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_06_1k.hdr .
+- Three.js r170 / RGBELoader: MIT. https://github.com/mrdoob/three.js/tree/r170 and https://github.com/mrdoob/three.js/blob/r170/LICENSE . Loader pinned to the existing renderer version.
+- Existing Piper/LJSpeech recordings reused without adding a voice service. See existing Studio research and asset credits for their provenance.
+- Blender 4.5.3 used offline for model authoring, AO baking and review renders; no Blender runtime dependency or paid service.
+
+## Validation and limits
+
+The GLB is approximately 9.07 MB. Automated checks cover 66 retained base face targets, finite posed/morphed vertices, seated wrist contacts, four portrait/desktop head framings, recorded duration, caption text, audio paths and baked AO. Existing Studio rig and transport tests continue to pass.
+
+Neutral, speaking and blinking geometry were viewed in actual offline Blender renders. These are not browser screenshots: browser material appearance, touch behavior and device frame rate remain unverified because the supported browser QA capability is unavailable. No FPS claim is made.
+
+This is one character and one fixed angle, not a completed three-character upgrade. Hair and facial styling remain a procedural derivative of the original base, not a commissioned bespoke character. The direction is now integrated into the full Studio as three derived variants; bespoke full-cast art, close-up polish and real-device approval remain later work. Build source: `tools/build-nova-lookdev.py` (Blender required).
+
+
+## Full-room integration
+
+Studio Edition 03 uses this asset in the full conversation with independent ECHO, Nova and Atlas variants and shared HDR lighting. Open `/studio/` for the new cast or `/studio/?edition=2` for the previous cast. The 15-second study on this page remains unchanged.
+</pre></html>

@@ -1,0 +1,5595 @@
+[
+  {
+    "id": "01",
+    "speaker": "echo",
+    "text": "Would you trust a perfect answer? Nova says confidence helps us move. Atlas thinks it can hide the problem.",
+    "audio": "audio/01.mp3",
+    "duration": 6.7686,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.0232,
+        "key": null
+      },
+      {
+        "start": 0.0232,
+        "end": 0.058,
+        "key": "U"
+      },
+      {
+        "start": 0.058,
+        "end": 0.0813,
+        "key": "U"
+      },
+      {
+        "start": 0.0813,
+        "end": 0.1161,
+        "key": "DD"
+      },
+      {
+        "start": 0.1161,
+        "end": 0.1509,
+        "key": null
+      },
+      {
+        "start": 0.1509,
+        "end": 0.209,
+        "key": "I"
+      },
+      {
+        "start": 0.209,
+        "end": 0.2438,
+        "key": "U"
+      },
+      {
+        "start": 0.2438,
+        "end": 0.267,
+        "key": "aa"
+      },
+      {
+        "start": 0.267,
+        "end": 0.3251,
+        "key": null
+      },
+      {
+        "start": 0.3251,
+        "end": 0.3831,
+        "key": "DD"
+      },
+      {
+        "start": 0.3831,
+        "end": 0.4296,
+        "key": "RR"
+      },
+      {
+        "start": 0.4296,
+        "end": 0.4528,
+        "key": null
+      },
+      {
+        "start": 0.4528,
+        "end": 0.5341,
+        "key": "aa"
+      },
+      {
+        "start": 0.5341,
+        "end": 0.5921,
+        "key": "SS"
+      },
+      {
+        "start": 0.5921,
+        "end": 0.6385,
+        "key": "DD"
+      },
+      {
+        "start": 0.6385,
+        "end": 0.685,
+        "key": null
+      },
+      {
+        "start": 0.685,
+        "end": 0.7314,
+        "key": "aa"
+      },
+      {
+        "start": 0.7314,
+        "end": 0.7779,
+        "key": null
+      },
+      {
+        "start": 0.7779,
+        "end": 0.8127,
+        "key": "PP"
+      },
+      {
+        "start": 0.8127,
+        "end": 0.8707,
+        "key": null
+      },
+      {
+        "start": 0.8707,
+        "end": 0.9404,
+        "key": "E"
+      },
+      {
+        "start": 0.9404,
+        "end": 0.9636,
+        "key": "aa"
+      },
+      {
+        "start": 0.9636,
+        "end": 1.0449,
+        "key": "FF"
+      },
+      {
+        "start": 1.0449,
+        "end": 1.0797,
+        "key": "E"
+      },
+      {
+        "start": 1.0797,
+        "end": 1.1262,
+        "key": "kk"
+      },
+      {
+        "start": 1.1262,
+        "end": 1.161,
+        "key": "DD"
+      },
+      {
+        "start": 1.161,
+        "end": 1.2074,
+        "key": null
+      },
+      {
+        "start": 1.2074,
+        "end": 1.3119,
+        "key": null
+      },
+      {
+        "start": 1.3119,
+        "end": 1.4164,
+        "key": "aa"
+      },
+      {
+        "start": 1.4164,
+        "end": 1.5093,
+        "key": "nn"
+      },
+      {
+        "start": 1.5093,
+        "end": 1.5906,
+        "key": "SS"
+      },
+      {
+        "start": 1.5906,
+        "end": 1.6951,
+        "key": "aa"
+      },
+      {
+        "start": 1.6951,
+        "end": 1.7879,
+        "key": null
+      },
+      {
+        "start": 1.7879,
+        "end": 1.8228,
+        "key": null
+      },
+      {
+        "start": 1.8228,
+        "end": 1.8692,
+        "key": null
+      },
+      {
+        "start": 1.8692,
+        "end": 1.9156,
+        "key": "nn"
+      },
+      {
+        "start": 1.9156,
+        "end": 1.9621,
+        "key": null
+      },
+      {
+        "start": 1.9621,
+        "end": 2.0434,
+        "key": "aa"
+      },
+      {
+        "start": 2.0434,
+        "end": 2.0898,
+        "key": "U"
+      },
+      {
+        "start": 2.0898,
+        "end": 2.1711,
+        "key": "FF"
+      },
+      {
+        "start": 2.1711,
+        "end": 2.2523,
+        "key": "aa"
+      },
+      {
+        "start": 2.2523,
+        "end": 2.322,
+        "key": null
+      },
+      {
+        "start": 2.322,
+        "end": 2.4033,
+        "key": "SS"
+      },
+      {
+        "start": 2.4033,
+        "end": 2.4845,
+        "key": null
+      },
+      {
+        "start": 2.4845,
+        "end": 2.531,
+        "key": "E"
+      },
+      {
+        "start": 2.531,
+        "end": 2.6006,
+        "key": "SS"
+      },
+      {
+        "start": 2.6006,
+        "end": 2.6935,
+        "key": null
+      },
+      {
+        "start": 2.6935,
+        "end": 2.7748,
+        "key": "kk"
+      },
+      {
+        "start": 2.7748,
+        "end": 2.8444,
+        "key": null
+      },
+      {
+        "start": 2.8444,
+        "end": 2.9141,
+        "key": "aa"
+      },
+      {
+        "start": 2.9141,
+        "end": 3.007,
+        "key": "nn"
+      },
+      {
+        "start": 3.007,
+        "end": 3.0302,
+        "key": "FF"
+      },
+      {
+        "start": 3.0302,
+        "end": 3.0883,
+        "key": "I"
+      },
+      {
+        "start": 3.0883,
+        "end": 3.1347,
+        "key": "DD"
+      },
+      {
+        "start": 3.1347,
+        "end": 3.216,
+        "key": "aa"
+      },
+      {
+        "start": 3.216,
+        "end": 3.2508,
+        "key": "nn"
+      },
+      {
+        "start": 3.2508,
+        "end": 3.3088,
+        "key": "SS"
+      },
+      {
+        "start": 3.3088,
+        "end": 3.3553,
+        "key": null
+      },
+      {
+        "start": 3.3553,
+        "end": 3.4133,
+        "key": "aa"
+      },
+      {
+        "start": 3.4133,
+        "end": 3.483,
+        "key": null
+      },
+      {
+        "start": 3.483,
+        "end": 3.5294,
+        "key": "E"
+      },
+      {
+        "start": 3.5294,
+        "end": 3.5991,
+        "key": "nn"
+      },
+      {
+        "start": 3.5991,
+        "end": 3.6455,
+        "key": "PP"
+      },
+      {
+        "start": 3.6455,
+        "end": 3.692,
+        "key": "SS"
+      },
+      {
+        "start": 3.692,
+        "end": 3.7268,
+        "key": null
+      },
+      {
+        "start": 3.7268,
+        "end": 3.75,
+        "key": null
+      },
+      {
+        "start": 3.75,
+        "end": 3.8081,
+        "key": "aa"
+      },
+      {
+        "start": 3.8081,
+        "end": 3.8661,
+        "key": "SS"
+      },
+      {
+        "start": 3.8661,
+        "end": 3.9474,
+        "key": null
+      },
+      {
+        "start": 3.9474,
+        "end": 4.0403,
+        "key": "PP"
+      },
+      {
+        "start": 4.0403,
+        "end": 4.1332,
+        "key": null
+      },
+      {
+        "start": 4.1332,
+        "end": 4.2376,
+        "key": "U"
+      },
+      {
+        "start": 4.2376,
+        "end": 4.3189,
+        "key": "aa"
+      },
+      {
+        "start": 4.3189,
+        "end": 4.3654,
+        "key": "FF"
+      },
+      {
+        "start": 4.3654,
+        "end": 4.4118,
+        "key": null
+      },
+      {
+        "start": 4.4118,
+        "end": 4.4234,
+        "key": null
+      },
+      {
+        "start": 4.4234,
+        "end": 4.4466,
+        "key": null
+      },
+      {
+        "start": 4.4466,
+        "end": 4.5511,
+        "key": null
+      },
+      {
+        "start": 4.5511,
+        "end": 4.6556,
+        "key": "aa"
+      },
+      {
+        "start": 4.6556,
+        "end": 4.7253,
+        "key": "DD"
+      },
+      {
+        "start": 4.7253,
+        "end": 4.7833,
+        "key": "nn"
+      },
+      {
+        "start": 4.7833,
+        "end": 4.8646,
+        "key": "aa"
+      },
+      {
+        "start": 4.8646,
+        "end": 4.9575,
+        "key": "SS"
+      },
+      {
+        "start": 4.9575,
+        "end": 5.0039,
+        "key": null
+      },
+      {
+        "start": 5.0039,
+        "end": 5.0736,
+        "key": "TH"
+      },
+      {
+        "start": 5.0736,
+        "end": 5.1548,
+        "key": null
+      },
+      {
+        "start": 5.1548,
+        "end": 5.2013,
+        "key": "I"
+      },
+      {
+        "start": 5.2013,
+        "end": 5.2477,
+        "key": "kk"
+      },
+      {
+        "start": 5.2477,
+        "end": 5.2825,
+        "key": "kk"
+      },
+      {
+        "start": 5.2825,
+        "end": 5.329,
+        "key": "SS"
+      },
+      {
+        "start": 5.329,
+        "end": 5.3522,
+        "key": null
+      },
+      {
+        "start": 5.3522,
+        "end": 5.4219,
+        "key": "I"
+      },
+      {
+        "start": 5.4219,
+        "end": 5.4799,
+        "key": "DD"
+      },
+      {
+        "start": 5.4799,
+        "end": 5.5612,
+        "key": null
+      },
+      {
+        "start": 5.5612,
+        "end": 5.6076,
+        "key": "kk"
+      },
+      {
+        "start": 5.6076,
+        "end": 5.6541,
+        "key": "aa"
+      },
+      {
+        "start": 5.6541,
+        "end": 5.7237,
+        "key": "nn"
+      },
+      {
+        "start": 5.7237,
+        "end": 5.7702,
+        "key": null
+      },
+      {
+        "start": 5.7702,
+        "end": 5.805,
+        "key": "aa"
+      },
+      {
+        "start": 5.805,
+        "end": 5.8514,
+        "key": null
+      },
+      {
+        "start": 5.8514,
+        "end": 5.8979,
+        "key": "aa"
+      },
+      {
+        "start": 5.8979,
+        "end": 5.9211,
+        "key": "I"
+      },
+      {
+        "start": 5.9211,
+        "end": 5.9443,
+        "key": "DD"
+      },
+      {
+        "start": 5.9443,
+        "end": 5.9907,
+        "key": null
+      },
+      {
+        "start": 5.9907,
+        "end": 6.0256,
+        "key": "TH"
+      },
+      {
+        "start": 6.0256,
+        "end": 6.072,
+        "key": "aa"
+      },
+      {
+        "start": 6.072,
+        "end": 6.1301,
+        "key": null
+      },
+      {
+        "start": 6.1301,
+        "end": 6.1765,
+        "key": "PP"
+      },
+      {
+        "start": 6.1765,
+        "end": 6.2346,
+        "key": "RR"
+      },
+      {
+        "start": 6.2346,
+        "end": 6.3274,
+        "key": null
+      },
+      {
+        "start": 6.3274,
+        "end": 6.4203,
+        "key": "aa"
+      },
+      {
+        "start": 6.4203,
+        "end": 6.4784,
+        "key": "PP"
+      },
+      {
+        "start": 6.4784,
+        "end": 6.548,
+        "key": "nn"
+      },
+      {
+        "start": 6.548,
+        "end": 6.6061,
+        "key": "aa"
+      },
+      {
+        "start": 6.6061,
+        "end": 6.6641,
+        "key": "PP"
+      },
+      {
+        "start": 6.6641,
+        "end": 6.7338,
+        "key": null
+      },
+      {
+        "start": 6.7338,
+        "end": 6.7686,
+        "key": null
+      }
+    ],
+    "captions": [
+      {
+        "start": 0,
+        "end": 1.8228,
+        "text": "Would you trust a perfect answer?"
+      },
+      {
+        "start": 1.8228,
+        "end": 4.4234,
+        "text": "Nova says confidence helps us move."
+      },
+      {
+        "start": 4.4234,
+        "end": 6.7686,
+        "text": "Atlas thinks it can hide the problem."
+      }
+    ],
+    "performance": [
+      {
+        "at": 0.2,
+        "actor": "echo",
+        "intent": "question",
+        "duration": 1.7,
+        "nod": false
+      },
+      {
+        "at": 2.2,
+        "actor": "nova",
+        "intent": "acknowledge",
+        "duration": 1.3,
+        "nod": true
+      },
+      {
+        "at": 4.5,
+        "actor": "atlas",
+        "intent": "doubt",
+        "duration": 1.6,
+        "nod": false
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "audience"
+      },
+      {
+        "at": 1.82,
+        "target": "nova"
+      },
+      {
+        "at": 4.42,
+        "target": "atlas"
+      }
+    ],
+    "gestures": [
+      {
+        "at": 0.5,
+        "duration": 1.5,
+        "strength": 0.6
+      }
+    ]
+  },
+  {
+    "id": "02",
+    "speaker": "nova",
+    "text": "I trust an answer that saves hours. If I check everything myself, what have I gained?",
+    "audio": "audio/02.mp3",
+    "duration": 6.757,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.0348,
+        "key": null
+      },
+      {
+        "start": 0.0348,
+        "end": 0.1974,
+        "key": "aa"
+      },
+      {
+        "start": 0.1974,
+        "end": 0.2554,
+        "key": "I"
+      },
+      {
+        "start": 0.2554,
+        "end": 0.3599,
+        "key": null
+      },
+      {
+        "start": 0.3599,
+        "end": 0.418,
+        "key": "DD"
+      },
+      {
+        "start": 0.418,
+        "end": 0.476,
+        "key": "RR"
+      },
+      {
+        "start": 0.476,
+        "end": 0.5341,
+        "key": null
+      },
+      {
+        "start": 0.5341,
+        "end": 0.6502,
+        "key": "aa"
+      },
+      {
+        "start": 0.6502,
+        "end": 0.6966,
+        "key": "SS"
+      },
+      {
+        "start": 0.6966,
+        "end": 0.7546,
+        "key": "DD"
+      },
+      {
+        "start": 0.7546,
+        "end": 0.8011,
+        "key": null
+      },
+      {
+        "start": 0.8011,
+        "end": 0.8591,
+        "key": "aa"
+      },
+      {
+        "start": 0.8591,
+        "end": 0.894,
+        "key": "nn"
+      },
+      {
+        "start": 0.894,
+        "end": 0.9404,
+        "key": null
+      },
+      {
+        "start": 0.9404,
+        "end": 1.0565,
+        "key": null
+      },
+      {
+        "start": 1.0565,
+        "end": 1.1494,
+        "key": "aa"
+      },
+      {
+        "start": 1.1494,
+        "end": 1.2074,
+        "key": "nn"
+      },
+      {
+        "start": 1.2074,
+        "end": 1.3003,
+        "key": "SS"
+      },
+      {
+        "start": 1.3003,
+        "end": 1.4164,
+        "key": "aa"
+      },
+      {
+        "start": 1.4164,
+        "end": 1.4512,
+        "key": null
+      },
+      {
+        "start": 1.4512,
+        "end": 1.4977,
+        "key": "TH"
+      },
+      {
+        "start": 1.4977,
+        "end": 1.5441,
+        "key": "aa"
+      },
+      {
+        "start": 1.5441,
+        "end": 1.6486,
+        "key": "DD"
+      },
+      {
+        "start": 1.6486,
+        "end": 1.7647,
+        "key": null
+      },
+      {
+        "start": 1.7647,
+        "end": 1.8344,
+        "key": "SS"
+      },
+      {
+        "start": 1.8344,
+        "end": 1.9156,
+        "key": null
+      },
+      {
+        "start": 1.9156,
+        "end": 2.0201,
+        "key": "E"
+      },
+      {
+        "start": 2.0201,
+        "end": 2.0898,
+        "key": "I"
+      },
+      {
+        "start": 2.0898,
+        "end": 2.1362,
+        "key": "FF"
+      },
+      {
+        "start": 2.1362,
+        "end": 2.1711,
+        "key": "SS"
+      },
+      {
+        "start": 2.1711,
+        "end": 2.2756,
+        "key": null
+      },
+      {
+        "start": 2.2756,
+        "end": 2.4149,
+        "key": null
+      },
+      {
+        "start": 2.4149,
+        "end": 2.5194,
+        "key": "aa"
+      },
+      {
+        "start": 2.5194,
+        "end": 2.6122,
+        "key": "U"
+      },
+      {
+        "start": 2.6122,
+        "end": 2.7516,
+        "key": "aa"
+      },
+      {
+        "start": 2.7516,
+        "end": 2.9141,
+        "key": "SS"
+      },
+      {
+        "start": 2.9141,
+        "end": 2.9954,
+        "key": null
+      },
+      {
+        "start": 2.9954,
+        "end": 3.0534,
+        "key": null
+      },
+      {
+        "start": 3.0534,
+        "end": 3.0766,
+        "key": null
+      },
+      {
+        "start": 3.0766,
+        "end": 3.1231,
+        "key": "I"
+      },
+      {
+        "start": 3.1231,
+        "end": 3.1927,
+        "key": "FF"
+      },
+      {
+        "start": 3.1927,
+        "end": 3.2624,
+        "key": null
+      },
+      {
+        "start": 3.2624,
+        "end": 3.3088,
+        "key": "aa"
+      },
+      {
+        "start": 3.3088,
+        "end": 3.3669,
+        "key": "I"
+      },
+      {
+        "start": 3.3669,
+        "end": 3.4366,
+        "key": null
+      },
+      {
+        "start": 3.4366,
+        "end": 3.4946,
+        "key": "DD"
+      },
+      {
+        "start": 3.4946,
+        "end": 3.5527,
+        "key": "CH"
+      },
+      {
+        "start": 3.5527,
+        "end": 3.5991,
+        "key": null
+      },
+      {
+        "start": 3.5991,
+        "end": 3.6455,
+        "key": "E"
+      },
+      {
+        "start": 3.6455,
+        "end": 3.7036,
+        "key": "kk"
+      },
+      {
+        "start": 3.7036,
+        "end": 3.7849,
+        "key": null
+      },
+      {
+        "start": 3.7849,
+        "end": 3.8661,
+        "key": null
+      },
+      {
+        "start": 3.8661,
+        "end": 3.9126,
+        "key": "E"
+      },
+      {
+        "start": 3.9126,
+        "end": 3.9706,
+        "key": "FF"
+      },
+      {
+        "start": 3.9706,
+        "end": 4.0287,
+        "key": "RR"
+      },
+      {
+        "start": 4.0287,
+        "end": 4.1099,
+        "key": "I"
+      },
+      {
+        "start": 4.1099,
+        "end": 4.1796,
+        "key": "TH"
+      },
+      {
+        "start": 4.1796,
+        "end": 4.226,
+        "key": null
+      },
+      {
+        "start": 4.226,
+        "end": 4.2493,
+        "key": "I"
+      },
+      {
+        "start": 4.2493,
+        "end": 4.3073,
+        "key": "kk"
+      },
+      {
+        "start": 4.3073,
+        "end": 4.3421,
+        "key": null
+      },
+      {
+        "start": 4.3421,
+        "end": 4.3886,
+        "key": "PP"
+      },
+      {
+        "start": 4.3886,
+        "end": 4.4582,
+        "key": "aa"
+      },
+      {
+        "start": 4.4582,
+        "end": 4.5395,
+        "key": "I"
+      },
+      {
+        "start": 4.5395,
+        "end": 4.7485,
+        "key": "SS"
+      },
+      {
+        "start": 4.7485,
+        "end": 4.8298,
+        "key": null
+      },
+      {
+        "start": 4.8298,
+        "end": 4.9342,
+        "key": "E"
+      },
+      {
+        "start": 4.9342,
+        "end": 5.0039,
+        "key": "nn"
+      },
+      {
+        "start": 5.0039,
+        "end": 5.0736,
+        "key": "FF"
+      },
+      {
+        "start": 5.0736,
+        "end": 5.387,
+        "key": null
+      },
+      {
+        "start": 5.387,
+        "end": 5.5496,
+        "key": null
+      },
+      {
+        "start": 5.5496,
+        "end": 5.5844,
+        "key": "U"
+      },
+      {
+        "start": 5.5844,
+        "end": 5.6192,
+        "key": null
+      },
+      {
+        "start": 5.6192,
+        "end": 5.6541,
+        "key": "aa"
+      },
+      {
+        "start": 5.6541,
+        "end": 5.6889,
+        "key": "DD"
+      },
+      {
+        "start": 5.6889,
+        "end": 5.7353,
+        "key": null
+      },
+      {
+        "start": 5.7353,
+        "end": 5.8166,
+        "key": "aa"
+      },
+      {
+        "start": 5.8166,
+        "end": 5.863,
+        "key": "aa"
+      },
+      {
+        "start": 5.863,
+        "end": 5.8979,
+        "key": "FF"
+      },
+      {
+        "start": 5.8979,
+        "end": 5.9559,
+        "key": null
+      },
+      {
+        "start": 5.9559,
+        "end": 6.0372,
+        "key": "aa"
+      },
+      {
+        "start": 6.0372,
+        "end": 6.0952,
+        "key": "I"
+      },
+      {
+        "start": 6.0952,
+        "end": 6.1649,
+        "key": null
+      },
+      {
+        "start": 6.1649,
+        "end": 6.2578,
+        "key": "kk"
+      },
+      {
+        "start": 6.2578,
+        "end": 6.281,
+        "key": null
+      },
+      {
+        "start": 6.281,
+        "end": 6.3158,
+        "key": "E"
+      },
+      {
+        "start": 6.3158,
+        "end": 6.4435,
+        "key": "I"
+      },
+      {
+        "start": 6.4435,
+        "end": 6.5364,
+        "key": "nn"
+      },
+      {
+        "start": 6.5364,
+        "end": 6.6409,
+        "key": "DD"
+      },
+      {
+        "start": 6.6409,
+        "end": 6.699,
+        "key": null
+      },
+      {
+        "start": 6.699,
+        "end": 6.757,
+        "key": null
+      }
+    ],
+    "captions": [
+      {
+        "start": 0,
+        "end": 3.0534,
+        "text": "I trust an answer that saves hours."
+      },
+      {
+        "start": 3.0534,
+        "end": 6.757,
+        "text": "If I check everything myself, what have I gained?"
+      }
+    ],
+    "performance": [
+      {
+        "at": 0.3,
+        "actor": "nova",
+        "intent": "warmth",
+        "duration": 1.7,
+        "nod": false
+      },
+      {
+        "at": 3.1,
+        "actor": "nova",
+        "intent": "question",
+        "duration": 2.1,
+        "nod": false
+      },
+      {
+        "at": 4.1,
+        "actor": "echo",
+        "intent": "consider",
+        "duration": 1.7,
+        "nod": false
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "echo"
+      },
+      {
+        "at": 3.05,
+        "target": "atlas"
+      }
+    ],
+    "gestures": [
+      {
+        "at": 0.4,
+        "duration": 1.7,
+        "strength": 0.65
+      }
+    ]
+  },
+  {
+    "id": "03",
+    "speaker": "atlas",
+    "text": "Time, perhaps. But a confident voice can make a guess sound like a fact. Even a beautiful guess.",
+    "audio": "audio/03.mp3",
+    "duration": 7.8483,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.0464,
+        "key": null
+      },
+      {
+        "start": 0.0464,
+        "end": 0.1277,
+        "key": "DD"
+      },
+      {
+        "start": 0.1277,
+        "end": 0.1741,
+        "key": null
+      },
+      {
+        "start": 0.1741,
+        "end": 0.2786,
+        "key": "aa"
+      },
+      {
+        "start": 0.2786,
+        "end": 0.3367,
+        "key": "I"
+      },
+      {
+        "start": 0.3367,
+        "end": 0.3715,
+        "key": "PP"
+      },
+      {
+        "start": 0.3715,
+        "end": 0.418,
+        "key": null
+      },
+      {
+        "start": 0.418,
+        "end": 0.4528,
+        "key": null
+      },
+      {
+        "start": 0.4528,
+        "end": 0.5573,
+        "key": "PP"
+      },
+      {
+        "start": 0.5573,
+        "end": 0.6037,
+        "key": "aa"
+      },
+      {
+        "start": 0.6037,
+        "end": 0.6966,
+        "key": "aa"
+      },
+      {
+        "start": 0.6966,
+        "end": 0.8475,
+        "key": null
+      },
+      {
+        "start": 0.8475,
+        "end": 1.0217,
+        "key": "aa"
+      },
+      {
+        "start": 1.0217,
+        "end": 1.0913,
+        "key": "PP"
+      },
+      {
+        "start": 1.0913,
+        "end": 1.2655,
+        "key": "SS"
+      },
+      {
+        "start": 1.2655,
+        "end": 1.3468,
+        "key": null
+      },
+      {
+        "start": 1.3468,
+        "end": 1.4048,
+        "key": null
+      },
+      {
+        "start": 1.4048,
+        "end": 1.428,
+        "key": null
+      },
+      {
+        "start": 1.428,
+        "end": 1.4745,
+        "key": "PP"
+      },
+      {
+        "start": 1.4745,
+        "end": 1.5673,
+        "key": null
+      },
+      {
+        "start": 1.5673,
+        "end": 1.6486,
+        "key": "aa"
+      },
+      {
+        "start": 1.6486,
+        "end": 1.7531,
+        "key": "DD"
+      },
+      {
+        "start": 1.7531,
+        "end": 2.1943,
+        "key": null
+      },
+      {
+        "start": 2.1943,
+        "end": 2.2872,
+        "key": "aa"
+      },
+      {
+        "start": 2.2872,
+        "end": 2.38,
+        "key": null
+      },
+      {
+        "start": 2.38,
+        "end": 2.4613,
+        "key": "kk"
+      },
+      {
+        "start": 2.4613,
+        "end": 2.5426,
+        "key": null
+      },
+      {
+        "start": 2.5426,
+        "end": 2.6239,
+        "key": "aa"
+      },
+      {
+        "start": 2.6239,
+        "end": 2.6819,
+        "key": "nn"
+      },
+      {
+        "start": 2.6819,
+        "end": 2.74,
+        "key": "FF"
+      },
+      {
+        "start": 2.74,
+        "end": 2.7864,
+        "key": "I"
+      },
+      {
+        "start": 2.7864,
+        "end": 2.8328,
+        "key": "DD"
+      },
+      {
+        "start": 2.8328,
+        "end": 2.8909,
+        "key": "aa"
+      },
+      {
+        "start": 2.8909,
+        "end": 2.9257,
+        "key": "nn"
+      },
+      {
+        "start": 2.9257,
+        "end": 2.9605,
+        "key": "DD"
+      },
+      {
+        "start": 2.9605,
+        "end": 3.0534,
+        "key": null
+      },
+      {
+        "start": 3.0534,
+        "end": 3.1463,
+        "key": "FF"
+      },
+      {
+        "start": 3.1463,
+        "end": 3.2624,
+        "key": null
+      },
+      {
+        "start": 3.2624,
+        "end": 3.3205,
+        "key": "O"
+      },
+      {
+        "start": 3.3205,
+        "end": 3.4133,
+        "key": "I"
+      },
+      {
+        "start": 3.4133,
+        "end": 3.4946,
+        "key": "SS"
+      },
+      {
+        "start": 3.4946,
+        "end": 3.5643,
+        "key": null
+      },
+      {
+        "start": 3.5643,
+        "end": 3.6107,
+        "key": "kk"
+      },
+      {
+        "start": 3.6107,
+        "end": 3.6455,
+        "key": "aa"
+      },
+      {
+        "start": 3.6455,
+        "end": 3.692,
+        "key": "nn"
+      },
+      {
+        "start": 3.692,
+        "end": 3.7152,
+        "key": null
+      },
+      {
+        "start": 3.7152,
+        "end": 3.7616,
+        "key": "PP"
+      },
+      {
+        "start": 3.7616,
+        "end": 3.7849,
+        "key": null
+      },
+      {
+        "start": 3.7849,
+        "end": 3.8081,
+        "key": "E"
+      },
+      {
+        "start": 3.8081,
+        "end": 3.8429,
+        "key": "I"
+      },
+      {
+        "start": 3.8429,
+        "end": 3.8893,
+        "key": "kk"
+      },
+      {
+        "start": 3.8893,
+        "end": 3.9242,
+        "key": null
+      },
+      {
+        "start": 3.9242,
+        "end": 3.9938,
+        "key": "aa"
+      },
+      {
+        "start": 3.9938,
+        "end": 4.0287,
+        "key": null
+      },
+      {
+        "start": 4.0287,
+        "end": 4.0867,
+        "key": "kk"
+      },
+      {
+        "start": 4.0867,
+        "end": 4.168,
+        "key": null
+      },
+      {
+        "start": 4.168,
+        "end": 4.2725,
+        "key": "E"
+      },
+      {
+        "start": 4.2725,
+        "end": 4.3421,
+        "key": "SS"
+      },
+      {
+        "start": 4.3421,
+        "end": 4.4234,
+        "key": null
+      },
+      {
+        "start": 4.4234,
+        "end": 4.4698,
+        "key": "SS"
+      },
+      {
+        "start": 4.4698,
+        "end": 4.5047,
+        "key": null
+      },
+      {
+        "start": 4.5047,
+        "end": 4.5627,
+        "key": "aa"
+      },
+      {
+        "start": 4.5627,
+        "end": 4.5976,
+        "key": "U"
+      },
+      {
+        "start": 4.5976,
+        "end": 4.6788,
+        "key": "nn"
+      },
+      {
+        "start": 4.6788,
+        "end": 4.7369,
+        "key": "DD"
+      },
+      {
+        "start": 4.7369,
+        "end": 4.7949,
+        "key": null
+      },
+      {
+        "start": 4.7949,
+        "end": 4.8298,
+        "key": "nn"
+      },
+      {
+        "start": 4.8298,
+        "end": 4.8762,
+        "key": null
+      },
+      {
+        "start": 4.8762,
+        "end": 4.8994,
+        "key": "aa"
+      },
+      {
+        "start": 4.8994,
+        "end": 4.9459,
+        "key": "I"
+      },
+      {
+        "start": 4.9459,
+        "end": 4.9807,
+        "key": "kk"
+      },
+      {
+        "start": 4.9807,
+        "end": 5.0155,
+        "key": null
+      },
+      {
+        "start": 5.0155,
+        "end": 5.0852,
+        "key": "aa"
+      },
+      {
+        "start": 5.0852,
+        "end": 5.1548,
+        "key": null
+      },
+      {
+        "start": 5.1548,
+        "end": 5.2825,
+        "key": "FF"
+      },
+      {
+        "start": 5.2825,
+        "end": 5.4799,
+        "key": null
+      },
+      {
+        "start": 5.4799,
+        "end": 5.5844,
+        "key": "aa"
+      },
+      {
+        "start": 5.5844,
+        "end": 5.6424,
+        "key": "kk"
+      },
+      {
+        "start": 5.6424,
+        "end": 5.7702,
+        "key": "DD"
+      },
+      {
+        "start": 5.7702,
+        "end": 5.8282,
+        "key": null
+      },
+      {
+        "start": 5.8282,
+        "end": 5.8979,
+        "key": null
+      },
+      {
+        "start": 5.8979,
+        "end": 5.9211,
+        "key": null
+      },
+      {
+        "start": 5.9211,
+        "end": 5.9907,
+        "key": null
+      },
+      {
+        "start": 5.9907,
+        "end": 6.0488,
+        "key": "I"
+      },
+      {
+        "start": 6.0488,
+        "end": 6.0836,
+        "key": "aa"
+      },
+      {
+        "start": 6.0836,
+        "end": 6.1533,
+        "key": "FF"
+      },
+      {
+        "start": 6.1533,
+        "end": 6.1997,
+        "key": "aa"
+      },
+      {
+        "start": 6.1997,
+        "end": 6.2462,
+        "key": "nn"
+      },
+      {
+        "start": 6.2462,
+        "end": 6.2694,
+        "key": null
+      },
+      {
+        "start": 6.2694,
+        "end": 6.3042,
+        "key": "aa"
+      },
+      {
+        "start": 6.3042,
+        "end": 6.3971,
+        "key": null
+      },
+      {
+        "start": 6.3971,
+        "end": 6.4319,
+        "key": "PP"
+      },
+      {
+        "start": 6.4319,
+        "end": 6.4784,
+        "key": "I"
+      },
+      {
+        "start": 6.4784,
+        "end": 6.5364,
+        "key": null
+      },
+      {
+        "start": 6.5364,
+        "end": 6.5829,
+        "key": "U"
+      },
+      {
+        "start": 6.5829,
+        "end": 6.6525,
+        "key": "aa"
+      },
+      {
+        "start": 6.6525,
+        "end": 6.7106,
+        "key": "DD"
+      },
+      {
+        "start": 6.7106,
+        "end": 6.8151,
+        "key": "I"
+      },
+      {
+        "start": 6.8151,
+        "end": 6.8847,
+        "key": "FF"
+      },
+      {
+        "start": 6.8847,
+        "end": 6.9544,
+        "key": "aa"
+      },
+      {
+        "start": 6.9544,
+        "end": 7.024,
+        "key": "nn"
+      },
+      {
+        "start": 7.024,
+        "end": 7.1169,
+        "key": null
+      },
+      {
+        "start": 7.1169,
+        "end": 7.1982,
+        "key": "kk"
+      },
+      {
+        "start": 7.1982,
+        "end": 7.2911,
+        "key": null
+      },
+      {
+        "start": 7.2911,
+        "end": 7.4536,
+        "key": "E"
+      },
+      {
+        "start": 7.4536,
+        "end": 7.7206,
+        "key": "SS"
+      },
+      {
+        "start": 7.7206,
+        "end": 7.7903,
+        "key": null
+      },
+      {
+        "start": 7.7903,
+        "end": 7.8483,
+        "key": null
+      }
+    ],
+    "captions": [
+      {
+        "start": 0,
+        "end": 1.4048,
+        "text": "Time, perhaps."
+      },
+      {
+        "start": 1.4048,
+        "end": 5.8979,
+        "text": "But a confident voice can make a guess sound like a fact."
+      },
+      {
+        "start": 5.8979,
+        "end": 7.8483,
+        "text": "Even a beautiful guess."
+      }
+    ],
+    "performance": [
+      {
+        "at": 0.1,
+        "actor": "atlas",
+        "intent": "doubt",
+        "duration": 1.3,
+        "nod": false
+      },
+      {
+        "at": 2,
+        "actor": "atlas",
+        "intent": "resolve",
+        "duration": 1.8,
+        "nod": false
+      },
+      {
+        "at": 6,
+        "actor": "nova",
+        "intent": "consider",
+        "duration": 1.2,
+        "nod": false
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "nova"
+      },
+      {
+        "at": 5.9,
+        "target": "echo"
+      }
+    ],
+    "gestures": [
+      {
+        "at": 1.7,
+        "duration": 1.8,
+        "strength": 0.5
+      }
+    ]
+  },
+  {
+    "id": "04",
+    "speaker": "echo",
+    "text": "An assistant says you should quit your job tomorrow. Clear reasoning. No hesitation. Would you?",
+    "audio": "audio/04.mp3",
+    "duration": 6.1185,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.0232,
+        "key": null
+      },
+      {
+        "start": 0.0232,
+        "end": 0.0697,
+        "key": "aa"
+      },
+      {
+        "start": 0.0697,
+        "end": 0.1161,
+        "key": "nn"
+      },
+      {
+        "start": 0.1161,
+        "end": 0.1509,
+        "key": null
+      },
+      {
+        "start": 0.1509,
+        "end": 0.2786,
+        "key": "aa"
+      },
+      {
+        "start": 0.2786,
+        "end": 0.3251,
+        "key": "SS"
+      },
+      {
+        "start": 0.3251,
+        "end": 0.3831,
+        "key": null
+      },
+      {
+        "start": 0.3831,
+        "end": 0.476,
+        "key": "I"
+      },
+      {
+        "start": 0.476,
+        "end": 0.5108,
+        "key": "SS"
+      },
+      {
+        "start": 0.5108,
+        "end": 0.5573,
+        "key": "DD"
+      },
+      {
+        "start": 0.5573,
+        "end": 0.6153,
+        "key": "aa"
+      },
+      {
+        "start": 0.6153,
+        "end": 0.6734,
+        "key": "nn"
+      },
+      {
+        "start": 0.6734,
+        "end": 0.7082,
+        "key": "DD"
+      },
+      {
+        "start": 0.7082,
+        "end": 0.7779,
+        "key": null
+      },
+      {
+        "start": 0.7779,
+        "end": 0.8707,
+        "key": "SS"
+      },
+      {
+        "start": 0.8707,
+        "end": 0.9172,
+        "key": null
+      },
+      {
+        "start": 0.9172,
+        "end": 0.9868,
+        "key": "E"
+      },
+      {
+        "start": 0.9868,
+        "end": 1.0333,
+        "key": "SS"
+      },
+      {
+        "start": 1.0333,
+        "end": 1.0565,
+        "key": null
+      },
+      {
+        "start": 1.0565,
+        "end": 1.0797,
+        "key": "I"
+      },
+      {
+        "start": 1.0797,
+        "end": 1.1146,
+        "key": "U"
+      },
+      {
+        "start": 1.1146,
+        "end": 1.1494,
+        "key": "aa"
+      },
+      {
+        "start": 1.1494,
+        "end": 1.1726,
+        "key": null
+      },
+      {
+        "start": 1.1726,
+        "end": 1.2307,
+        "key": "CH"
+      },
+      {
+        "start": 1.2307,
+        "end": 1.2539,
+        "key": null
+      },
+      {
+        "start": 1.2539,
+        "end": 1.2887,
+        "key": "U"
+      },
+      {
+        "start": 1.2887,
+        "end": 1.3351,
+        "key": "DD"
+      },
+      {
+        "start": 1.3351,
+        "end": 1.4396,
+        "key": null
+      },
+      {
+        "start": 1.4396,
+        "end": 1.5209,
+        "key": "kk"
+      },
+      {
+        "start": 1.5209,
+        "end": 1.5441,
+        "key": "U"
+      },
+      {
+        "start": 1.5441,
+        "end": 1.579,
+        "key": null
+      },
+      {
+        "start": 1.579,
+        "end": 1.6254,
+        "key": "I"
+      },
+      {
+        "start": 1.6254,
+        "end": 1.6718,
+        "key": "DD"
+      },
+      {
+        "start": 1.6718,
+        "end": 1.7067,
+        "key": null
+      },
+      {
+        "start": 1.7067,
+        "end": 1.7531,
+        "key": "I"
+      },
+      {
+        "start": 1.7531,
+        "end": 1.7763,
+        "key": "O"
+      },
+      {
+        "start": 1.7763,
+        "end": 1.8228,
+        "key": "aa"
+      },
+      {
+        "start": 1.8228,
+        "end": 1.8808,
+        "key": null
+      },
+      {
+        "start": 1.8808,
+        "end": 1.9505,
+        "key": "DD"
+      },
+      {
+        "start": 1.9505,
+        "end": 2.0085,
+        "key": "CH"
+      },
+      {
+        "start": 2.0085,
+        "end": 2.1014,
+        "key": null
+      },
+      {
+        "start": 2.1014,
+        "end": 2.1943,
+        "key": "aa"
+      },
+      {
+        "start": 2.1943,
+        "end": 2.2639,
+        "key": "PP"
+      },
+      {
+        "start": 2.2639,
+        "end": 2.3684,
+        "key": null
+      },
+      {
+        "start": 2.3684,
+        "end": 2.4381,
+        "key": "DD"
+      },
+      {
+        "start": 2.4381,
+        "end": 2.4845,
+        "key": "aa"
+      },
+      {
+        "start": 2.4845,
+        "end": 2.5426,
+        "key": "PP"
+      },
+      {
+        "start": 2.5426,
+        "end": 2.6355,
+        "key": null
+      },
+      {
+        "start": 2.6355,
+        "end": 2.7167,
+        "key": "aa"
+      },
+      {
+        "start": 2.7167,
+        "end": 2.7748,
+        "key": "RR"
+      },
+      {
+        "start": 2.7748,
+        "end": 2.8212,
+        "key": "aa"
+      },
+      {
+        "start": 2.8212,
+        "end": 2.9025,
+        "key": "U"
+      },
+      {
+        "start": 2.9025,
+        "end": 2.9722,
+        "key": null
+      },
+      {
+        "start": 2.9722,
+        "end": 3.0418,
+        "key": null
+      },
+      {
+        "start": 3.0418,
+        "end": 3.0766,
+        "key": null
+      },
+      {
+        "start": 3.0766,
+        "end": 3.1231,
+        "key": "kk"
+      },
+      {
+        "start": 3.1231,
+        "end": 3.1927,
+        "key": "nn"
+      },
+      {
+        "start": 3.1927,
+        "end": 3.2972,
+        "key": null
+      },
+      {
+        "start": 3.2972,
+        "end": 3.3437,
+        "key": "I"
+      },
+      {
+        "start": 3.3437,
+        "end": 3.4366,
+        "key": "aa"
+      },
+      {
+        "start": 3.4366,
+        "end": 3.483,
+        "key": null
+      },
+      {
+        "start": 3.483,
+        "end": 3.5294,
+        "key": "RR"
+      },
+      {
+        "start": 3.5294,
+        "end": 3.5643,
+        "key": null
+      },
+      {
+        "start": 3.5643,
+        "end": 3.6107,
+        "key": "I"
+      },
+      {
+        "start": 3.6107,
+        "end": 3.6804,
+        "key": "aa"
+      },
+      {
+        "start": 3.6804,
+        "end": 3.75,
+        "key": "SS"
+      },
+      {
+        "start": 3.75,
+        "end": 3.8429,
+        "key": "aa"
+      },
+      {
+        "start": 3.8429,
+        "end": 3.9358,
+        "key": "nn"
+      },
+      {
+        "start": 3.9358,
+        "end": 4.0054,
+        "key": "I"
+      },
+      {
+        "start": 4.0054,
+        "end": 4.0635,
+        "key": "kk"
+      },
+      {
+        "start": 4.0635,
+        "end": 4.1448,
+        "key": null
+      },
+      {
+        "start": 4.1448,
+        "end": 4.1796,
+        "key": null
+      },
+      {
+        "start": 4.1796,
+        "end": 4.2144,
+        "key": null
+      },
+      {
+        "start": 4.2144,
+        "end": 4.2725,
+        "key": "nn"
+      },
+      {
+        "start": 4.2725,
+        "end": 4.3305,
+        "key": null
+      },
+      {
+        "start": 4.3305,
+        "end": 4.4118,
+        "key": "aa"
+      },
+      {
+        "start": 4.4118,
+        "end": 4.4698,
+        "key": "U"
+      },
+      {
+        "start": 4.4698,
+        "end": 4.5047,
+        "key": null
+      },
+      {
+        "start": 4.5047,
+        "end": 4.5511,
+        "key": "aa"
+      },
+      {
+        "start": 4.5511,
+        "end": 4.5976,
+        "key": null
+      },
+      {
+        "start": 4.5976,
+        "end": 4.644,
+        "key": "E"
+      },
+      {
+        "start": 4.644,
+        "end": 4.7369,
+        "key": "SS"
+      },
+      {
+        "start": 4.7369,
+        "end": 4.8298,
+        "key": "I"
+      },
+      {
+        "start": 4.8298,
+        "end": 4.8878,
+        "key": "DD"
+      },
+      {
+        "start": 4.8878,
+        "end": 4.9807,
+        "key": null
+      },
+      {
+        "start": 4.9807,
+        "end": 5.0503,
+        "key": "E"
+      },
+      {
+        "start": 5.0503,
+        "end": 5.1548,
+        "key": "I"
+      },
+      {
+        "start": 5.1548,
+        "end": 5.2245,
+        "key": "CH"
+      },
+      {
+        "start": 5.2245,
+        "end": 5.2941,
+        "key": "aa"
+      },
+      {
+        "start": 5.2941,
+        "end": 5.3754,
+        "key": "nn"
+      },
+      {
+        "start": 5.3754,
+        "end": 5.4219,
+        "key": null
+      },
+      {
+        "start": 5.4219,
+        "end": 5.5031,
+        "key": null
+      },
+      {
+        "start": 5.5031,
+        "end": 5.538,
+        "key": null
+      },
+      {
+        "start": 5.538,
+        "end": 5.5612,
+        "key": "U"
+      },
+      {
+        "start": 5.5612,
+        "end": 5.6076,
+        "key": null
+      },
+      {
+        "start": 5.6076,
+        "end": 5.6308,
+        "key": "U"
+      },
+      {
+        "start": 5.6308,
+        "end": 5.7121,
+        "key": "DD"
+      },
+      {
+        "start": 5.7121,
+        "end": 5.7818,
+        "key": null
+      },
+      {
+        "start": 5.7818,
+        "end": 5.863,
+        "key": "I"
+      },
+      {
+        "start": 5.863,
+        "end": 5.9327,
+        "key": "U"
+      },
+      {
+        "start": 5.9327,
+        "end": 6.0024,
+        "key": "aa"
+      },
+      {
+        "start": 6.0024,
+        "end": 6.072,
+        "key": null
+      },
+      {
+        "start": 6.072,
+        "end": 6.1185,
+        "key": null
+      }
+    ],
+    "captions": [
+      {
+        "start": 0,
+        "end": 3.0418,
+        "text": "An assistant says you should quit your job tomorrow."
+      },
+      {
+        "start": 3.0418,
+        "end": 4.1796,
+        "text": "Clear reasoning."
+      },
+      {
+        "start": 4.1796,
+        "end": 5.5031,
+        "text": "No hesitation."
+      },
+      {
+        "start": 5.5031,
+        "end": 6.1185,
+        "text": "Would you?"
+      }
+    ],
+    "performance": [
+      {
+        "at": 0.2,
+        "actor": "echo",
+        "intent": "consider",
+        "duration": 2,
+        "nod": false
+      },
+      {
+        "at": 3.3,
+        "actor": "atlas",
+        "intent": "doubt",
+        "duration": 1.5,
+        "nod": false
+      },
+      {
+        "at": 5.6,
+        "actor": "echo",
+        "intent": "question",
+        "duration": 1.1,
+        "nod": false
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "nova"
+      }
+    ],
+    "gestures": [
+      {
+        "at": 3.1,
+        "duration": 1.5,
+        "strength": 0.55
+      }
+    ]
+  },
+  {
+    "id": "05",
+    "speaker": "nova",
+    "text": "No. It does not know who depends on me, or how long my savings would last.",
+    "audio": "audio/05.mp3",
+    "duration": 5.7818,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.0464,
+        "key": null
+      },
+      {
+        "start": 0.0464,
+        "end": 0.1161,
+        "key": "nn"
+      },
+      {
+        "start": 0.1161,
+        "end": 0.1741,
+        "key": null
+      },
+      {
+        "start": 0.1741,
+        "end": 0.267,
+        "key": "aa"
+      },
+      {
+        "start": 0.267,
+        "end": 0.3715,
+        "key": "U"
+      },
+      {
+        "start": 0.3715,
+        "end": 0.4528,
+        "key": null
+      },
+      {
+        "start": 0.4528,
+        "end": 0.5224,
+        "key": null
+      },
+      {
+        "start": 0.5224,
+        "end": 0.5457,
+        "key": null
+      },
+      {
+        "start": 0.5457,
+        "end": 0.5921,
+        "key": "I"
+      },
+      {
+        "start": 0.5921,
+        "end": 0.6269,
+        "key": "DD"
+      },
+      {
+        "start": 0.6269,
+        "end": 0.685,
+        "key": null
+      },
+      {
+        "start": 0.685,
+        "end": 0.7663,
+        "key": "DD"
+      },
+      {
+        "start": 0.7663,
+        "end": 0.8011,
+        "key": "aa"
+      },
+      {
+        "start": 0.8011,
+        "end": 0.8707,
+        "key": "SS"
+      },
+      {
+        "start": 0.8707,
+        "end": 0.952,
+        "key": "nn"
+      },
+      {
+        "start": 0.952,
+        "end": 1.0101,
+        "key": null
+      },
+      {
+        "start": 1.0101,
+        "end": 1.0797,
+        "key": "aa"
+      },
+      {
+        "start": 1.0797,
+        "end": 1.1262,
+        "key": "DD"
+      },
+      {
+        "start": 1.1262,
+        "end": 1.1842,
+        "key": null
+      },
+      {
+        "start": 1.1842,
+        "end": 1.2074,
+        "key": "nn"
+      },
+      {
+        "start": 1.2074,
+        "end": 1.2655,
+        "key": null
+      },
+      {
+        "start": 1.2655,
+        "end": 1.3119,
+        "key": "aa"
+      },
+      {
+        "start": 1.3119,
+        "end": 1.3351,
+        "key": "U"
+      },
+      {
+        "start": 1.3351,
+        "end": 1.37,
+        "key": null
+      },
+      {
+        "start": 1.37,
+        "end": 1.3932,
+        "key": "aa"
+      },
+      {
+        "start": 1.3932,
+        "end": 1.428,
+        "key": null
+      },
+      {
+        "start": 1.428,
+        "end": 1.4629,
+        "key": "U"
+      },
+      {
+        "start": 1.4629,
+        "end": 1.4861,
+        "key": "aa"
+      },
+      {
+        "start": 1.4861,
+        "end": 1.5209,
+        "key": null
+      },
+      {
+        "start": 1.5209,
+        "end": 1.5441,
+        "key": "DD"
+      },
+      {
+        "start": 1.5441,
+        "end": 1.6486,
+        "key": "I"
+      },
+      {
+        "start": 1.6486,
+        "end": 1.7183,
+        "key": "PP"
+      },
+      {
+        "start": 1.7183,
+        "end": 1.7647,
+        "key": null
+      },
+      {
+        "start": 1.7647,
+        "end": 1.8344,
+        "key": "E"
+      },
+      {
+        "start": 1.8344,
+        "end": 1.8808,
+        "key": "nn"
+      },
+      {
+        "start": 1.8808,
+        "end": 1.9389,
+        "key": "DD"
+      },
+      {
+        "start": 1.9389,
+        "end": 1.9853,
+        "key": "SS"
+      },
+      {
+        "start": 1.9853,
+        "end": 2.0201,
+        "key": null
+      },
+      {
+        "start": 2.0201,
+        "end": 2.0666,
+        "key": null
+      },
+      {
+        "start": 2.0666,
+        "end": 2.1246,
+        "key": "aa"
+      },
+      {
+        "start": 2.1246,
+        "end": 2.2059,
+        "key": "nn"
+      },
+      {
+        "start": 2.2059,
+        "end": 2.2523,
+        "key": null
+      },
+      {
+        "start": 2.2523,
+        "end": 2.2872,
+        "key": "PP"
+      },
+      {
+        "start": 2.2872,
+        "end": 2.38,
+        "key": null
+      },
+      {
+        "start": 2.38,
+        "end": 2.4961,
+        "key": "I"
+      },
+      {
+        "start": 2.4961,
+        "end": 2.5658,
+        "key": "aa"
+      },
+      {
+        "start": 2.5658,
+        "end": 2.8561,
+        "key": null
+      },
+      {
+        "start": 2.8561,
+        "end": 3.065,
+        "key": null
+      },
+      {
+        "start": 3.065,
+        "end": 3.1463,
+        "key": "O"
+      },
+      {
+        "start": 3.1463,
+        "end": 3.216,
+        "key": "aa"
+      },
+      {
+        "start": 3.216,
+        "end": 3.274,
+        "key": null
+      },
+      {
+        "start": 3.274,
+        "end": 3.3437,
+        "key": "aa"
+      },
+      {
+        "start": 3.3437,
+        "end": 3.3901,
+        "key": null
+      },
+      {
+        "start": 3.3901,
+        "end": 3.4598,
+        "key": "aa"
+      },
+      {
+        "start": 3.4598,
+        "end": 3.5178,
+        "key": "U"
+      },
+      {
+        "start": 3.5178,
+        "end": 3.5527,
+        "key": null
+      },
+      {
+        "start": 3.5527,
+        "end": 3.6107,
+        "key": "nn"
+      },
+      {
+        "start": 3.6107,
+        "end": 3.6804,
+        "key": null
+      },
+      {
+        "start": 3.6804,
+        "end": 3.7849,
+        "key": "aa"
+      },
+      {
+        "start": 3.7849,
+        "end": 3.8429,
+        "key": "kk"
+      },
+      {
+        "start": 3.8429,
+        "end": 3.8661,
+        "key": null
+      },
+      {
+        "start": 3.8661,
+        "end": 3.9126,
+        "key": "PP"
+      },
+      {
+        "start": 3.9126,
+        "end": 3.9938,
+        "key": "aa"
+      },
+      {
+        "start": 3.9938,
+        "end": 4.0867,
+        "key": "I"
+      },
+      {
+        "start": 4.0867,
+        "end": 4.168,
+        "key": null
+      },
+      {
+        "start": 4.168,
+        "end": 4.2376,
+        "key": "SS"
+      },
+      {
+        "start": 4.2376,
+        "end": 4.3073,
+        "key": null
+      },
+      {
+        "start": 4.3073,
+        "end": 4.3654,
+        "key": "E"
+      },
+      {
+        "start": 4.3654,
+        "end": 4.4118,
+        "key": "I"
+      },
+      {
+        "start": 4.4118,
+        "end": 4.4698,
+        "key": "FF"
+      },
+      {
+        "start": 4.4698,
+        "end": 4.5511,
+        "key": "I"
+      },
+      {
+        "start": 4.5511,
+        "end": 4.6208,
+        "key": "kk"
+      },
+      {
+        "start": 4.6208,
+        "end": 4.6788,
+        "key": "SS"
+      },
+      {
+        "start": 4.6788,
+        "end": 4.7137,
+        "key": null
+      },
+      {
+        "start": 4.7137,
+        "end": 4.7601,
+        "key": "U"
+      },
+      {
+        "start": 4.7601,
+        "end": 4.7949,
+        "key": "U"
+      },
+      {
+        "start": 4.7949,
+        "end": 4.8762,
+        "key": "DD"
+      },
+      {
+        "start": 4.8762,
+        "end": 4.9226,
+        "key": null
+      },
+      {
+        "start": 4.9226,
+        "end": 4.9923,
+        "key": "nn"
+      },
+      {
+        "start": 4.9923,
+        "end": 5.2941,
+        "key": null
+      },
+      {
+        "start": 5.2941,
+        "end": 5.3986,
+        "key": "aa"
+      },
+      {
+        "start": 5.3986,
+        "end": 5.5496,
+        "key": "SS"
+      },
+      {
+        "start": 5.5496,
+        "end": 5.6657,
+        "key": "DD"
+      },
+      {
+        "start": 5.6657,
+        "end": 5.7353,
+        "key": null
+      },
+      {
+        "start": 5.7353,
+        "end": 5.7818,
+        "key": null
+      }
+    ],
+    "captions": [
+      {
+        "start": 0,
+        "end": 0.5224,
+        "text": "No."
+      },
+      {
+        "start": 0.5224,
+        "end": 2.8561,
+        "text": "It does not know who depends on me,"
+      },
+      {
+        "start": 2.8561,
+        "end": 5.7818,
+        "text": "or how long my savings would last."
+      }
+    ],
+    "performance": [
+      {
+        "at": 0.15,
+        "actor": "nova",
+        "intent": "resolve",
+        "duration": 1,
+        "nod": false
+      },
+      {
+        "at": 1.1,
+        "actor": "nova",
+        "intent": "consider",
+        "duration": 2.1,
+        "nod": false
+      },
+      {
+        "at": 3.4,
+        "actor": "echo",
+        "intent": "acknowledge",
+        "duration": 1.5,
+        "nod": true
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "echo"
+      }
+    ],
+    "gestures": []
+  },
+  {
+    "id": "06",
+    "speaker": "atlas",
+    "text": "A perfect answer to the wrong question is still wrong. I want it to ask something back.",
+    "audio": "audio/06.mp3",
+    "duration": 6.6061,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.0348,
+        "key": null
+      },
+      {
+        "start": 0.0348,
+        "end": 0.1161,
+        "key": "aa"
+      },
+      {
+        "start": 0.1161,
+        "end": 0.1858,
+        "key": null
+      },
+      {
+        "start": 0.1858,
+        "end": 0.2438,
+        "key": "PP"
+      },
+      {
+        "start": 0.2438,
+        "end": 0.2786,
+        "key": null
+      },
+      {
+        "start": 0.2786,
+        "end": 0.3483,
+        "key": "E"
+      },
+      {
+        "start": 0.3483,
+        "end": 0.3947,
+        "key": "aa"
+      },
+      {
+        "start": 0.3947,
+        "end": 0.4644,
+        "key": "FF"
+      },
+      {
+        "start": 0.4644,
+        "end": 0.4992,
+        "key": "E"
+      },
+      {
+        "start": 0.4992,
+        "end": 0.5689,
+        "key": "kk"
+      },
+      {
+        "start": 0.5689,
+        "end": 0.6037,
+        "key": "DD"
+      },
+      {
+        "start": 0.6037,
+        "end": 0.6618,
+        "key": null
+      },
+      {
+        "start": 0.6618,
+        "end": 0.7546,
+        "key": null
+      },
+      {
+        "start": 0.7546,
+        "end": 0.8243,
+        "key": "aa"
+      },
+      {
+        "start": 0.8243,
+        "end": 0.894,
+        "key": "nn"
+      },
+      {
+        "start": 0.894,
+        "end": 0.9752,
+        "key": "SS"
+      },
+      {
+        "start": 0.9752,
+        "end": 1.0449,
+        "key": "aa"
+      },
+      {
+        "start": 1.0449,
+        "end": 1.1494,
+        "key": null
+      },
+      {
+        "start": 1.1494,
+        "end": 1.1842,
+        "key": "DD"
+      },
+      {
+        "start": 1.1842,
+        "end": 1.219,
+        "key": "aa"
+      },
+      {
+        "start": 1.219,
+        "end": 1.2539,
+        "key": null
+      },
+      {
+        "start": 1.2539,
+        "end": 1.2887,
+        "key": "TH"
+      },
+      {
+        "start": 1.2887,
+        "end": 1.3235,
+        "key": "aa"
+      },
+      {
+        "start": 1.3235,
+        "end": 1.3816,
+        "key": null
+      },
+      {
+        "start": 1.3816,
+        "end": 1.4629,
+        "key": "RR"
+      },
+      {
+        "start": 1.4629,
+        "end": 1.5673,
+        "key": null
+      },
+      {
+        "start": 1.5673,
+        "end": 1.6486,
+        "key": "aa"
+      },
+      {
+        "start": 1.6486,
+        "end": 1.7183,
+        "key": "kk"
+      },
+      {
+        "start": 1.7183,
+        "end": 1.7763,
+        "key": null
+      },
+      {
+        "start": 1.7763,
+        "end": 1.846,
+        "key": "kk"
+      },
+      {
+        "start": 1.846,
+        "end": 1.8808,
+        "key": "U"
+      },
+      {
+        "start": 1.8808,
+        "end": 1.9389,
+        "key": null
+      },
+      {
+        "start": 1.9389,
+        "end": 2.0085,
+        "key": "E"
+      },
+      {
+        "start": 2.0085,
+        "end": 2.0666,
+        "key": "SS"
+      },
+      {
+        "start": 2.0666,
+        "end": 2.1478,
+        "key": "DD"
+      },
+      {
+        "start": 2.1478,
+        "end": 2.2059,
+        "key": "CH"
+      },
+      {
+        "start": 2.2059,
+        "end": 2.38,
+        "key": "aa"
+      },
+      {
+        "start": 2.38,
+        "end": 2.8328,
+        "key": "nn"
+      },
+      {
+        "start": 2.8328,
+        "end": 2.8677,
+        "key": null
+      },
+      {
+        "start": 2.8677,
+        "end": 2.9489,
+        "key": "I"
+      },
+      {
+        "start": 2.9489,
+        "end": 2.9838,
+        "key": "SS"
+      },
+      {
+        "start": 2.9838,
+        "end": 3.0534,
+        "key": null
+      },
+      {
+        "start": 3.0534,
+        "end": 3.1231,
+        "key": "SS"
+      },
+      {
+        "start": 3.1231,
+        "end": 3.1811,
+        "key": "DD"
+      },
+      {
+        "start": 3.1811,
+        "end": 3.2276,
+        "key": null
+      },
+      {
+        "start": 3.2276,
+        "end": 3.3321,
+        "key": "I"
+      },
+      {
+        "start": 3.3321,
+        "end": 3.4133,
+        "key": "nn"
+      },
+      {
+        "start": 3.4133,
+        "end": 3.483,
+        "key": null
+      },
+      {
+        "start": 3.483,
+        "end": 3.5527,
+        "key": "RR"
+      },
+      {
+        "start": 3.5527,
+        "end": 3.6455,
+        "key": null
+      },
+      {
+        "start": 3.6455,
+        "end": 3.75,
+        "key": "aa"
+      },
+      {
+        "start": 3.75,
+        "end": 3.8545,
+        "key": "kk"
+      },
+      {
+        "start": 3.8545,
+        "end": 3.9126,
+        "key": null
+      },
+      {
+        "start": 3.9126,
+        "end": 3.959,
+        "key": null
+      },
+      {
+        "start": 3.959,
+        "end": 3.9822,
+        "key": null
+      },
+      {
+        "start": 3.9822,
+        "end": 4.0751,
+        "key": "aa"
+      },
+      {
+        "start": 4.0751,
+        "end": 4.1332,
+        "key": "I"
+      },
+      {
+        "start": 4.1332,
+        "end": 4.2376,
+        "key": null
+      },
+      {
+        "start": 4.2376,
+        "end": 4.2957,
+        "key": "U"
+      },
+      {
+        "start": 4.2957,
+        "end": 4.3654,
+        "key": null
+      },
+      {
+        "start": 4.3654,
+        "end": 4.4118,
+        "key": "aa"
+      },
+      {
+        "start": 4.4118,
+        "end": 4.4466,
+        "key": "nn"
+      },
+      {
+        "start": 4.4466,
+        "end": 4.5163,
+        "key": "DD"
+      },
+      {
+        "start": 4.5163,
+        "end": 4.5511,
+        "key": null
+      },
+      {
+        "start": 4.5511,
+        "end": 4.6092,
+        "key": "I"
+      },
+      {
+        "start": 4.6092,
+        "end": 4.6324,
+        "key": "DD"
+      },
+      {
+        "start": 4.6324,
+        "end": 4.702,
+        "key": null
+      },
+      {
+        "start": 4.702,
+        "end": 4.7833,
+        "key": "DD"
+      },
+      {
+        "start": 4.7833,
+        "end": 4.8646,
+        "key": "U"
+      },
+      {
+        "start": 4.8646,
+        "end": 4.9459,
+        "key": null
+      },
+      {
+        "start": 4.9459,
+        "end": 5.0968,
+        "key": null
+      },
+      {
+        "start": 5.0968,
+        "end": 5.2013,
+        "key": "aa"
+      },
+      {
+        "start": 5.2013,
+        "end": 5.2477,
+        "key": "SS"
+      },
+      {
+        "start": 5.2477,
+        "end": 5.3406,
+        "key": "kk"
+      },
+      {
+        "start": 5.3406,
+        "end": 5.4219,
+        "key": null
+      },
+      {
+        "start": 5.4219,
+        "end": 5.4683,
+        "key": "SS"
+      },
+      {
+        "start": 5.4683,
+        "end": 5.5263,
+        "key": null
+      },
+      {
+        "start": 5.5263,
+        "end": 5.5728,
+        "key": "aa"
+      },
+      {
+        "start": 5.5728,
+        "end": 5.6541,
+        "key": "PP"
+      },
+      {
+        "start": 5.6541,
+        "end": 5.7237,
+        "key": "TH"
+      },
+      {
+        "start": 5.7237,
+        "end": 5.7702,
+        "key": "I"
+      },
+      {
+        "start": 5.7702,
+        "end": 5.863,
+        "key": "kk"
+      },
+      {
+        "start": 5.863,
+        "end": 5.9559,
+        "key": null
+      },
+      {
+        "start": 5.9559,
+        "end": 6.0372,
+        "key": "PP"
+      },
+      {
+        "start": 6.0372,
+        "end": 6.2346,
+        "key": null
+      },
+      {
+        "start": 6.2346,
+        "end": 6.3507,
+        "key": "aa"
+      },
+      {
+        "start": 6.3507,
+        "end": 6.4784,
+        "key": "kk"
+      },
+      {
+        "start": 6.4784,
+        "end": 6.5248,
+        "key": null
+      },
+      {
+        "start": 6.5248,
+        "end": 6.6061,
+        "key": null
+      }
+    ],
+    "captions": [
+      {
+        "start": 0,
+        "end": 3.959,
+        "text": "A perfect answer to the wrong question is still wrong."
+      },
+      {
+        "start": 3.959,
+        "end": 6.6061,
+        "text": "I want it to ask something back."
+      }
+    ],
+    "performance": [
+      {
+        "at": 0.3,
+        "actor": "atlas",
+        "intent": "resolve",
+        "duration": 2,
+        "nod": false
+      },
+      {
+        "at": 4,
+        "actor": "atlas",
+        "intent": "question",
+        "duration": 1.7,
+        "nod": false
+      },
+      {
+        "at": 4.5,
+        "actor": "nova",
+        "intent": "acknowledge",
+        "duration": 1.3,
+        "nod": true
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "nova"
+      },
+      {
+        "at": 3.96,
+        "target": "echo"
+      }
+    ],
+    "gestures": [
+      {
+        "at": 4.1,
+        "duration": 1.6,
+        "strength": 0.8
+      }
+    ]
+  },
+  {
+    "id": "07",
+    "speaker": "nova",
+    "text": "Maybe useful confidence sounds like this: here is my suggestion, here is what I am missing. Help me check it.",
+    "audio": "audio/07.mp3",
+    "duration": 8.6262,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.0348,
+        "key": null
+      },
+      {
+        "start": 0.0348,
+        "end": 0.0697,
+        "key": "PP"
+      },
+      {
+        "start": 0.0697,
+        "end": 0.1161,
+        "key": null
+      },
+      {
+        "start": 0.1161,
+        "end": 0.1858,
+        "key": "E"
+      },
+      {
+        "start": 0.1858,
+        "end": 0.2322,
+        "key": "I"
+      },
+      {
+        "start": 0.2322,
+        "end": 0.2554,
+        "key": "PP"
+      },
+      {
+        "start": 0.2554,
+        "end": 0.3135,
+        "key": "I"
+      },
+      {
+        "start": 0.3135,
+        "end": 0.3599,
+        "key": "aa"
+      },
+      {
+        "start": 0.3599,
+        "end": 0.4296,
+        "key": null
+      },
+      {
+        "start": 0.4296,
+        "end": 0.4644,
+        "key": "I"
+      },
+      {
+        "start": 0.4644,
+        "end": 0.4992,
+        "key": null
+      },
+      {
+        "start": 0.4992,
+        "end": 0.5573,
+        "key": "U"
+      },
+      {
+        "start": 0.5573,
+        "end": 0.6385,
+        "key": "aa"
+      },
+      {
+        "start": 0.6385,
+        "end": 0.6966,
+        "key": "SS"
+      },
+      {
+        "start": 0.6966,
+        "end": 0.7663,
+        "key": "FF"
+      },
+      {
+        "start": 0.7663,
+        "end": 0.8707,
+        "key": "aa"
+      },
+      {
+        "start": 0.8707,
+        "end": 0.9172,
+        "key": "nn"
+      },
+      {
+        "start": 0.9172,
+        "end": 0.9752,
+        "key": null
+      },
+      {
+        "start": 0.9752,
+        "end": 1.0797,
+        "key": "kk"
+      },
+      {
+        "start": 1.0797,
+        "end": 1.1494,
+        "key": null
+      },
+      {
+        "start": 1.1494,
+        "end": 1.2539,
+        "key": "aa"
+      },
+      {
+        "start": 1.2539,
+        "end": 1.3351,
+        "key": "nn"
+      },
+      {
+        "start": 1.3351,
+        "end": 1.4048,
+        "key": "FF"
+      },
+      {
+        "start": 1.4048,
+        "end": 1.4396,
+        "key": "I"
+      },
+      {
+        "start": 1.4396,
+        "end": 1.4861,
+        "key": "DD"
+      },
+      {
+        "start": 1.4861,
+        "end": 1.579,
+        "key": "aa"
+      },
+      {
+        "start": 1.579,
+        "end": 1.637,
+        "key": "nn"
+      },
+      {
+        "start": 1.637,
+        "end": 1.6834,
+        "key": "SS"
+      },
+      {
+        "start": 1.6834,
+        "end": 1.7415,
+        "key": null
+      },
+      {
+        "start": 1.7415,
+        "end": 1.8344,
+        "key": "SS"
+      },
+      {
+        "start": 1.8344,
+        "end": 1.9156,
+        "key": null
+      },
+      {
+        "start": 1.9156,
+        "end": 1.9621,
+        "key": "aa"
+      },
+      {
+        "start": 1.9621,
+        "end": 2.0434,
+        "key": "U"
+      },
+      {
+        "start": 2.0434,
+        "end": 2.0898,
+        "key": "nn"
+      },
+      {
+        "start": 2.0898,
+        "end": 2.1362,
+        "key": "DD"
+      },
+      {
+        "start": 2.1362,
+        "end": 2.2059,
+        "key": "SS"
+      },
+      {
+        "start": 2.2059,
+        "end": 2.2523,
+        "key": null
+      },
+      {
+        "start": 2.2523,
+        "end": 2.2872,
+        "key": "nn"
+      },
+      {
+        "start": 2.2872,
+        "end": 2.322,
+        "key": null
+      },
+      {
+        "start": 2.322,
+        "end": 2.3568,
+        "key": "aa"
+      },
+      {
+        "start": 2.3568,
+        "end": 2.3917,
+        "key": "I"
+      },
+      {
+        "start": 2.3917,
+        "end": 2.5078,
+        "key": "kk"
+      },
+      {
+        "start": 2.5078,
+        "end": 2.5774,
+        "key": null
+      },
+      {
+        "start": 2.5774,
+        "end": 2.6703,
+        "key": "TH"
+      },
+      {
+        "start": 2.6703,
+        "end": 2.7632,
+        "key": null
+      },
+      {
+        "start": 2.7632,
+        "end": 2.8909,
+        "key": "I"
+      },
+      {
+        "start": 2.8909,
+        "end": 3.0999,
+        "key": "SS"
+      },
+      {
+        "start": 3.0999,
+        "end": 3.3901,
+        "key": null
+      },
+      {
+        "start": 3.3901,
+        "end": 3.8197,
+        "key": null
+      },
+      {
+        "start": 3.8197,
+        "end": 3.8893,
+        "key": "aa"
+      },
+      {
+        "start": 3.8893,
+        "end": 3.9242,
+        "key": null
+      },
+      {
+        "start": 3.9242,
+        "end": 3.9822,
+        "key": "I"
+      },
+      {
+        "start": 3.9822,
+        "end": 4.0171,
+        "key": "aa"
+      },
+      {
+        "start": 4.0171,
+        "end": 4.0635,
+        "key": "RR"
+      },
+      {
+        "start": 4.0635,
+        "end": 4.1215,
+        "key": null
+      },
+      {
+        "start": 4.1215,
+        "end": 4.168,
+        "key": "I"
+      },
+      {
+        "start": 4.168,
+        "end": 4.2376,
+        "key": "SS"
+      },
+      {
+        "start": 4.2376,
+        "end": 4.2725,
+        "key": null
+      },
+      {
+        "start": 4.2725,
+        "end": 4.3421,
+        "key": "PP"
+      },
+      {
+        "start": 4.3421,
+        "end": 4.4234,
+        "key": "aa"
+      },
+      {
+        "start": 4.4234,
+        "end": 4.4815,
+        "key": "I"
+      },
+      {
+        "start": 4.4815,
+        "end": 4.5511,
+        "key": null
+      },
+      {
+        "start": 4.5511,
+        "end": 4.5976,
+        "key": "SS"
+      },
+      {
+        "start": 4.5976,
+        "end": 4.6788,
+        "key": "aa"
+      },
+      {
+        "start": 4.6788,
+        "end": 4.7369,
+        "key": "DD"
+      },
+      {
+        "start": 4.7369,
+        "end": 4.7949,
+        "key": "CH"
+      },
+      {
+        "start": 4.7949,
+        "end": 4.8414,
+        "key": null
+      },
+      {
+        "start": 4.8414,
+        "end": 4.9226,
+        "key": "E"
+      },
+      {
+        "start": 4.9226,
+        "end": 4.9923,
+        "key": "SS"
+      },
+      {
+        "start": 4.9923,
+        "end": 5.0503,
+        "key": "DD"
+      },
+      {
+        "start": 5.0503,
+        "end": 5.12,
+        "key": "CH"
+      },
+      {
+        "start": 5.12,
+        "end": 5.2013,
+        "key": "aa"
+      },
+      {
+        "start": 5.2013,
+        "end": 5.3638,
+        "key": "nn"
+      },
+      {
+        "start": 5.3638,
+        "end": 5.6192,
+        "key": null
+      },
+      {
+        "start": 5.6192,
+        "end": 5.7818,
+        "key": null
+      },
+      {
+        "start": 5.7818,
+        "end": 5.8282,
+        "key": "aa"
+      },
+      {
+        "start": 5.8282,
+        "end": 5.8746,
+        "key": null
+      },
+      {
+        "start": 5.8746,
+        "end": 5.9095,
+        "key": "I"
+      },
+      {
+        "start": 5.9095,
+        "end": 5.9559,
+        "key": "aa"
+      },
+      {
+        "start": 5.9559,
+        "end": 5.9791,
+        "key": "RR"
+      },
+      {
+        "start": 5.9791,
+        "end": 6.0488,
+        "key": null
+      },
+      {
+        "start": 6.0488,
+        "end": 6.0952,
+        "key": "I"
+      },
+      {
+        "start": 6.0952,
+        "end": 6.1649,
+        "key": "SS"
+      },
+      {
+        "start": 6.1649,
+        "end": 6.2229,
+        "key": null
+      },
+      {
+        "start": 6.2229,
+        "end": 6.2694,
+        "key": "U"
+      },
+      {
+        "start": 6.2694,
+        "end": 6.339,
+        "key": "aa"
+      },
+      {
+        "start": 6.339,
+        "end": 6.4203,
+        "key": "DD"
+      },
+      {
+        "start": 6.4203,
+        "end": 6.5132,
+        "key": null
+      },
+      {
+        "start": 6.5132,
+        "end": 6.5829,
+        "key": "aa"
+      },
+      {
+        "start": 6.5829,
+        "end": 6.7106,
+        "key": "I"
+      },
+      {
+        "start": 6.7106,
+        "end": 6.7686,
+        "key": "aa"
+      },
+      {
+        "start": 6.7686,
+        "end": 6.8034,
+        "key": "PP"
+      },
+      {
+        "start": 6.8034,
+        "end": 6.8383,
+        "key": null
+      },
+      {
+        "start": 6.8383,
+        "end": 6.8847,
+        "key": "PP"
+      },
+      {
+        "start": 6.8847,
+        "end": 6.9428,
+        "key": null
+      },
+      {
+        "start": 6.9428,
+        "end": 7.0356,
+        "key": "I"
+      },
+      {
+        "start": 7.0356,
+        "end": 7.1169,
+        "key": "SS"
+      },
+      {
+        "start": 7.1169,
+        "end": 7.175,
+        "key": "I"
+      },
+      {
+        "start": 7.175,
+        "end": 7.2446,
+        "key": "kk"
+      },
+      {
+        "start": 7.2446,
+        "end": 7.3259,
+        "key": null
+      },
+      {
+        "start": 7.3259,
+        "end": 7.3491,
+        "key": null
+      },
+      {
+        "start": 7.3491,
+        "end": 7.3839,
+        "key": null
+      },
+      {
+        "start": 7.3839,
+        "end": 7.4072,
+        "key": "aa"
+      },
+      {
+        "start": 7.4072,
+        "end": 7.4536,
+        "key": null
+      },
+      {
+        "start": 7.4536,
+        "end": 7.5,
+        "key": "E"
+      },
+      {
+        "start": 7.5,
+        "end": 7.5697,
+        "key": "nn"
+      },
+      {
+        "start": 7.5697,
+        "end": 7.6045,
+        "key": "PP"
+      },
+      {
+        "start": 7.6045,
+        "end": 7.6626,
+        "key": null
+      },
+      {
+        "start": 7.6626,
+        "end": 7.6858,
+        "key": "PP"
+      },
+      {
+        "start": 7.6858,
+        "end": 7.7322,
+        "key": null
+      },
+      {
+        "start": 7.7322,
+        "end": 7.7555,
+        "key": "I"
+      },
+      {
+        "start": 7.7555,
+        "end": 7.8019,
+        "key": "aa"
+      },
+      {
+        "start": 7.8019,
+        "end": 7.8716,
+        "key": null
+      },
+      {
+        "start": 7.8716,
+        "end": 7.9296,
+        "key": "DD"
+      },
+      {
+        "start": 7.9296,
+        "end": 7.9877,
+        "key": "CH"
+      },
+      {
+        "start": 7.9877,
+        "end": 8.0689,
+        "key": null
+      },
+      {
+        "start": 8.0689,
+        "end": 8.1154,
+        "key": "E"
+      },
+      {
+        "start": 8.1154,
+        "end": 8.1966,
+        "key": "kk"
+      },
+      {
+        "start": 8.1966,
+        "end": 8.2547,
+        "key": null
+      },
+      {
+        "start": 8.2547,
+        "end": 8.336,
+        "key": "I"
+      },
+      {
+        "start": 8.336,
+        "end": 8.4985,
+        "key": "DD"
+      },
+      {
+        "start": 8.4985,
+        "end": 8.5798,
+        "key": null
+      },
+      {
+        "start": 8.5798,
+        "end": 8.6262,
+        "key": null
+      }
+    ],
+    "reaction": "atlas",
+    "captions": [
+      {
+        "start": 0,
+        "end": 3.3901,
+        "text": "Maybe useful confidence sounds like this:"
+      },
+      {
+        "start": 3.3901,
+        "end": 5.6192,
+        "text": "here is my suggestion,"
+      },
+      {
+        "start": 5.6192,
+        "end": 7.3491,
+        "text": "here is what I am missing."
+      },
+      {
+        "start": 7.3491,
+        "end": 8.6262,
+        "text": "Help me check it."
+      }
+    ],
+    "reactionAt": 5.6192,
+    "shot": "two",
+    "performance": [
+      {
+        "at": 0.3,
+        "actor": "nova",
+        "intent": "consider",
+        "duration": 2,
+        "nod": false
+      },
+      {
+        "at": 3.6,
+        "actor": "nova",
+        "intent": "warmth",
+        "duration": 1.5,
+        "nod": false
+      },
+      {
+        "at": 5.8,
+        "actor": "atlas",
+        "intent": "acknowledge",
+        "duration": 1.5,
+        "nod": true
+      },
+      {
+        "at": 7.5,
+        "actor": "nova",
+        "intent": "question",
+        "duration": 1.4,
+        "nod": false
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "echo"
+      },
+      {
+        "at": 5.62,
+        "target": "atlas"
+      }
+    ],
+    "gestures": [
+      {
+        "at": 3.5,
+        "duration": 1.5,
+        "strength": 0.7
+      }
+    ]
+  },
+  {
+    "id": "08",
+    "speaker": "echo",
+    "text": "So we have changed the test. Can we see what would change its mind?",
+    "audio": "audio/08.mp3",
+    "duration": 4.5395,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.1045,
+        "key": null
+      },
+      {
+        "start": 0.1045,
+        "end": 0.209,
+        "key": "SS"
+      },
+      {
+        "start": 0.209,
+        "end": 0.2554,
+        "key": null
+      },
+      {
+        "start": 0.2554,
+        "end": 0.2902,
+        "key": "aa"
+      },
+      {
+        "start": 0.2902,
+        "end": 0.3251,
+        "key": "U"
+      },
+      {
+        "start": 0.3251,
+        "end": 0.3599,
+        "key": null
+      },
+      {
+        "start": 0.3599,
+        "end": 0.3831,
+        "key": "U"
+      },
+      {
+        "start": 0.3831,
+        "end": 0.4412,
+        "key": "I"
+      },
+      {
+        "start": 0.4412,
+        "end": 0.4876,
+        "key": "aa"
+      },
+      {
+        "start": 0.4876,
+        "end": 0.5108,
+        "key": null
+      },
+      {
+        "start": 0.5108,
+        "end": 0.5573,
+        "key": "aa"
+      },
+      {
+        "start": 0.5573,
+        "end": 0.6037,
+        "key": "aa"
+      },
+      {
+        "start": 0.6037,
+        "end": 0.6502,
+        "key": "FF"
+      },
+      {
+        "start": 0.6502,
+        "end": 0.743,
+        "key": null
+      },
+      {
+        "start": 0.743,
+        "end": 0.7779,
+        "key": "DD"
+      },
+      {
+        "start": 0.7779,
+        "end": 0.8359,
+        "key": "CH"
+      },
+      {
+        "start": 0.8359,
+        "end": 0.8824,
+        "key": null
+      },
+      {
+        "start": 0.8824,
+        "end": 0.9404,
+        "key": "E"
+      },
+      {
+        "start": 0.9404,
+        "end": 0.9868,
+        "key": "I"
+      },
+      {
+        "start": 0.9868,
+        "end": 1.0333,
+        "key": "nn"
+      },
+      {
+        "start": 1.0333,
+        "end": 1.1029,
+        "key": "DD"
+      },
+      {
+        "start": 1.1029,
+        "end": 1.161,
+        "key": "CH"
+      },
+      {
+        "start": 1.161,
+        "end": 1.2307,
+        "key": "DD"
+      },
+      {
+        "start": 1.2307,
+        "end": 1.3003,
+        "key": null
+      },
+      {
+        "start": 1.3003,
+        "end": 1.3351,
+        "key": "TH"
+      },
+      {
+        "start": 1.3351,
+        "end": 1.3932,
+        "key": "aa"
+      },
+      {
+        "start": 1.3932,
+        "end": 1.4861,
+        "key": null
+      },
+      {
+        "start": 1.4861,
+        "end": 1.6022,
+        "key": "DD"
+      },
+      {
+        "start": 1.6022,
+        "end": 1.7415,
+        "key": null
+      },
+      {
+        "start": 1.7415,
+        "end": 1.8808,
+        "key": "E"
+      },
+      {
+        "start": 1.8808,
+        "end": 1.9853,
+        "key": "SS"
+      },
+      {
+        "start": 1.9853,
+        "end": 2.1014,
+        "key": "DD"
+      },
+      {
+        "start": 2.1014,
+        "end": 2.1595,
+        "key": null
+      },
+      {
+        "start": 2.1595,
+        "end": 2.2059,
+        "key": null
+      },
+      {
+        "start": 2.2059,
+        "end": 2.2523,
+        "key": null
+      },
+      {
+        "start": 2.2523,
+        "end": 2.3104,
+        "key": "kk"
+      },
+      {
+        "start": 2.3104,
+        "end": 2.3684,
+        "key": "aa"
+      },
+      {
+        "start": 2.3684,
+        "end": 2.4381,
+        "key": "nn"
+      },
+      {
+        "start": 2.4381,
+        "end": 2.4729,
+        "key": null
+      },
+      {
+        "start": 2.4729,
+        "end": 2.4961,
+        "key": "U"
+      },
+      {
+        "start": 2.4961,
+        "end": 2.531,
+        "key": "I"
+      },
+      {
+        "start": 2.531,
+        "end": 2.6122,
+        "key": "aa"
+      },
+      {
+        "start": 2.6122,
+        "end": 2.6819,
+        "key": null
+      },
+      {
+        "start": 2.6819,
+        "end": 2.7632,
+        "key": "SS"
+      },
+      {
+        "start": 2.7632,
+        "end": 2.798,
+        "key": null
+      },
+      {
+        "start": 2.798,
+        "end": 2.8444,
+        "key": "I"
+      },
+      {
+        "start": 2.8444,
+        "end": 2.8793,
+        "key": "aa"
+      },
+      {
+        "start": 2.8793,
+        "end": 2.9373,
+        "key": null
+      },
+      {
+        "start": 2.9373,
+        "end": 2.9722,
+        "key": "U"
+      },
+      {
+        "start": 2.9722,
+        "end": 3.0186,
+        "key": "aa"
+      },
+      {
+        "start": 3.0186,
+        "end": 3.065,
+        "key": "DD"
+      },
+      {
+        "start": 3.065,
+        "end": 3.1115,
+        "key": null
+      },
+      {
+        "start": 3.1115,
+        "end": 3.1347,
+        "key": "U"
+      },
+      {
+        "start": 3.1347,
+        "end": 3.1579,
+        "key": "U"
+      },
+      {
+        "start": 3.1579,
+        "end": 3.2276,
+        "key": "DD"
+      },
+      {
+        "start": 3.2276,
+        "end": 3.2972,
+        "key": null
+      },
+      {
+        "start": 3.2972,
+        "end": 3.3437,
+        "key": "DD"
+      },
+      {
+        "start": 3.3437,
+        "end": 3.4017,
+        "key": "CH"
+      },
+      {
+        "start": 3.4017,
+        "end": 3.4482,
+        "key": null
+      },
+      {
+        "start": 3.4482,
+        "end": 3.4714,
+        "key": "E"
+      },
+      {
+        "start": 3.4714,
+        "end": 3.5062,
+        "key": "I"
+      },
+      {
+        "start": 3.5062,
+        "end": 3.5294,
+        "key": "nn"
+      },
+      {
+        "start": 3.5294,
+        "end": 3.5643,
+        "key": "DD"
+      },
+      {
+        "start": 3.5643,
+        "end": 3.6223,
+        "key": "CH"
+      },
+      {
+        "start": 3.6223,
+        "end": 3.6688,
+        "key": null
+      },
+      {
+        "start": 3.6688,
+        "end": 3.7036,
+        "key": "I"
+      },
+      {
+        "start": 3.7036,
+        "end": 3.7616,
+        "key": "DD"
+      },
+      {
+        "start": 3.7616,
+        "end": 3.8081,
+        "key": "SS"
+      },
+      {
+        "start": 3.8081,
+        "end": 3.8777,
+        "key": null
+      },
+      {
+        "start": 3.8777,
+        "end": 3.9474,
+        "key": "PP"
+      },
+      {
+        "start": 3.9474,
+        "end": 4.0287,
+        "key": null
+      },
+      {
+        "start": 4.0287,
+        "end": 4.1448,
+        "key": "aa"
+      },
+      {
+        "start": 4.1448,
+        "end": 4.2493,
+        "key": "I"
+      },
+      {
+        "start": 4.2493,
+        "end": 4.3305,
+        "key": "nn"
+      },
+      {
+        "start": 4.3305,
+        "end": 4.4002,
+        "key": "DD"
+      },
+      {
+        "start": 4.4002,
+        "end": 4.4582,
+        "key": null
+      },
+      {
+        "start": 4.4582,
+        "end": 4.5395,
+        "key": null
+      }
+    ],
+    "captions": [
+      {
+        "start": 0,
+        "end": 2.2059,
+        "text": "So we have changed the test."
+      },
+      {
+        "start": 2.2059,
+        "end": 4.5395,
+        "text": "Can we see what would change its mind?"
+      }
+    ],
+    "performance": [
+      {
+        "at": 0.3,
+        "actor": "echo",
+        "intent": "warmth",
+        "duration": 1.5,
+        "nod": false
+      },
+      {
+        "at": 2.3,
+        "actor": "echo",
+        "intent": "question",
+        "duration": 1.8,
+        "nod": false
+      },
+      {
+        "at": 3.3,
+        "actor": "atlas",
+        "intent": "acknowledge",
+        "duration": 1.2,
+        "nod": true
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "nova"
+      },
+      {
+        "at": 2.2,
+        "target": "atlas"
+      }
+    ],
+    "gestures": []
+  },
+  {
+    "id": "09",
+    "speaker": "atlas",
+    "text": "Yes. And can it stop when the stakes are too high? Sometimes the best answer is a better question.",
+    "audio": "audio/09.mp3",
+    "duration": 6.2113,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.0348,
+        "key": null
+      },
+      {
+        "start": 0.0348,
+        "end": 0.0929,
+        "key": "I"
+      },
+      {
+        "start": 0.0929,
+        "end": 0.2322,
+        "key": null
+      },
+      {
+        "start": 0.2322,
+        "end": 0.3251,
+        "key": "E"
+      },
+      {
+        "start": 0.3251,
+        "end": 0.5341,
+        "key": "SS"
+      },
+      {
+        "start": 0.5341,
+        "end": 0.5921,
+        "key": null
+      },
+      {
+        "start": 0.5921,
+        "end": 0.6502,
+        "key": null
+      },
+      {
+        "start": 0.6502,
+        "end": 0.6734,
+        "key": null
+      },
+      {
+        "start": 0.6734,
+        "end": 0.6966,
+        "key": "aa"
+      },
+      {
+        "start": 0.6966,
+        "end": 0.7314,
+        "key": "nn"
+      },
+      {
+        "start": 0.7314,
+        "end": 0.7779,
+        "key": "DD"
+      },
+      {
+        "start": 0.7779,
+        "end": 0.8707,
+        "key": null
+      },
+      {
+        "start": 0.8707,
+        "end": 0.9288,
+        "key": "kk"
+      },
+      {
+        "start": 0.9288,
+        "end": 0.9868,
+        "key": "aa"
+      },
+      {
+        "start": 0.9868,
+        "end": 1.0333,
+        "key": "nn"
+      },
+      {
+        "start": 1.0333,
+        "end": 1.0565,
+        "key": null
+      },
+      {
+        "start": 1.0565,
+        "end": 1.1029,
+        "key": "I"
+      },
+      {
+        "start": 1.1029,
+        "end": 1.1494,
+        "key": "DD"
+      },
+      {
+        "start": 1.1494,
+        "end": 1.1842,
+        "key": null
+      },
+      {
+        "start": 1.1842,
+        "end": 1.2539,
+        "key": "SS"
+      },
+      {
+        "start": 1.2539,
+        "end": 1.3119,
+        "key": "DD"
+      },
+      {
+        "start": 1.3119,
+        "end": 1.4745,
+        "key": null
+      },
+      {
+        "start": 1.4745,
+        "end": 1.5325,
+        "key": "aa"
+      },
+      {
+        "start": 1.5325,
+        "end": 1.6022,
+        "key": "PP"
+      },
+      {
+        "start": 1.6022,
+        "end": 1.6254,
+        "key": null
+      },
+      {
+        "start": 1.6254,
+        "end": 1.6486,
+        "key": "U"
+      },
+      {
+        "start": 1.6486,
+        "end": 1.6834,
+        "key": "E"
+      },
+      {
+        "start": 1.6834,
+        "end": 1.7299,
+        "key": "nn"
+      },
+      {
+        "start": 1.7299,
+        "end": 1.7531,
+        "key": null
+      },
+      {
+        "start": 1.7531,
+        "end": 1.7879,
+        "key": "TH"
+      },
+      {
+        "start": 1.7879,
+        "end": 1.8344,
+        "key": "aa"
+      },
+      {
+        "start": 1.8344,
+        "end": 1.904,
+        "key": null
+      },
+      {
+        "start": 1.904,
+        "end": 1.9737,
+        "key": "SS"
+      },
+      {
+        "start": 1.9737,
+        "end": 2.0201,
+        "key": "DD"
+      },
+      {
+        "start": 2.0201,
+        "end": 2.0898,
+        "key": null
+      },
+      {
+        "start": 2.0898,
+        "end": 2.1711,
+        "key": "E"
+      },
+      {
+        "start": 2.1711,
+        "end": 2.2175,
+        "key": "I"
+      },
+      {
+        "start": 2.2175,
+        "end": 2.2756,
+        "key": "kk"
+      },
+      {
+        "start": 2.2756,
+        "end": 2.2988,
+        "key": "SS"
+      },
+      {
+        "start": 2.2988,
+        "end": 2.3336,
+        "key": null
+      },
+      {
+        "start": 2.3336,
+        "end": 2.4033,
+        "key": "aa"
+      },
+      {
+        "start": 2.4033,
+        "end": 2.4497,
+        "key": "aa"
+      },
+      {
+        "start": 2.4497,
+        "end": 2.531,
+        "key": null
+      },
+      {
+        "start": 2.531,
+        "end": 2.6122,
+        "key": "DD"
+      },
+      {
+        "start": 2.6122,
+        "end": 2.6471,
+        "key": null
+      },
+      {
+        "start": 2.6471,
+        "end": 2.6935,
+        "key": "U"
+      },
+      {
+        "start": 2.6935,
+        "end": 2.7283,
+        "key": "aa"
+      },
+      {
+        "start": 2.7283,
+        "end": 2.798,
+        "key": null
+      },
+      {
+        "start": 2.798,
+        "end": 2.8677,
+        "key": "aa"
+      },
+      {
+        "start": 2.8677,
+        "end": 2.9954,
+        "key": null
+      },
+      {
+        "start": 2.9954,
+        "end": 3.0999,
+        "key": "aa"
+      },
+      {
+        "start": 3.0999,
+        "end": 3.1927,
+        "key": "I"
+      },
+      {
+        "start": 3.1927,
+        "end": 3.274,
+        "key": null
+      },
+      {
+        "start": 3.274,
+        "end": 3.3437,
+        "key": null
+      },
+      {
+        "start": 3.3437,
+        "end": 3.4017,
+        "key": null
+      },
+      {
+        "start": 3.4017,
+        "end": 3.483,
+        "key": "SS"
+      },
+      {
+        "start": 3.483,
+        "end": 3.5527,
+        "key": null
+      },
+      {
+        "start": 3.5527,
+        "end": 3.6223,
+        "key": "aa"
+      },
+      {
+        "start": 3.6223,
+        "end": 3.6804,
+        "key": "PP"
+      },
+      {
+        "start": 3.6804,
+        "end": 3.7384,
+        "key": "DD"
+      },
+      {
+        "start": 3.7384,
+        "end": 3.8197,
+        "key": "aa"
+      },
+      {
+        "start": 3.8197,
+        "end": 3.8661,
+        "key": "I"
+      },
+      {
+        "start": 3.8661,
+        "end": 3.9474,
+        "key": "PP"
+      },
+      {
+        "start": 3.9474,
+        "end": 3.9938,
+        "key": "SS"
+      },
+      {
+        "start": 3.9938,
+        "end": 4.0519,
+        "key": null
+      },
+      {
+        "start": 4.0519,
+        "end": 4.0983,
+        "key": "TH"
+      },
+      {
+        "start": 4.0983,
+        "end": 4.1215,
+        "key": "aa"
+      },
+      {
+        "start": 4.1215,
+        "end": 4.1448,
+        "key": null
+      },
+      {
+        "start": 4.1448,
+        "end": 4.1796,
+        "key": "PP"
+      },
+      {
+        "start": 4.1796,
+        "end": 4.2725,
+        "key": null
+      },
+      {
+        "start": 4.2725,
+        "end": 4.3305,
+        "key": "E"
+      },
+      {
+        "start": 4.3305,
+        "end": 4.4002,
+        "key": "SS"
+      },
+      {
+        "start": 4.4002,
+        "end": 4.435,
+        "key": "DD"
+      },
+      {
+        "start": 4.435,
+        "end": 4.5279,
+        "key": null
+      },
+      {
+        "start": 4.5279,
+        "end": 4.6092,
+        "key": null
+      },
+      {
+        "start": 4.6092,
+        "end": 4.6904,
+        "key": "aa"
+      },
+      {
+        "start": 4.6904,
+        "end": 4.7601,
+        "key": "nn"
+      },
+      {
+        "start": 4.7601,
+        "end": 4.8298,
+        "key": "SS"
+      },
+      {
+        "start": 4.8298,
+        "end": 4.8994,
+        "key": "aa"
+      },
+      {
+        "start": 4.8994,
+        "end": 4.9459,
+        "key": "RR"
+      },
+      {
+        "start": 4.9459,
+        "end": 4.9807,
+        "key": null
+      },
+      {
+        "start": 4.9807,
+        "end": 5.0155,
+        "key": "I"
+      },
+      {
+        "start": 5.0155,
+        "end": 5.0736,
+        "key": "SS"
+      },
+      {
+        "start": 5.0736,
+        "end": 5.0968,
+        "key": null
+      },
+      {
+        "start": 5.0968,
+        "end": 5.1432,
+        "key": "aa"
+      },
+      {
+        "start": 5.1432,
+        "end": 5.1897,
+        "key": null
+      },
+      {
+        "start": 5.1897,
+        "end": 5.2361,
+        "key": "PP"
+      },
+      {
+        "start": 5.2361,
+        "end": 5.2941,
+        "key": null
+      },
+      {
+        "start": 5.2941,
+        "end": 5.3754,
+        "key": "E"
+      },
+      {
+        "start": 5.3754,
+        "end": 5.4335,
+        "key": "DD"
+      },
+      {
+        "start": 5.4335,
+        "end": 5.538,
+        "key": "aa"
+      },
+      {
+        "start": 5.538,
+        "end": 5.5844,
+        "key": null
+      },
+      {
+        "start": 5.5844,
+        "end": 5.6192,
+        "key": "kk"
+      },
+      {
+        "start": 5.6192,
+        "end": 5.6424,
+        "key": "U"
+      },
+      {
+        "start": 5.6424,
+        "end": 5.7121,
+        "key": null
+      },
+      {
+        "start": 5.7121,
+        "end": 5.805,
+        "key": "E"
+      },
+      {
+        "start": 5.805,
+        "end": 5.8746,
+        "key": "SS"
+      },
+      {
+        "start": 5.8746,
+        "end": 5.9211,
+        "key": "DD"
+      },
+      {
+        "start": 5.9211,
+        "end": 5.9791,
+        "key": "CH"
+      },
+      {
+        "start": 5.9791,
+        "end": 6.0488,
+        "key": "aa"
+      },
+      {
+        "start": 6.0488,
+        "end": 6.0952,
+        "key": "nn"
+      },
+      {
+        "start": 6.0952,
+        "end": 6.1765,
+        "key": null
+      },
+      {
+        "start": 6.1765,
+        "end": 6.2113,
+        "key": null
+      }
+    ],
+    "captions": [
+      {
+        "start": 0,
+        "end": 0.6502,
+        "text": "Yes."
+      },
+      {
+        "start": 0.6502,
+        "end": 3.3437,
+        "text": "And can it stop when the stakes are too high?"
+      },
+      {
+        "start": 3.3437,
+        "end": 6.2113,
+        "text": "Sometimes the best answer is a better question."
+      }
+    ],
+    "performance": [
+      {
+        "at": 0.15,
+        "actor": "atlas",
+        "intent": "acknowledge",
+        "duration": 1,
+        "nod": false
+      },
+      {
+        "at": 1,
+        "actor": "atlas",
+        "intent": "consider",
+        "duration": 1.7,
+        "nod": false
+      },
+      {
+        "at": 3.5,
+        "actor": "atlas",
+        "intent": "warmth",
+        "duration": 1.8,
+        "nod": false
+      },
+      {
+        "at": 4.2,
+        "actor": "nova",
+        "intent": "acknowledge",
+        "duration": 1.4,
+        "nod": true
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "echo"
+      }
+    ],
+    "gestures": [
+      {
+        "at": 3.6,
+        "duration": 1.8,
+        "strength": 0.5
+      }
+    ]
+  },
+  {
+    "id": "10",
+    "speaker": "echo",
+    "text": "Your turn. Would you choose the voice that sounds certain, or the one that shows its doubts?",
+    "audio": "audio/10.mp3",
+    "duration": 6.3158,
+    "pause": 0.5,
+    "cues": [
+      {
+        "start": 0,
+        "end": 0.0464,
+        "key": null
+      },
+      {
+        "start": 0.0464,
+        "end": 0.1277,
+        "key": "I"
+      },
+      {
+        "start": 0.1277,
+        "end": 0.209,
+        "key": "O"
+      },
+      {
+        "start": 0.209,
+        "end": 0.2786,
+        "key": "aa"
+      },
+      {
+        "start": 0.2786,
+        "end": 0.3831,
+        "key": null
+      },
+      {
+        "start": 0.3831,
+        "end": 0.4644,
+        "key": "DD"
+      },
+      {
+        "start": 0.4644,
+        "end": 0.5457,
+        "key": null
+      },
+      {
+        "start": 0.5457,
+        "end": 0.6037,
+        "key": "E"
+      },
+      {
+        "start": 0.6037,
+        "end": 0.6966,
+        "key": "aa"
+      },
+      {
+        "start": 0.6966,
+        "end": 0.7779,
+        "key": "nn"
+      },
+      {
+        "start": 0.7779,
+        "end": 0.8591,
+        "key": null
+      },
+      {
+        "start": 0.8591,
+        "end": 0.9404,
+        "key": null
+      },
+      {
+        "start": 0.9404,
+        "end": 0.9636,
+        "key": null
+      },
+      {
+        "start": 0.9636,
+        "end": 0.9985,
+        "key": "U"
+      },
+      {
+        "start": 0.9985,
+        "end": 1.0333,
+        "key": "U"
+      },
+      {
+        "start": 1.0333,
+        "end": 1.0913,
+        "key": "DD"
+      },
+      {
+        "start": 1.0913,
+        "end": 1.1378,
+        "key": null
+      },
+      {
+        "start": 1.1378,
+        "end": 1.161,
+        "key": "I"
+      },
+      {
+        "start": 1.161,
+        "end": 1.2074,
+        "key": "U"
+      },
+      {
+        "start": 1.2074,
+        "end": 1.2539,
+        "key": "aa"
+      },
+      {
+        "start": 1.2539,
+        "end": 1.3235,
+        "key": null
+      },
+      {
+        "start": 1.3235,
+        "end": 1.3932,
+        "key": "DD"
+      },
+      {
+        "start": 1.3932,
+        "end": 1.4396,
+        "key": "CH"
+      },
+      {
+        "start": 1.4396,
+        "end": 1.5209,
+        "key": null
+      },
+      {
+        "start": 1.5209,
+        "end": 1.6022,
+        "key": "U"
+      },
+      {
+        "start": 1.6022,
+        "end": 1.6834,
+        "key": "aa"
+      },
+      {
+        "start": 1.6834,
+        "end": 1.7415,
+        "key": "SS"
+      },
+      {
+        "start": 1.7415,
+        "end": 1.7647,
+        "key": null
+      },
+      {
+        "start": 1.7647,
+        "end": 1.7995,
+        "key": "TH"
+      },
+      {
+        "start": 1.7995,
+        "end": 1.846,
+        "key": "aa"
+      },
+      {
+        "start": 1.846,
+        "end": 1.8808,
+        "key": null
+      },
+      {
+        "start": 1.8808,
+        "end": 1.9505,
+        "key": "FF"
+      },
+      {
+        "start": 1.9505,
+        "end": 2.055,
+        "key": null
+      },
+      {
+        "start": 2.055,
+        "end": 2.1246,
+        "key": "O"
+      },
+      {
+        "start": 2.1246,
+        "end": 2.2059,
+        "key": "I"
+      },
+      {
+        "start": 2.2059,
+        "end": 2.2639,
+        "key": "SS"
+      },
+      {
+        "start": 2.2639,
+        "end": 2.2872,
+        "key": null
+      },
+      {
+        "start": 2.2872,
+        "end": 2.3336,
+        "key": "TH"
+      },
+      {
+        "start": 2.3336,
+        "end": 2.3684,
+        "key": "aa"
+      },
+      {
+        "start": 2.3684,
+        "end": 2.4381,
+        "key": "DD"
+      },
+      {
+        "start": 2.4381,
+        "end": 2.5078,
+        "key": null
+      },
+      {
+        "start": 2.5078,
+        "end": 2.5774,
+        "key": "SS"
+      },
+      {
+        "start": 2.5774,
+        "end": 2.6587,
+        "key": null
+      },
+      {
+        "start": 2.6587,
+        "end": 2.7167,
+        "key": "aa"
+      },
+      {
+        "start": 2.7167,
+        "end": 2.7632,
+        "key": "U"
+      },
+      {
+        "start": 2.7632,
+        "end": 2.8328,
+        "key": "nn"
+      },
+      {
+        "start": 2.8328,
+        "end": 2.8793,
+        "key": "DD"
+      },
+      {
+        "start": 2.8793,
+        "end": 2.9257,
+        "key": "SS"
+      },
+      {
+        "start": 2.9257,
+        "end": 3.1115,
+        "key": null
+      },
+      {
+        "start": 3.1115,
+        "end": 3.2044,
+        "key": "SS"
+      },
+      {
+        "start": 3.2044,
+        "end": 3.274,
+        "key": null
+      },
+      {
+        "start": 3.274,
+        "end": 3.3321,
+        "key": "E"
+      },
+      {
+        "start": 3.3321,
+        "end": 3.4133,
+        "key": "aa"
+      },
+      {
+        "start": 3.4133,
+        "end": 3.5062,
+        "key": "DD"
+      },
+      {
+        "start": 3.5062,
+        "end": 3.5759,
+        "key": "aa"
+      },
+      {
+        "start": 3.5759,
+        "end": 3.6571,
+        "key": "nn"
+      },
+      {
+        "start": 3.6571,
+        "end": 3.8429,
+        "key": null
+      },
+      {
+        "start": 3.8429,
+        "end": 4.0983,
+        "key": null
+      },
+      {
+        "start": 4.0983,
+        "end": 4.168,
+        "key": "O"
+      },
+      {
+        "start": 4.168,
+        "end": 4.2376,
+        "key": "aa"
+      },
+      {
+        "start": 4.2376,
+        "end": 4.2725,
+        "key": null
+      },
+      {
+        "start": 4.2725,
+        "end": 4.3305,
+        "key": "TH"
+      },
+      {
+        "start": 4.3305,
+        "end": 4.3886,
+        "key": "aa"
+      },
+      {
+        "start": 4.3886,
+        "end": 4.4466,
+        "key": null
+      },
+      {
+        "start": 4.4466,
+        "end": 4.4931,
+        "key": "U"
+      },
+      {
+        "start": 4.4931,
+        "end": 4.5511,
+        "key": null
+      },
+      {
+        "start": 4.5511,
+        "end": 4.5976,
+        "key": "aa"
+      },
+      {
+        "start": 4.5976,
+        "end": 4.6556,
+        "key": "nn"
+      },
+      {
+        "start": 4.6556,
+        "end": 4.6904,
+        "key": null
+      },
+      {
+        "start": 4.6904,
+        "end": 4.7485,
+        "key": "TH"
+      },
+      {
+        "start": 4.7485,
+        "end": 4.7833,
+        "key": "aa"
+      },
+      {
+        "start": 4.7833,
+        "end": 4.8414,
+        "key": "DD"
+      },
+      {
+        "start": 4.8414,
+        "end": 4.9459,
+        "key": null
+      },
+      {
+        "start": 4.9459,
+        "end": 4.9923,
+        "key": "CH"
+      },
+      {
+        "start": 4.9923,
+        "end": 5.062,
+        "key": null
+      },
+      {
+        "start": 5.062,
+        "end": 5.1084,
+        "key": "aa"
+      },
+      {
+        "start": 5.1084,
+        "end": 5.1664,
+        "key": "U"
+      },
+      {
+        "start": 5.1664,
+        "end": 5.2013,
+        "key": "SS"
+      },
+      {
+        "start": 5.2013,
+        "end": 5.2477,
+        "key": null
+      },
+      {
+        "start": 5.2477,
+        "end": 5.2941,
+        "key": "I"
+      },
+      {
+        "start": 5.2941,
+        "end": 5.3754,
+        "key": "DD"
+      },
+      {
+        "start": 5.3754,
+        "end": 5.4567,
+        "key": "SS"
+      },
+      {
+        "start": 5.4567,
+        "end": 5.5496,
+        "key": null
+      },
+      {
+        "start": 5.5496,
+        "end": 5.6076,
+        "key": "DD"
+      },
+      {
+        "start": 5.6076,
+        "end": 5.7121,
+        "key": null
+      },
+      {
+        "start": 5.7121,
+        "end": 5.805,
+        "key": "aa"
+      },
+      {
+        "start": 5.805,
+        "end": 5.9095,
+        "key": "U"
+      },
+      {
+        "start": 5.9095,
+        "end": 6.0372,
+        "key": "DD"
+      },
+      {
+        "start": 6.0372,
+        "end": 6.1765,
+        "key": "SS"
+      },
+      {
+        "start": 6.1765,
+        "end": 6.281,
+        "key": null
+      },
+      {
+        "start": 6.281,
+        "end": 6.3158,
+        "key": null
+      }
+    ],
+    "captions": [
+      {
+        "start": 0,
+        "end": 0.9404,
+        "text": "Your turn."
+      },
+      {
+        "start": 0.9404,
+        "end": 3.8429,
+        "text": "Would you choose the voice that sounds certain,"
+      },
+      {
+        "start": 3.8429,
+        "end": 6.3158,
+        "text": "or the one that shows its doubts?"
+      }
+    ],
+    "performance": [
+      {
+        "at": 0.1,
+        "actor": "echo",
+        "intent": "warmth",
+        "duration": 1.1,
+        "nod": false
+      },
+      {
+        "at": 1.2,
+        "actor": "echo",
+        "intent": "question",
+        "duration": 2,
+        "nod": false
+      },
+      {
+        "at": 4,
+        "actor": "echo",
+        "intent": "consider",
+        "duration": 1.5,
+        "nod": false
+      }
+    ],
+    "attention": [
+      {
+        "at": 0,
+        "target": "audience"
+      }
+    ],
+    "gestures": [
+      {
+        "at": 1.3,
+        "duration": 1.6,
+        "strength": 0.6
+      }
+    ]
+  }
+]

@@ -1,0 +1,29 @@
+# ECHO visual direction and upgrade sequence
+
+## Decision
+
+Prioritize a convincing conversation before adding rendering effects or interface features. Edition 05 completes the next scene-level pass: inward seating, partner-directed gaze, closer coverage, authored body accents and visible clothing/footwear fixes. Keep the forest, sage and ivory identity, the recorded 70.57-second episode, one renderer and existing transport/camera controls.
+
+## Implemented in Edition 05
+
+- `blocking.js` defines an inward-facing cast and explicit conversation camera compositions. Guest pivots are moved out from the table edge and rotated toward their partners. Speaking attention cues identify the addressee; listening actors track the speaker. Head and eye angles have separate limits. Opening and closing moderator addresses target the audience without following every camera cut.
+- Close-shot geometric face heights measure 37–42% of frame in the tested configurations. Wide and two-person framing reduce unused wall space; lamps move away from head silhouettes. Cuts remain triggered by dialogue/caption events; fixed camera and reduced motion remain supported.
+- Replaced the identical every-turn arm accent in the main studio with sparse scripted gesture timing. Wrist and forearm amplitudes are restrained to maintain table contact. No hand tracking or motion capture is claimed.
+- Added simple low-profile footwear and removed fully covered foot triangles. Added cloth clearance to eliminate the observed collar/skin intersection in reviewed shots.
+- Studio V2 remains available with its previous seating/camera logic. Current and Original are unchanged. The Nova study receives shared clothing and footwear fixes; it retains its single-character layout.
+
+## Review workflow and findings
+
+`tools/export-studio-review.mjs` loads the actual GLBs and applies the same Three scene, skeleton poses, morph values, materials and camera coordinates, then writes static posed geometry to `/tmp/echo-scene-review`. `tools/render-studio-review.py` imports those snapshots into Blender. Five shot compositions were rendered and viewed; observed collar intersections, bare feet, a lamp/head tangent and excessive wall space led to changes and rerenders.
+
+These are offline composition renders, NOT browser screenshots. The review approximates lighting, omits canvas labels, instanced wall slats and custom shader contact patches, and does not reproduce the browser's exact tone mapping or effects. Texture UV conventions are converted explicitly. It is useful for pose, furniture and camera assessment, not WebGL performance claims.
+
+Automated checks cover 25 shot/aspect combinations, face-center furniture occlusion, independent rigs, hair attachment/normals, expressive morphs, seated wrist/toe positions and gesture contact over all ten turns. Original rig, Nova study, expressive sampling and transport suites pass. Browser visuals, mobile touch behavior and measured device FPS remain unverified because the supported browser QA capability is unavailable.
+
+## Next quality gates
+
+1. **Distinct character art.** Treat the shared MPFB-derived base as a prototype ceiling. Author or select three coherent but genuinely distinct faces, hair silhouettes and outfits. Acceptance: recognizably different in grayscale, neutral and speaking close-ups; clean eyelids/teeth/collars from front and both interview angles; documented browser asset redistribution rights; rig and facial target compatibility. Review a full-size neutral/speaking/listening portrait before replacing the cast. No asset purchase or subscription is authorized or required by this document.
+2. **Real-device visual pass.** Review the complete episode on a portrait phone and desktop. Capture all five shots plus a reaction, measure render cost and loading, verify mute/replay/interruption/context loss. Only after measurements decide on compressed textures, geometry reduction or additional shading. Do not claim a frame rate from geometry tests or offline renders.
+3. **Performance polish against the approved art.** Tune eye focus, expression intensity and mouth shapes on the final faces; adjust timing only when a visible issue justifies it. Acceptance: no repeated identical gesture across turns, no eye/head snapping, no mouth deformation competing with speech, no audio overlap. Keep the voice/LLM adapter independent.
+
+Do not add new product features, more dashboards or expensive effects to disguise weak character art. Cinematic depth of field, dynamic hair physics and additional voices are deferred until the existing visual and device gates pass.

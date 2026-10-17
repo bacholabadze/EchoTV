@@ -1,0 +1,2 @@
+export function actorFactory(model){const bones={},morphs=[];model.traverse(o=>{if(o.isBone)bones[o.name]={bone:o,rest:o.quaternion.clone()};if(o.isMesh){o.frustumCulled=false;if(o.morphTargetDictionary)morphs.push(o);for(const m of Array.isArray(o.material)?o.material:[o.material])m.envMapIntensity=.65;}});return {model,bones,morphs,morphBindings:morphs.flatMap(mesh=>Object.entries(mesh.morphTargetDictionary).map(([name,index])=>({mesh,name,index}))),index:0};}
+export function novaFrame(aspect){return [.23,1.28,aspect<.65?1.19:1.08,0,1.15,-.14,32];}
