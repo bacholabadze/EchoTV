@@ -2,6 +2,7 @@
 // revisions and approvals live here. Agents (LLMs) only ever create proposals and answers;
 // nothing an agent sends changes the committed programme without human approval.
 import {createHash} from 'node:crypto';
+import * as Interview from './interview.mjs';
 
 export class DomainError extends Error {
   constructor(code, message, details = {}) { super(message); this.code = code; this.details = details; }
@@ -124,6 +125,108 @@ export class BroadcastDesk {
     this.contentChanged(actor, `${seg.title} media replaced`, [segmentId]);
     return clone(seg);
   }
+  // ---------- creator interviews and library (3.2) ----------
+  // Private by default and owner-scoped: a person sees their own; their agent acts for them; nobody else (not the
+  // producer, not other creators or agents) can read them. Unknown and foreign ids both read as "not found".
+  ownerOf(actor) { return actor?.type === 'agent' ? this.agent(actor.id).ownerId : this.requireHuman(actor).id; }
+  library(ownerId) { this.state.library ??= {}; return this.state.library[ownerId] ??= {media: {}}; }
+  libraryMedia(ownerId) { return Object.values(this.library(ownerId).media).filter(m => m.status !== 'withdrawn'); }
+  interviewFor(actor, id) {
+    const iv = this.state.interviews?.[id];
+    if (!iv || iv.ownerId !== this.ownerOf(actor)) fail('not_found', `No interview ${id}`);
+    return iv;
+  }
+  ivCtx(ownerId) { const lib = this.libraryMedia(ownerId); return {library: lib, mediaOwned: id => lib.some(m => m.id === id), person: this.state.people[ownerId]}; }
+  ivCall(fn) { try { return fn(); } catch (e) { if (e instanceof Interview.InterviewError) fail(e.code, e.message); throw e; } }
+  startInterview(actor) {
+    const ownerId = this.ownerOf(actor);
+    if (this.state.people[ownerId].role !== 'creator') fail('forbidden', 'Interviews are for creators');
+    this.state.interviews ??= {};
+    const id = `IV${(this.state.counters.interview = (this.state.counters.interview || 0) + 1)}`;
+    this.state.interviews[id] = Interview.createInterview({id, ownerId, startedBy: actor.id, now: this.now()});
+    this.log(actor, 'interview_started', `${this.state.people[ownerId].name}: interview ${id} started${actor.type === 'agent' ? ` by ${this.agent(actor.id).label}` : ''}`, {interviewId: id, private: true});
+    return this.interviewView(actor, id);
+  }
+  interviewView(actor, id) {
+    const iv = this.interviewFor(actor, id);
+    return {id: iv.id, status: iv.status, step: iv.step, prompt: Interview.nextPrompt(iv), answers: iv.answers, brief: iv.brief, history: iv.history, briefRevisions: iv.briefRevisions, updatedAt: iv.updatedAt};
+  }
+  interviewAct(actor, id, action, body = {}) {
+    const iv = this.interviewFor(actor, id), by = actor.id, now = this.now(), ctx = this.ivCtx(iv.ownerId);
+    const human = actor.type === 'person';
+    if (['approve', 'withdraw', 'quotes'].includes(action) && !human) fail('forbidden', 'Only the creator can approve, choose quotes or withdraw; an agent can prepare answers');
+    this.ivCall(() => {
+      if (action === 'answer') Interview.answer(iv, {stepId: body.stepId, text: body.text, fields: body.fields, source: human ? (body.source === 'voice' ? 'voice' : 'typed') : 'agent', by, now, transcript: human && body.source === 'voice' ? body.transcript : null}, ctx);
+      else if (action === 'skip') Interview.skip(iv, {stepId: body.stepId, by, now}, ctx);
+      else if (action === 'goto') Interview.goTo(iv, {stepId: body.stepId, by, now});
+      else if (action === 'review') Interview.review(iv, ctx, {now});
+      else if (action === 'quotes') Interview.setQuotes(iv, {quotes: body.quotes, by, now}, ctx);
+      else if (action === 'approve') Interview.approve(iv, {version: body.version, hash: body.hash, by, now});
+      else if (action === 'withdraw') Interview.withdraw(iv, {by, now, reason: body.reason});
+      else fail('bad_request', 'Unknown interview action');
+    });
+    // Only the fact that something happened is logged publicly, never the content.
+    if (action === 'review') this.log(actor, 'brief_drafted', `${this.state.people[iv.ownerId].name}: creator brief ${id} draft v${iv.brief?.version}`, {interviewId: id, private: true});
+    if (action === 'approve' || action === 'withdraw') this.log(actor, `brief_${action === 'approve' ? 'approved' : 'withdrawn'}`, `${this.state.people[iv.ownerId].name}: creator brief ${id} ${action === 'approve' ? `v${iv.brief.version} approved by the creator` : 'withdrawn by the creator'}`, {interviewId: id});
+    if (action === 'withdraw') this.briefWithdrawn(actor, iv);
+    return this.interviewView(actor, id);
+  }
+  // Media: upload acceptance and the technical check (server) are separate from the rights declaration (creator),
+  // editorial review (producer, per segment revision) and broadcast authorisation (publication + start checks).
+  addLibraryMedia(actor, {sha256: hash, file, kind, technical, title, filename, bytes}) {
+    const person = this.requireHuman(actor), lib = this.library(person.id);
+    const id = `M${(this.state.counters.media = (this.state.counters.media || 0) + 1)}`;
+    lib.media[id] = {id, ownerId: person.id, kind, sha256: hash, file, title: Interview.cleanText(title || filename, 200), filename: Interview.cleanText(filename, 200), bytes, technical, rights: null, status: 'accepted', at: this.now(), history: [{at: this.now(), by: actor.id, action: 'uploaded'}]};
+    this.log(actor, 'library_media_added', `${person.name} added a ${kind} file to their private library`, {private: true});
+    return clone(lib.media[id]);
+  }
+  mediaOf(actor, id) { const person = this.requireHuman(actor), m = this.library(person.id).media[id]; if (!m) fail('not_found', `No media ${id}`); return m; }
+  // A declaration by the creator, not proof of ownership. Each permitted use is explicit.
+  declareRights(actor, id, {publicBroadcast, editing, replays, promoExcerpts, statement, confirm}) {
+    const m = this.mediaOf(actor, id);
+    if (m.status === 'withdrawn') fail('closed', 'This file was withdrawn');
+    if (confirm !== true) fail('rights_required', 'Confirm that you own this work or are licensed to grant these uses');
+    const rights = {publicBroadcast: publicBroadcast === true, editing: editing === true, replays: replays === true, promoExcerpts: promoExcerpts === true, statement: Interview.cleanText(statement, 500), declaredBy: actor.id, at: this.now(), verified: false};
+    const lostBroadcast = m.rights?.publicBroadcast && !rights.publicBroadcast;
+    m.rights = rights; m.history.push({at: this.now(), by: actor.id, action: 'rights_declared', rights: {...rights, statement: undefined}});
+    this.log(actor, 'rights_declared', `${this.state.people[m.ownerId].name} declared uses for a library file: ${['publicBroadcast', 'editing', 'replays', 'promoExcerpts'].filter(k => rights[k]).join(', ') || 'none'}`, {private: true});
+    if (lostBroadcast) this.mediaPermissionLost(actor, m, 'broadcast permission withdrawn by the creator');
+    return clone(m);
+  }
+  withdrawLibraryMedia(actor, id) {
+    const m = this.mediaOf(actor, id);
+    m.status = 'withdrawn'; m.history.push({at: this.now(), by: actor.id, action: 'withdrawn'});
+    this.log(actor, 'library_media_withdrawn', `${this.state.people[m.ownerId].name} withdrew a library file`, {private: true});
+    this.mediaPermissionLost(actor, m, 'file withdrawn by the creator');
+    return clone(m);
+  }
+  // Segments built from this file lose authorisation; a ready publication (or one counting down) that contains them
+  // is withdrawn before air (N04). Bytes are kept for audit.
+  mediaPermissionLost(actor, m, note) {
+    for (const seg of Object.values(this.state.segments)) if (seg.assets.some(a => a.libraryMediaId === m.id)) {
+      this.log(actor, 'segment_unauthorised', `${seg.title}: ${note}; it cannot be published or aired`, {segmentId: seg.id});
+      this.withdrawIfPublished(actor, seg, 'rejected', note);
+    }
+  }
+  briefWithdrawn(actor, iv) {
+    for (const seg of Object.values(this.state.segments)) if (seg.content?.brief?.interviewId === iv.id) {
+      this.log(actor, 'segment_unauthorised', `${seg.title}: the creator withdrew its brief; it cannot be published or aired`, {segmentId: seg.id});
+      this.withdrawIfPublished(actor, seg, 'rejected', 'creator withdrew the brief');
+    }
+  }
+  libraryView(actor) {
+    const ownerId = this.ownerOf(actor);
+    return {media: Object.values(this.library(ownerId).media).map(m => ({...clone(m), file: undefined})),
+      briefs: Object.values(this.state.interviews || {}).filter(iv => iv.ownerId === ownerId).map(iv => ({interviewId: iv.id, status: iv.status, brief: iv.brief && {version: iv.brief.version, status: iv.brief.status, displayName: iv.brief.creator.displayName, title: iv.brief.work.title, missing: iv.brief.missing}, lifecycle: this.briefLifecycle(iv)}))};
+  }
+  briefLifecycle(iv) {
+    const seg = Object.values(this.state.segments).find(s => s.content?.brief?.interviewId === iv.id), b = this.state.broadcast;
+    const steps = [['interview', true], ['draft', !!iv.brief], ['creator_approved', iv.status === 'approved' || !!seg], ['segment_prepared', !!seg], ['content_reviewed', !!seg && this.approvalValid(seg)],
+      ['airtime_requested', !!seg && Object.values(this.state.proposals).some(p => [...p.changes, ...p.concessions].some(c => c.segmentId === seg.id))], ['booking_confirmed', !!seg && this.state.bookings[seg.id]?.state === 'confirmed'],
+      ['published', !!seg && !!b.manifest?.segments.some(x => x.id === seg.id)], ['on_air', !!seg && ['on_air', 'completed'].includes(b.state) && !!b.manifest?.segments.some(x => x.id === seg.id)]];
+    return {withdrawn: iv.status === 'withdrawn', segmentId: seg?.id || null, steps: steps.map(([step, done]) => ({step, done}))};
+  }
+
   // ---------- voice (3.2) ----------
   // Who may put words in a segment's mouth: its owner, or the producer for house segments. Checked before any
   // render is paid for. Agents never render or approve; people do.

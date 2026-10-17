@@ -14,7 +14,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary',
   '.hdr': 'application/octet-stream', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.m4a': 'audio/mp4', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8'};
 const STATUS = {voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
-const MAX_UPLOAD = 25 * 1024 * 1024;
+const MAX_UPLOAD = 25 * 1024 * 1024, SENT = Symbol('sent');
 
 const MAGIC = {
   '.png': b => b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
@@ -59,6 +59,27 @@ export function checkMedia(file, recorded = null) {
   // Without a decoder, a shipped file is trusted only if its bytes are exactly the ones verified when it was authored.
   if (!probe.probed && recorded?.sha256 === hash) { probe = {kind: probe.kind, decodable: true, probed: false, verifiedRecord: recorded.by, ...recorded.metadata}; method = RECORDED_FINGERPRINT; }
   return probe.decodable ? {...probe, sha256: hash, verification: {method, sha256: hash}} : {...probe, sha256: hash, unplayableReason: reason, verification: null};
+}
+
+// Creator library files (3.2): images and audio get the same full check as broadcast media; existing video is fully
+// decoded too (accepted for the library; no video module airs it yet); PDFs are supporting documents only (never
+// parsed or broadcast). Nothing here is generated: creators upload what already exists.
+export const LIBRARY_TYPES = {'.png': 'image', '.jpg': 'image', '.jpeg': 'image', '.webp': 'image', '.mp3': 'audio', '.wav': 'audio', '.ogg': 'audio', '.m4a': 'audio', '.mp4': 'video', '.mov': 'video', '.webm': 'video', '.pdf': 'document'};
+export function checkLibraryFile(file) {
+  const ext = extname(file).toLowerCase(), kind = LIBRARY_TYPES[ext], head = readFileSync(file).subarray(0, 16);
+  if (kind === 'image' || kind === 'audio') { const r = checkMedia(file); return {kind: r.kind, decodable: r.decodable, reason: r.unplayableReason || null, durationSec: r.durationSec, width: r.width, height: r.height, method: r.verification?.method || null}; }
+  if (kind === 'document') return head.toString('latin1', 0, 5) === '%PDF-' ? {kind, decodable: true, reason: null, method: 'pdf-signature', note: 'supporting document: not parsed, never broadcast'} : {kind, decodable: false, reason: 'not a PDF file'};
+  if (kind !== 'video') return {kind: 'unknown', decodable: false, reason: `unsupported type ${ext}`};
+  const magic = ext === '.webm' ? head.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])) : head.toString('latin1', 4, 8) === 'ftyp';
+  if (!magic) return {kind, decodable: false, reason: `not a valid ${ext.slice(1)} file`};
+  if (!hasDecoder()) return {kind, decodable: false, reason: 'no media decoder on this server (install ffmpeg)'};
+  const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration:stream=codec_type,width,height', '-of', 'json', file], {encoding: 'utf8', timeout: 15000});
+  let info; try { info = JSON.parse(r.stdout); } catch { info = {}; }
+  const v = (info.streams || []).find(x => x.codec_type === 'video');
+  if (r.status !== 0 || !v || !(v.width > 0)) return {kind, decodable: false, reason: 'no decodable video stream'};
+  const d = spawnSync('ffmpeg', ['-v', 'error', '-xerror', '-i', file, '-f', 'null', '-'], {encoding: 'utf8', timeout: 60000});
+  if (d.status !== 0 || d.stderr.trim()) return {kind, decodable: false, reason: `decoding failed: ${(d.stderr || 'decoder error').trim().split('\n').pop().slice(0, 160)}`};
+  return {kind, decodable: true, reason: null, durationSec: Math.round(+info.format?.duration * 1000) / 1000, width: v.width, height: v.height, method: MEDIA_CHECKS[0]};
 }
 
 // Demo media shipped in the repo; uploads are stored in the data directory.
@@ -110,6 +131,8 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     for (const p of Object.values(s.people)) delete p.token;
     for (const a of Object.values(s.agents)) delete a.token;
     delete s.idempotency; delete s.media; // internal: retry records and the storage index
+    delete s.interviews; delete s.library;   // private, owner-scoped (served only by /api/interviews and /api/library)
+    s.audit = s.audit.filter(e => !e.private);
     s.serverTime = now();
     s.layout = desk.layout();
     s.segmentsValid = Object.fromEntries(Object.keys(s.segments).map(id => [id, desk.approvalValid(desk.state.segments[id])]));
@@ -279,6 +302,26 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       const voiceMeta = {provider: r.provider, model: r.model, voiceIds: r.voiceIds, lang: r.lang, duration: r.duration, captions: r.captions, cues: r.cues, turns: r.turns, approximateTiming: r.approximateTiming, requestIds: r.requestIds, cacheHit: r.cacheHit, fallbacks: r.attempts};
       return mutate(d => d.setVoice(actor, {segmentId: m[1], lines: r.lines, lang: r.lang, asset: {sha256: hash, file, ...check, voice: voiceMeta}}));
     }],
+    // ---- creator interviews and private library (3.2): owner-scoped; never in /api/state ----
+    ['GET', /^\/api\/interviews$/, ({actor}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); const owner = desk.ownerOf(actor); return Object.values(desk.state.interviews || {}).filter(iv => iv.ownerId === owner).map(iv => ({id: iv.id, status: iv.status, title: iv.brief?.work.title || null, updatedAt: iv.updatedAt})); }],
+    ['GET', /^\/api\/interviews\/(\w+)$/, ({actor, m}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); return desk.interviewView(actor, m[1]); }],
+    ['POST', /^\/api\/interviews$/, ({actor}) => mutate(d => d.startInterview(actor))],
+    ['POST', /^\/api\/interviews\/(\w+)\/(answer|skip|goto|review|quotes|approve|withdraw)$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.interviewAct(actor, m[1], m[2], body)); }],
+    ['GET', /^\/api\/library$/, ({actor}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); return desk.libraryView(actor); }],
+    ['GET', /^\/api\/library\/media\/(\w+)\/file$/, ({actor, m, req, res}) => { const item = desk.mediaOf(actor, m[1]); serveFile(req, res, join(dataDir, 'uploads', item.file)); return SENT; }],
+    ['POST', /^\/api\/library\/media$/, ({actor, req, raw}) => {
+      desk.requireHuman(actor);
+      const filename = decodeURIComponent(req.headers['x-filename'] || ''), ext = extname(filename).toLowerCase();
+      if (!LIBRARY_TYPES[ext]) throw new DomainError('bad_request', `Supported: ${Object.keys(LIBRARY_TYPES).join(', ')}`);
+      if (!raw.length) throw new DomainError('bad_request', 'Empty file');
+      const hash = sha256(raw), file = `${hash}${ext}`, path = join(dataDir, 'uploads', file);
+      writeFileSync(path, raw);
+      const c = checkLibraryFile(path);
+      return mutate(d => d.addLibraryMedia(actor, {sha256: hash, file, kind: c.kind, title: decodeURIComponent(req.headers['x-title'] || ''), filename, bytes: raw.length,
+        technical: {decodable: c.decodable, reason: c.reason, method: c.method || null, durationSec: c.durationSec, width: c.width, height: c.height, note: c.note || null}}));
+    }],
+    ['POST', /^\/api\/library\/media\/(\w+)\/rights$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.declareRights(actor, m[1], body)); }],
+    ['POST', /^\/api\/library\/media\/(\w+)\/withdraw$/, ({actor, m}) => mutate(d => d.withdrawLibraryMedia(actor, m[1]))],
     ['GET', /^\/api\/voice\/status$/, () => ({budget: voices.budget()})],
     // House host lines are written from the programme and voiced offline with Piper; captions-only if unavailable.
     ['POST', /^\/api\/publish$/, async ({actor}) => {
@@ -338,7 +381,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     let replayKey = null;
     try {
       if (route[0] === 'POST' && !actor) throw new DomainError('unauthorized', 'Missing or unknown token');
-      const raw = route[0] === 'POST' ? await readBody(req, /\/media\//.test(url.pathname) ? MAX_UPLOAD : 1e6) : Buffer.alloc(0);
+      const raw = route[0] === 'POST' ? await readBody(req, /\/media(\/|$)|\/transcribe$/.test(url.pathname) ? MAX_UPLOAD : 1e6) : Buffer.alloc(0);
       // Retries: the same Idempotency-Key from the same identity returns the first outcome instead of acting twice.
       const key = req.headers['idempotency-key'];
       if (key && route[0] === 'POST') {
@@ -354,6 +397,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
         replayKey = {replayKey, fingerprint};
       }
       const result = await route[2]({actor, req, res, url, raw, json: () => parseJson(raw), m: url.pathname.match(route[1])});
+      if (result === SENT) return; // the route streamed its own response (owner-only file)
       if (replayKey) remember(replayKey, 200, result);
       send(res, 200, result);
     } catch (error) {

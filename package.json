@@ -6,7 +6,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "npm run test:studio && npm run test:broadcast && npm run test:voice && npm run test:episode",
+    "test": "npm run test:studio && npm run test:broadcast && npm run test:voice && npm run test:episode && npm run test:interview",
     "test:studio": "node tests/studio-transport.mjs > /dev/null && node tests/studio-expressions.mjs && node --no-warnings --experimental-loader=./tests/three-loader.mjs tests/studio-rig.mjs && node --no-warnings --experimental-loader=./tests/three-loader.mjs tests/studio-materials.mjs && node --no-warnings --experimental-loader=./tests/three-loader.mjs tests/nova-study.mjs",
     "test:broadcast": "node --test --test-timeout=20000 tests/broadcast/*.test.mjs",
     "start": "node server/server.mjs",
@@ -22,7 +22,8 @@
     "test:voice": "node --test --test-timeout=180000 tests/voice/*.test.mjs",
     "test:voice-playout": "node tests/browser/voice-playout.mjs",
     "test:episode": "node --test tests/episode/*.test.mjs",
-    "test:guided-flow": "node tests/browser/guided-flow.mjs"
+    "test:guided-flow": "node tests/browser/guided-flow.mjs",
+    "test:interview": "node --test --test-timeout=60000 tests/interview/*.test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.31.0",
