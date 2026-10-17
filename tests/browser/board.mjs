@@ -40,7 +40,7 @@ try {
   for (const page of [a, b, producer]) await page.waitForFunction(() => document.querySelector('#revision').textContent === 'r2');
   assert.match(await a.textContent('#revisions'), /Art gallery: 10s\+30s → 5s\+45s/);
   await producer.click('#publish-btn');
-  await producer.waitForFunction(() => document.querySelector('#publish').textContent.startsWith('r2'));
+  await producer.waitForFunction(() => /^#1 · r2 · [0-9a-f]{10}$/.test(document.querySelector('#publish').textContent));
   await producer.screenshot({path: join(out, 'board-committed-published.png'), fullPage: true});
   assert.deepEqual(errors, []);
   console.log(`PASS: three sessions, one live board; per-person approve buttons; r2 committed and published. Screenshots in ${out}`);

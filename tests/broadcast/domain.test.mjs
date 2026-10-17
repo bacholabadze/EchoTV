@@ -142,7 +142,7 @@ test('old approval does not carry over to changed media', () => {
   assert.throws(() => d.reviewSegment(producer, {segmentId: 'premiere', revision: 1, decision: 'approved'}), code('stale_revision'));
   assert.throws(() => d.reviewSegment(B, {segmentId: 'premiere', revision: 2, decision: 'approved'}), code('forbidden'));
   d.reviewSegment(producer, {segmentId: 'premiere', revision: 2, decision: 'approved'});
-  assert.equal(d.publish(producer).publishRevision, 1);
+  assert.equal(d.publish(producer).publishRevision, 2, 'a media change is a new programme revision');
 });
 
 test('unanswered request expires as "no change", never as consent', () => {
@@ -156,12 +156,15 @@ test('unanswered request expires as "no change", never as consent', () => {
   assert.equal(d.state.showRevision, 1);
 });
 
-test('publish → on air → completed; manifest hash is stable for the same revision', () => {
+test('publish → on air → completed; every publication has its own number', () => {
   const d = desk();
   const m1 = d.publish(producer), m2 = d.publish(producer);
-  assert.equal(m1.hash, m2.hash);
+  assert.equal(m1.publishRevision, m2.publishRevision);
+  assert.equal(m2.publicationId, m1.publicationId + 1);
+  assert.notEqual(m1.hash, m2.hash);
   assert.throws(() => d.goLive(A), code('forbidden'));
-  const b = d.goLive(producer, {delayMs: 0});
+  assert.throws(() => d.goLive(producer, {delayMs: 0, publicationId: m1.publicationId, hash: m1.hash}), code('stale_manifest'), 'superseded publication');
+  const b = d.goLive(producer, {delayMs: 0, publicationId: m2.publicationId, hash: m2.hash});
   assert.equal(b.state, 'on_air');
   assert.throws(() => d.publish(producer), code('on_air'));
   d.advance(121000); d.tick();

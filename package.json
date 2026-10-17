@@ -11,7 +11,9 @@
     "test:broadcast": "node --test --test-timeout=20000 tests/broadcast/*.test.mjs",
     "start": "node server/server.mjs",
     "test:browser": "node tests/browser/board.mjs",
-    "test:broadcast-browser": "node tests/browser/broadcast.mjs"
+    "test:broadcast-browser": "node tests/browser/broadcast.mjs",
+    "test:audio-stall": "node tests/browser/audio-stall.mjs",
+    "test:browser-all": "npm run test:browser && npm run test:audio-stall && npm run test:broadcast-browser"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.31.0",

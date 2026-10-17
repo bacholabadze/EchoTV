@@ -1,6 +1,6 @@
 import {test, before, after} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync} from 'node:fs';
+import {mkdtempSync, readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createEchoServer} from '../../server/server.mjs';
@@ -67,8 +67,8 @@ test('concurrent double confirmation over HTTP: exactly one succeeds', async () 
   const d = echo.desk;
   d.state.segments.rival = {...structuredClone(d.state.segments.gallery), id: 'rival', title: 'Rival', ownerId: 'creator-a'};
   d.state.segments.rival2 = {...structuredClone(d.state.segments.gallery), id: 'rival2', title: 'Rival 2', ownerId: 'creator-b'};
-  assert.equal((await call('POST', '/api/slots/hold', tokens.a, {segmentId: 'rival', start: 200, duration: 30})).status, 200);
-  assert.equal((await call('POST', '/api/slots/hold', tokens.b, {segmentId: 'rival2', start: 210, duration: 30})).status, 200);
+  assert.equal((await call('POST', '/api/slots/hold', tokens.a, {segmentId: 'rival', start: 0, duration: 30})).status, 200);
+  assert.equal((await call('POST', '/api/slots/hold', tokens.b, {segmentId: 'rival2', start: 10, duration: 30})).status, 200);
   const results = await Promise.all(['rival', 'rival2'].map(segmentId => call('POST', '/api/slots/confirm', tokens.producer, {segmentId})));
   assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);
   assert.equal(results.find(r => r.status === 409).body.error, 'slot_taken');
@@ -119,7 +119,7 @@ test('static site and range requests are served', async () => {
 });
 
 test('owner media upload: hashed, served by hash, approval invalidated until re-reviewed', async () => {
-  const bytes = Buffer.from('ID3 fake audio for upload test');
+  const bytes = readFileSync(new URL('../fixtures/tone-62s.mp3', import.meta.url));
   const up = await fetch(`${base}/api/segments/premiere/media/track`, {method: 'POST', body: bytes, headers: {authorization: `Bearer ${tokens.creatorB}`, 'x-filename': 'new.mp3', 'x-rights-declared': 'yes', 'x-title': 'New%20take'}});
   assert.equal(up.status, 200);
   const seg = (await up.json());

@@ -75,6 +75,12 @@ export class BroadcastDesk {
     if (seg.ownerId !== owner) fail('forbidden', 'You can only hold slots for your own segment');
     const booking = this.state.bookings[segmentId];
     if (booking?.state === 'confirmed') fail('booking_confirmed', 'This segment already has a confirmed slot');
+    if (!Number.isInteger(start) || !Number.isInteger(duration)) fail('bad_request', 'start and duration are whole seconds');
+    if (start < 0 || duration <= 0 || start + duration > this.episode.durationSec)
+      fail('bad_request', `Interval ${start}s+${duration}s must lie within the ${this.episode.durationSec}s episode and last at least 1s`);
+    if (duration < seg.minDuration || duration > seg.maxDuration) fail('out_of_bounds', `${seg.title} must stay between ${seg.minDuration}s and ${seg.maxDuration}s`);
+    const clash = this.confirmedBookings().find(b => b.segmentId !== segmentId && b.start < start + duration && start < b.start + b.duration);
+    if (clash) fail('slot_taken', `Interval overlaps the confirmed ${this.state.segments[clash.segmentId].title}`, {clash: clone(clash)});
     this.state.bookings[segmentId] = {segmentId, start, duration, state: 'held', heldBy: actor.id, heldAt: this.now()};
     this.log(actor, 'slot_held', `${seg.title}: held ${start}s–${start + duration}s (not guaranteed until confirmed)`);
     return clone(this.state.bookings[segmentId]);
@@ -107,9 +113,34 @@ export class BroadcastDesk {
     if (!meta.rightsDeclared && !seg.assets.find(a => a.id === assetId)?.rightsDeclared) fail('rights_required', 'Declare distribution rights before submitting media');
     const assets = seg.assets.filter(a => a.id !== assetId);
     assets.push({id: assetId, sha256: hash, ...meta});
-    seg.assets = assets; seg.revision++; seg.state = 'submitted';
+    seg.assets = assets; seg.revision++; seg.state = 'submitted'; seg.approval = null;
+    this.indexMedia(hash, meta);
     this.log(actor, 'asset_replaced', `${seg.title}: media ${assetId} replaced; revision ${seg.revision} needs review`, {segmentId, revision: seg.revision});
+    this.contentChanged(actor, `${seg.title} media replaced`, [segmentId]);
     return clone(seg);
+  }
+  // Content changed outside a proposal: the programme gets a new revision, open proposals are rebased onto it
+  // (durations are unaffected) and every approval already given for them is void, because people approved
+  // what they saw before the change.
+  contentChanged(actor, reason, segmentIds) {
+    const from = this.state.showRevision;
+    this.state.showRevision++;
+    this.state.revisions.push({revision: this.state.showRevision, baseRevision: from, proposalId: null, reason, segmentIds, at: this.now(), schedule: this.layout(), diff: []});
+    for (const p of Object.values(this.state.proposals).filter(p => OPEN_PROPOSAL.has(p.status))) {
+      const hadApprovals = Object.keys(p.approvals || {}).length > 0;
+      p.baseRevision = this.state.showRevision;
+      if (p.status === 'awaiting_approval') { p.history.push({version: p.version, changes: clone(p.changes), voidedBy: reason}); p.version++; p.approvals = {}; p.segmentRevisions = this.segmentRevisions(p); }
+      this.log({type: 'system', id: 'showrunner'}, 'approvals_reset', `${reason}: ${p.id} rebased on r${this.state.showRevision}${hadApprovals ? `; earlier approvals are void, please approve v${p.version}` : ''}`, {proposalId: p.id});
+    }
+  }
+  indexMedia(hash, meta = {}) {
+    // Append-only: a published manifest can always fetch the exact bytes it was approved with.
+    this.state.media ??= {};
+    this.state.media[hash] ??= {file: meta.file, upload: !!meta.upload, kind: meta.kind, at: this.now()};
+  }
+  segmentRevisions(proposal) {
+    const ids = new Set([...proposal.changes, ...proposal.concessions, ...proposal.houseChanges].map(c => c.segmentId));
+    return Object.fromEntries([...ids].map(id => [id, this.state.segments[id].revision]));
   }
   reviewSegment(actor, {segmentId, revision, decision, note = ''}) {
     this.requireProducer(actor);
@@ -351,6 +382,7 @@ export class BroadcastDesk {
     const owners = new Set(all.map(c => this.state.segments[c.segmentId].ownerId).filter(id => this.state.people[id]?.role !== 'producer'));
     proposal.requiredApprovals = [...owners, ...Object.values(this.state.people).filter(p => p.role === 'producer').map(p => p.id).slice(0, 1)];
     proposal.status = 'awaiting_approval';
+    proposal.segmentRevisions = this.segmentRevisions(proposal);
     proposal.preview = this.layout(this.proposedDurations(proposal));
     this.log({type: 'system', id: 'showrunner'}, 'proposal_ready', `${reason} Waiting for: ${proposal.requiredApprovals.map(id => this.state.people[id].name).join(', ')}.`, {proposalId: proposal.id});
   }
@@ -360,6 +392,7 @@ export class BroadcastDesk {
     if (proposal.status !== 'awaiting_approval') fail('closed', `Proposal is ${proposal.status}`);
     if (version !== proposal.version) fail('stale_revision', `You reviewed version ${version}; current is ${proposal.version}`);
     if (!proposal.requiredApprovals.includes(person.id)) fail('forbidden', 'Your approval is not required for this proposal');
+    this.requireUnchangedSegments(proposal);
     if (decision === 'reject') {
       this.closeProposal(proposal, 'rejected', `${person.name} rejected${note ? ` — “${note}”` : ''}. Programme stays at revision ${this.state.showRevision}.`, actor);
       return {proposal: clone(proposal), committed: false};
@@ -370,7 +403,14 @@ export class BroadcastDesk {
     if (!proposal.requiredApprovals.every(id => proposal.approvals[id]?.version === proposal.version)) return {proposal: clone(proposal), committed: false};
     return {proposal: clone(proposal), committed: true, revision: this.commit(proposal)};
   }
+  // Defence in depth: a proposal can only be approved or committed against the segment revisions it was shown with.
+  requireUnchangedSegments(proposal) {
+    const now = this.segmentRevisions(proposal), then = proposal.segmentRevisions || {};
+    const changed = Object.keys(now).filter(id => now[id] !== then[id]);
+    if (changed.length) fail('stale_revision', `${changed.map(id => this.state.segments[id].title).join(', ')} changed after this version was prepared; approvals must be given again`, {changed});
+  }
   commit(proposal) {
+    this.requireUnchangedSegments(proposal);
     if (proposal.baseRevision !== this.state.showRevision) { this.closeProposal(proposal, 'stale', `Proposal was based on revision ${proposal.baseRevision}; show is at ${this.state.showRevision}. Nothing applied.`); fail('stale_base', 'Show changed since this proposal was made'); }
     const durations = this.proposedDurations(proposal), problems = this.violations(durations);
     if (problems.length) { this.closeProposal(proposal, 'rejected', `Commit refused: ${problems.map(p => p.rule).join(', ')}`); fail('invariant', 'Proposal violates programme rules', {problems}); }
@@ -402,23 +442,38 @@ export class BroadcastDesk {
     if (this.state.broadcast.state === 'on_air') fail('on_air', 'A broadcast is on air');
     const problems = this.violations(this.durations());
     const unapproved = this.layout().filter(e => e.duration > 0 && !this.approvalValid(this.state.segments[e.segmentId])).map(e => this.state.segments[e.segmentId].title);
-    if (problems.length || unapproved.length) fail('not_publishable', `Cannot publish: ${[...problems.map(p => p.rule), ...unapproved.map(t => `${t} not approved for its current revision`)].join('; ')}`, {problems, unapproved});
+    const unplayable = [];
+    for (const e of this.layout().filter(e => e.duration > 0)) {
+      const seg = this.state.segments[e.segmentId];
+      for (const a of seg.assets) if (a.decodable === false) unplayable.push(`${seg.title}: ${a.id} could not be decoded`);
+      const audio = seg.module === 'music' && seg.assets.find(a => a.id === seg.content?.assetId);
+      if (audio?.durationSec !== undefined && audio.durationSec + .05 < (seg.content.offset || 0) + e.duration)
+        unplayable.push(`${seg.title}: audio is ${audio.durationSec.toFixed(1)}s but the slot needs ${(seg.content.offset || 0) + e.duration}s`);
+    }
+    if (problems.length || unapproved.length || unplayable.length) fail('not_publishable', `Cannot publish: ${[...problems.map(p => p.rule), ...unapproved.map(t => `${t} not approved for its current revision`), ...unplayable].join('; ')}`, {problems, unapproved, unplayable});
     const segments = this.layout().filter(e => e.duration > 0).map(e => {
       const seg = this.state.segments[e.segmentId];
       return {id: seg.id, module: seg.module, title: seg.title, owner: this.state.people[seg.ownerId].name, ownerId: seg.ownerId, start: e.start, duration: e.duration, revision: seg.revision,
         confirmed: this.state.bookings[seg.id]?.state === 'confirmed', content: {...clone(seg.content || {}), ...(host[seg.id] ? {host: clone(host[seg.id])} : {})},
         assets: seg.assets.map(a => ({id: a.id, sha256: a.sha256, url: `/media/${a.sha256}`, title: a.title, credit: a.credit, license: a.license, source: a.source, kind: a.kind}))};
     });
-    const body = {episodeId: this.episode.id, title: this.episode.title, durationSec: this.episode.durationSec, publishRevision: this.state.showRevision, segments};
+    // publicationId is never reused (it survives rehearsal resets); publishRevision names the programme revision.
+    this.state.counters.publication = (this.state.counters.publication || 0) + 1;
+    const body = {episodeId: this.episode.id, title: this.episode.title, durationSec: this.episode.durationSec, publicationId: this.state.counters.publication, publishRevision: this.state.showRevision, segments};
     const manifest = {...body, hash: sha256(canonical(body)), publishedAt: this.now(), publishedBy: actor.id};
-    this.state.broadcast = {state: 'ready', publishRevision: this.state.showRevision, manifest, onAirAt: null};
-    this.log(actor, 'published', `Manifest for revision ${this.state.showRevision} published (${manifest.hash.slice(0, 12)})`, {revision: this.state.showRevision});
+    this.state.broadcast = {state: 'ready', publicationId: manifest.publicationId, publishRevision: this.state.showRevision, manifest, onAirAt: null};
+    this.log(actor, 'published', `Publication #${manifest.publicationId} of revision ${this.state.showRevision} published (${manifest.hash.slice(0, 12)})`, {revision: this.state.showRevision});
     return clone(manifest);
   }
-  goLive(actor, {delayMs = 3000} = {}) {
+  // The producer goes live with the exact publication they reviewed, and only if it is still the current programme.
+  goLive(actor, {delayMs = 3000, publicationId, hash} = {}) {
     this.requireProducer(actor);
     const b = this.state.broadcast;
     if (b.state !== 'ready') fail('not_ready', `Broadcast is ${b.state}; publish an approved revision first`);
+    if (publicationId !== b.manifest.publicationId || hash !== b.manifest.hash)
+      fail('stale_manifest', `You confirmed publication #${publicationId ?? '?'}; the ready publication is #${b.manifest.publicationId} (${b.manifest.hash.slice(0, 10)}). Review it and go live again.`);
+    if (b.publishRevision !== this.state.showRevision) fail('stale_manifest', `Publication #${b.manifest.publicationId} is revision ${b.publishRevision}, but the programme is now at revision ${this.state.showRevision}. Publish again.`);
+    if (!Number.isInteger(delayMs) || delayMs < 0 || delayMs > 600000) fail('bad_request', 'delayMs must be 0–600000');
     b.state = 'on_air'; b.onAirAt = this.now() + delayMs;
     this.log(actor, 'on_air', `Revision ${b.publishRevision} on air`, {revision: b.publishRevision});
     return clone(b);

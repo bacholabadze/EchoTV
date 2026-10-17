@@ -5,15 +5,22 @@
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {z} from 'zod';
+import {randomUUID} from 'node:crypto';
 
 const BASE = process.env.ECHO_URL || 'http://127.0.0.1:8787', TOKEN = process.env.ECHO_AGENT_TOKEN, CLIENT = process.env.ECHO_AGENT_CLIENT || 'MCP agent';
 if (!TOKEN) { console.error('ECHO_AGENT_TOKEN is required'); process.exit(1); }
 
+// One Idempotency-Key per action: if the network drops, the single retry cannot apply the action twice.
 async function api(method, path, body) {
-  const res = await fetch(BASE + path, {method, headers: {authorization: `Bearer ${TOKEN}`, 'content-type': 'application/json', 'x-echo-client': CLIENT}, body: body && JSON.stringify(body)});
-  const data = await res.json();
-  if (!res.ok) throw Object.assign(new Error(data.message || data.error), {data});
-  return data;
+  const key = method === 'POST' ? randomUUID() : null;
+  for (let attempt = 0; ; attempt++) {
+    let res;
+    try { res = await fetch(BASE + path, {method, headers: {authorization: `Bearer ${TOKEN}`, 'content-type': 'application/json', 'x-echo-client': CLIENT, ...(key ? {'idempotency-key': key} : {})}, body: body && JSON.stringify(body)}); }
+    catch (error) { if (attempt >= 1) throw error; await new Promise(r => setTimeout(r, 1000)); continue; }
+    const data = await res.json();
+    if (!res.ok) throw Object.assign(new Error(data.message || data.error), {data});
+    return data;
+  }
 }
 const result = data => ({content: [{type: 'text', text: JSON.stringify(data, null, 2)}]});
 // Domain refusals are useful information for the agent, not crashes.

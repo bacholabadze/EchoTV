@@ -28,7 +28,9 @@ export function seedState({people = {}, media = {}} = {}) {
     seg.approval = {revision: 1, assetHashes: seg.assets.map(x => x.sha256).sort(), by: producer.id, at: 0, seeded: true};
   }
   return {
-    schema: 1, seq: 0, showRevision: 1, counters: {proposal: 0, request: 0},
+    schema: 1, seq: 0, showRevision: 1, counters: {proposal: 0, request: 0, publication: 0},
+    media: Object.fromEntries(Object.values(media).filter(m => m.file).map(m => [m.sha256, {file: m.file, upload: false, kind: m.kind, at: 0}])),
+    idempotency: {},
     episode: {id: 'one-premiere-three-roles', title: 'One premiere, three roles', durationSec: 120},
     people: {[a.id]: a, [b.id]: b, [producer.id]: producer},
     agents: {

@@ -52,17 +52,49 @@ function renderHost(host, local, ms) {
 }
 
 // ---------- audio ----------
+// Required-audio watchdog: playback must keep advancing. No progress for STALL_MS → visible "interrupted" state and
+// a bounded number of reloads; no progress for FAIL_MS → visible "unavailable", the programme continues without it.
+const STALL_MS = 2500, FAIL_MS = 8000, MAX_RETRIES = 3;
+const health = {src: null, state: 'ok', since: 0, lastTime: -1, retries: 0, lastRetry: 0, errored: false, recoveries: 0};
+audio.addEventListener('error', () => { health.errored = true; });
+function resetHealth(src) { Object.assign(health, {src, state: 'ok', since: performance.now(), lastTime: audio.currentTime, retries: 0, lastRetry: 0, errored: false}); }
+function watchAudio(src, expected) {
+  const t = performance.now();
+  if (health.src !== src) resetHealth(src);
+  if (health.state === 'failed') return;
+  // Progress means decoded media advancing on its own; our own seeks (see seekTo) never count.
+  if (!health.errored && !audio.paused && audio.readyState >= 2 && audio.currentTime !== health.lastTime) {
+    health.lastTime = audio.currentTime; health.since = t;
+    if (health.state !== 'ok') { health.state = 'ok'; health.recoveries++; }
+    return;
+  }
+  const stuck = t - health.since;
+  if (stuck > FAIL_MS) { health.state = 'failed'; audio.pause(); return; }
+  if (stuck > STALL_MS || health.errored) {
+    health.state = 'stalled';
+    if (health.retries < MAX_RETRIES && t - health.lastRetry > STALL_MS) {
+      health.retries++; health.lastRetry = t; health.errored = false;
+      audio.src = `${src}${src.includes('?') ? '&' : '?'}retry=${health.retries}`; seekTo(expected); audio.play().catch(() => {});
+    }
+  }
+}
+function seekTo(t) { audio.currentTime = t; health.lastTime = audio.currentTime; }
 function syncAudio(src, expected, volume = 1, end = Infinity) {
-  if (!soundOn || !src || expected >= end) { if (!audio.paused) audio.pause(); return; }
+  view.audioNeeded = false;
+  if (!soundOn || !src || expected >= end) { stopAudio(); return; }
+  view.audioNeeded = true;
+  if (health.src === src && health.state === 'failed') return;
+  watchAudio(src, expected);
   audio.volume = Math.max(0, Math.min(1, volume));
   const t = performance.now();
-  if (audio.dataset.src !== src) { audio.dataset.src = src; audio.src = src; audio.currentTime = expected; audio.play().catch(() => {}); lastSync = t; return; }
-  if (t - lastSync < 400) return;
+  if (audio.dataset.src !== src) { audio.dataset.src = src; audio.src = src; seekTo(expected); audio.play().catch(() => {}); lastSync = t; return; }
+  if (t - lastSync < 400 || health.state !== 'ok') return;
   lastSync = t;
-  if (audio.paused) { audio.currentTime = expected; audio.play().catch(() => {}); }
-  else if (Math.abs(audio.currentTime - expected) > .35) audio.currentTime = expected;
+  if (audio.paused) { seekTo(expected); audio.play().catch(() => {}); }
+  else if (Math.abs(audio.currentTime - expected) > .35) seekTo(expected);
 }
-function stopAudio() { if (!audio.paused) audio.pause(); }
+// A deliberate stop ends watching: the next segment that needs audio (even the same file) starts a fresh watch.
+function stopAudio() { if (!audio.paused) audio.pause(); health.src = null; }
 
 // ---------- modules ----------
 function lower(kicker, title, credit, owner) {
@@ -134,23 +166,30 @@ function tick(ms) {
   const b = state?.broadcast, m = b?.manifest;
   screen.dataset.live = 'no';
   if (!state) return;
-  if (!m || b.state === 'queued') { setText('#onair-label', 'Off air'); setText('#manifest', ''); setText('#clock', ''); setText('#next', ''); return slate('ECHO TV', 'Off air', 'The next programme is being prepared on the Production Board by its creators and their agents.'); }
-  setText('#manifest', `manifest r${m.publishRevision} · ${m.hash.slice(0, 10)}`);
-  if (b.state === 'failed') { setText('#onair-label', 'Technical break'); return slate('ECHO TV', 'We’ll be right back.', 'Playout was stopped by the producer. Approved programme r' + m.publishRevision + ' is safe.'); }
-  if (b.state === 'ready') { setText('#onair-label', 'Standby'); setText('#clock', `0:00 / ${fmt(m.durationSec)}`); setText('#next', ''); return slate('Next on ECHO', m.title, `${m.segments.map(s => s.title).join(' · ')}`, `Approved revision r${m.publishRevision} · waiting for the producer to go live`); }
+  if (!m || b.state === 'queued') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Off air'); setText('#manifest', ''); setText('#clock', ''); setText('#next', ''); return slate('ECHO TV', 'Off air', 'The next programme is being prepared on the Production Board by its creators and their agents.'); }
+  setText('#manifest', `publication #${m.publicationId ?? '–'} · r${m.publishRevision} · ${m.hash.slice(0, 10)}`);
+  if (b.state === 'failed') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Technical break'); return slate('ECHO TV', 'We’ll be right back.', 'Playout was stopped by the producer. Approved programme r' + m.publishRevision + ' is safe.'); }
+  if (b.state === 'ready') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Standby'); setText('#clock', `0:00 / ${fmt(m.durationSec)}`); setText('#next', ''); return slate('Next on ECHO', m.title, `${m.segments.map(s => s.title).join(' · ')}`, `Approved revision r${m.publishRevision} · waiting for the producer to go live`); }
   const t = (now() - b.onAirAt) / 1000;
-  if (t < 0) { setText('#onair-label', 'Starting'); return slate('ECHO TV', `On air in ${Math.ceil(-t)}`, m.title, `Approved revision r${m.publishRevision} · ${m.hash.slice(0, 10)}`); }
-  if (t >= m.durationSec) { setText('#onair-label', 'Ended'); setText('#next', ''); setText('#clock', `${fmt(m.durationSec)} / ${fmt(m.durationSec)}`); return slate('That was', m.title, `Made by ${[...new Set(m.segments.filter(s => s.ownerId !== 'producer').map(s => s.owner))].sort().join(' and ')} with their agents, coordinated by the ECHO Showrunner.`, `Aired revision r${m.publishRevision} · ${m.hash.slice(0, 10)} · ${fmt(m.durationSec)}`); }
-  screen.dataset.live = 'yes'; setText('#onair-label', 'Live');
+  if (t < 0) { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Starting'); return slate('ECHO TV', `On air in ${Math.ceil(-t)}`, m.title, `Approved revision r${m.publishRevision} · ${m.hash.slice(0, 10)}`); }
+  if (t >= m.durationSec) { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Ended'); setText('#next', ''); setText('#clock', `${fmt(m.durationSec)} / ${fmt(m.durationSec)}`); return slate('That was', m.title, `Made by ${[...new Set(m.segments.filter(s => s.ownerId !== 'producer').map(s => s.owner))].sort().join(' and ')} with their agents, coordinated by the ECHO Showrunner.`, `Aired revision r${m.publishRevision} · ${m.hash.slice(0, 10)} · ${fmt(m.durationSec)}`); }
+  screen.dataset.live = 'yes';
   const seg = m.segments.find(s => t >= s.start && t < s.start + s.duration), next = m.segments[m.segments.indexOf(seg) + 1], local = t - seg.start;
   setText('#clock', `${fmt(t)} / ${fmt(m.durationSec)}`);
   setText('#next', next ? `Next · ${next.title} at ${fmt(next.start)}${next.confirmed ? ' · confirmed' : ''}` : 'Final segment');
   view.segment = seg.id; view.local = local; view.t = t;
   if (seg.module !== 'host') $('#caption').hidden = true;
   screen.dataset.module = seg.module;
+  view.audioNeeded = false; // set again by syncAudio when this segment requires sound
   if (seg.module === 'art') playArt(seg, local);
   else if (seg.module === 'music') playMusic(seg, local);
   else if (seg.module === 'host') playHost(seg, local, ms);
+  // Never a plain "Live" while required audio is stuck.
+  const fault = view.audioNeeded && health.src === audio.dataset.src && health.state !== 'ok' ? health.state : null;
+  screen.dataset.audio = fault || 'ok';
+  setText('#onair-label', fault === 'stalled' ? 'Live · audio interrupted' : fault === 'failed' ? 'Live · audio unavailable' : 'Live');
+  $('#fault').hidden = !fault; $('#fault-retry').hidden = fault !== 'failed';
+  if (fault) setText('#fault-text', fault === 'stalled' ? `Audio interrupted — reconnecting (attempt ${health.retries} of ${MAX_RETRIES})` : `Audio unavailable for “${seg.title}” — the programme continues without sound`);
 }
 
 $('#sound').onclick = () => {
@@ -167,9 +206,21 @@ const events = new EventSource('/api/events');
 const preloaded = new Set();
 // Fetch every image of the published manifest up front so a slide never appears blank.
 function preload(m) { for (const seg of m?.segments || []) for (const a of seg.assets) if (a.kind === 'image' && !preloaded.has(a.url)) { preloaded.add(a.url); new Image().src = a.url; } }
-events.addEventListener('state', e => { state = JSON.parse(e.data); offset = state.serverTime - Date.now(); preload(state.broadcast?.manifest); });
-events.addEventListener('clock', e => { offset = +e.data - Date.now(); });
+// Clock: round-trip-corrected samples of /api/time (lowest-latency sample wins). SSE delivery can be delayed or
+// buffered, so its timestamps are only used until the first real sample arrives.
+let clockSamples = [], clockSynced = false;
+async function syncClock() {
+  try {
+    const t0 = Date.now(), r = await fetch('/api/time', {cache: 'no-store'}), {serverTime} = await r.json(), t1 = Date.now();
+    clockSamples = [...clockSamples, {rtt: t1 - t0, offset: serverTime - (t0 + t1) / 2}].slice(-8);
+    offset = clockSamples.reduce((best, x) => x.rtt < best.rtt ? x : best).offset; clockSynced = true;
+  } catch {}
+}
+for (const delay of [0, 300, 900]) setTimeout(syncClock, delay);
+setInterval(syncClock, 10000);
+events.addEventListener('state', e => { state = JSON.parse(e.data); if (!clockSynced) offset = state.serverTime - Date.now(); preload(state.broadcast?.manifest); });
+$('#fault-retry').onclick = () => { if (health.src) { resetHealth(health.src); audio.dataset.src = ''; } };
 const audioLevel = () => { if (!analyser) return null; const d = new Uint8Array(analyser.fftSize); analyser.getByteTimeDomainData(d); let m = 0; for (const v of d) m = Math.max(m, Math.abs(v - 128)); return m / 128; };
-window.EchoBroadcast = {getState: () => ({viz: view.viz, audioLevel: audioLevel(), module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
+window.EchoBroadcast = {getState: () => ({audioHealth: {state: health.state, retries: health.retries, recoveries: health.recoveries, needed: !!view.audioNeeded}, onAirLabel: $('#onair-label').textContent, faultVisible: !$('#fault').hidden, clockSynced, clockOffsetMs: Math.round(offset), publicationId: state?.broadcast?.manifest?.publicationId, viz: view.viz, audioLevel: audioLevel(), module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
 loadStudio();
 requestAnimationFrame(tick);

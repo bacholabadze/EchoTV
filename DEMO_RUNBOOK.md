@@ -78,7 +78,9 @@ The agent scripts start Claude Code and Codex with only the ECHO tools attached.
 4. When the last required person approves, the Showrunner re-checks every rule and commits `r2`. The revision history shows the before/after diff.
 5. Agents can never approve. There is no approve tool, and the server returns 403 for agent tokens. Any person whose approval is required can press **Reject** instead; the programme then stays as it was.
 
-Then the producer presses **Publish approved revision** (manifest `r2 · <hash>` appears on the board and in the broadcast's top-right corner), then **Go live** (5-second countdown on every viewer).
+Then the producer presses **Publish approved revision**. The board and the broadcast's top-right corner show `#<publication> · r2 · <hash>`; publication numbers are never reused. Then the producer presses **Go live** (5-second countdown on every viewer). Go live only airs the exact publication shown on the producer's board: if the programme or its media changed since, the server refuses and asks for a new Publish.
+
+If any creator replaces media while a proposal waits for approval, every approval already given is void. The board asks everyone to approve the new version, and the changed segment needs the producer's editorial approval again before publishing. Uploads that cannot be decoded, the wrong kind of file, or audio too short for its slot are refused.
 
 ## 5. What to type to the agents
 
@@ -111,6 +113,7 @@ Optional proofs: **NO AGREEMENT** (see §5). **Stale approval**: B uses *Replace
 - **An AI agent fails:** run `data/demo/fallback-b.sh` (or the equivalent for A, per `server/fallback-agent.mjs`). The board shows the agent's client as "ECHO fallback (rule-based)".
 - **An agent stays silent for 3 minutes:** its request expires as *no change*, never as consent.
 - **Piper missing:** the outro shows captions only; the activity feed says so.
+- **Audio stalls on a viewer:** after about 2.5 s the broadcast shows **Live · audio interrupted** and retries up to 3 times. After about 8 s it shows **Live · audio unavailable** with a **Retry audio** button, and the programme continues without sound. It never shows a plain "Live" while required audio is stuck.
 - **WebGL unavailable:** the outro shows a text slate; the programme continues.
 - **Rehearse again:** `scripts/demo.sh reset`, or **Reset rehearsal** on the producer board.
 

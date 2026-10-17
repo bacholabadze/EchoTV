@@ -6,11 +6,17 @@ if (fromHash) { try { sessionStorage.setItem('echo-token', fromHash); } catch {}
 let token = fromHash; try { token ||= sessionStorage.getItem('echo-token'); } catch {}
 let me = null, state = null, clockOffset = 0, seenSeq = 0;
 
+// Every click gets one Idempotency-Key; a network retry of that click reuses it, so it can never act twice.
 async function api(method, path, body) {
-  const res = await fetch(path, {method, headers: {'content-type': 'application/json', ...(token ? {authorization: `Bearer ${token}`} : {})}, body: body && JSON.stringify(body)});
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || data.error);
-  return data;
+  const key = method === 'POST' ? crypto.randomUUID() : null;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const res = await fetch(path, {method, headers: {'content-type': 'application/json', ...(token ? {authorization: `Bearer ${token}`} : {}), ...(key ? {'idempotency-key': key} : {})}, body: body && JSON.stringify(body)});
+      const data = await res.json();
+      if (!res.ok) throw Object.assign(new Error(data.message || data.error), {handled: true});
+      return data;
+    } catch (e) { if (e.handled || attempt >= 1) throw e; await new Promise(r => setTimeout(r, 800)); }
+  }
 }
 const act = (fn, button) => async () => {
   $('#error').hidden = true; if (button) button.disabled = true;
@@ -33,7 +39,7 @@ function render() {
   const s = state;
   $('#episode').textContent = s.episode.title;
   $('#revision').textContent = `r${s.showRevision}`;
-  $('#publish').textContent = s.broadcast.publishRevision ? `r${s.broadcast.publishRevision} · ${s.broadcast.manifest.hash.slice(0, 10)}` : 'not published';
+  $('#publish').textContent = s.broadcast.publishRevision ? `#${s.broadcast.manifest.publicationId ?? '–'} · r${s.broadcast.publishRevision} · ${s.broadcast.manifest.hash.slice(0, 10)}` : 'not published';
   $('#broadcast-state').textContent = s.broadcast.state.replace('_', ' ');
   const ruler = [0, 20, 40, 50, 60, 80, 100, 120].filter(t => t <= s.episode.durationSec);
   $('#ruler').innerHTML = ruler.map(t => `<span style="left:${t / s.episode.durationSec * 100}%">${t}s</span>`).join('');
@@ -124,10 +130,15 @@ async function upload(segmentId, file) {
   if (!file) return;
   const seg = state.segments[segmentId], assetId = seg.assets.find(a => a.kind === (file.type.startsWith('audio') ? 'audio' : 'image'))?.id || seg.assets[0].id;
   if (!confirm(`Replace ${assetId} in “${seg.title}” with ${file.name}?\n\nConfirm you own or are licensed to broadcast this media. The segment will need editorial approval again.`)) return;
-  const res = await fetch(`/api/segments/${segmentId}/media/${assetId}`, {method: 'POST', body: file, headers: {authorization: `Bearer ${token}`, 'x-filename': file.name, 'x-rights-declared': 'yes', 'x-title': encodeURIComponent(file.name)}});
+  const res = await fetch(`/api/segments/${segmentId}/media/${assetId}`, {method: 'POST', body: file, headers: {authorization: `Bearer ${token}`, 'idempotency-key': crypto.randomUUID(), 'x-filename': file.name, 'x-rights-declared': 'yes', 'x-title': encodeURIComponent(file.name)}});
   if (!res.ok) throw new Error((await res.json()).message);
 }
 
+let clockSynced = false, bestRtt = Infinity;
+async function syncClock() {
+  try { const t0 = Date.now(), {serverTime} = await (await fetch('/api/time', {cache: 'no-store'})).json(), t1 = Date.now();
+    if (t1 - t0 <= bestRtt * 1.5) { bestRtt = Math.min(bestRtt, t1 - t0); clockOffset = serverTime - (t0 + t1) / 2; clockSynced = true; } } catch {}
+}
 function playhead() {
   const b = state?.broadcast, el = $('#playhead');
   if (!b || b.state !== 'on_air') { el.hidden = true; return; }
@@ -138,7 +149,8 @@ function playhead() {
 setInterval(playhead, 250);
 
 $('#publish-btn').onclick = act(() => api('POST', '/api/publish'), $('#publish-btn'));
-$('#live-btn').onclick = act(() => api('POST', '/api/golive', {delayMs: 5000}), $('#live-btn'));
+// Go live with exactly the publication shown on this board; the server refuses if it is no longer current.
+$('#live-btn').onclick = act(() => api('POST', '/api/golive', {delayMs: 5000, publicationId: state.broadcast.manifest?.publicationId, hash: state.broadcast.manifest?.hash}), $('#live-btn'));
 $('#reset-btn').onclick = act(async () => { if (confirm('Reset the rehearsal to the seeded programme? Audit history is cleared.')) await api('POST', '/api/reset'); });
 
 async function start() {
@@ -147,8 +159,8 @@ async function start() {
     catch { token = null; try { sessionStorage.removeItem('echo-token'); } catch {} $('#who').textContent = 'Viewer · link not recognised'; }
   }
   const events = new EventSource('/api/events');
-  events.addEventListener('state', e => { state = JSON.parse(e.data); clockOffset = state.serverTime - Date.now(); render(); });
-  events.addEventListener('clock', e => { clockOffset = +e.data - Date.now(); });
+  events.addEventListener('state', e => { state = JSON.parse(e.data); if (!clockSynced) clockOffset = state.serverTime - Date.now(); render(); });
+  syncClock(); setInterval(syncClock, 15000);
   events.onopen = () => { $('#connection').dataset.state = 'live'; $('#connection').textContent = 'Live'; };
   events.onerror = () => { $('#connection').dataset.state = 'lost'; $('#connection').textContent = 'Reconnecting'; };
 }

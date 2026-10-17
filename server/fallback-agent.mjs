@@ -2,15 +2,22 @@
 // Rule-based fallback agent: used only when a creator's own AI agent is unavailable.
 // It identifies itself as rule-based on the board and follows a written owner policy, e.g.
 //   ECHO_AGENT_TOKEN=... ECHO_POLICY='{"concede":{"intro":5},"adapt":true}' node server/fallback-agent.mjs
+import {randomUUID} from 'node:crypto';
 const BASE = process.env.ECHO_URL || 'http://127.0.0.1:8787', TOKEN = process.env.ECHO_AGENT_TOKEN;
 const policy = JSON.parse(process.env.ECHO_POLICY || '{}');
 const once = process.argv.includes('--once');
 
+// One Idempotency-Key per action: if the network drops, the single retry cannot apply the action twice.
 async function api(method, path, body) {
-  const res = await fetch(BASE + path, {method, headers: {authorization: `Bearer ${TOKEN}`, 'content-type': 'application/json', 'x-echo-client': 'ECHO fallback (rule-based)'}, body: body && JSON.stringify(body)});
-  const data = await res.json();
-  if (!res.ok) throw Object.assign(new Error(data.message || data.error), {data});
-  return data;
+  const key = method === 'POST' ? randomUUID() : null;
+  for (let attempt = 0; ; attempt++) {
+    let res;
+    try { res = await fetch(BASE + path, {method, headers: {authorization: `Bearer ${TOKEN}`, 'content-type': 'application/json', 'x-echo-client': 'ECHO fallback (rule-based)', ...(key ? {'idempotency-key': key} : {})}, body: body && JSON.stringify(body)}); }
+    catch (error) { if (attempt >= 1) throw error; await new Promise(r => setTimeout(r, 1000)); continue; }
+    const data = await res.json();
+    if (!res.ok) throw Object.assign(new Error(data.message || data.error), {data});
+    return data;
+  }
 }
 const evenSlides = (slides, duration) => {
   const base = Math.floor(duration / slides.length), extra = duration - base * slides.length;
