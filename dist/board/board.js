@@ -45,20 +45,27 @@ function render() {
   const w = s.broadcast.withdrawn;
   $('#publish').textContent = s.broadcast.publishRevision ? `#${s.broadcast.manifest.publicationId ?? '–'} · r${s.broadcast.publishRevision} · ${s.broadcast.manifest.hash.slice(0, 10)}` : w ? `#${w.publicationId} withdrawn` : 'not published';
   $('#publish').title = w && !s.broadcast.manifest ? `Withdrawn by ${name(w.by)}: ${w.reason}` : '';
-  $('#broadcast-state').textContent = s.broadcast.state.replace('_', ' ');
+  broadcastLabel();
   const ruler = [0, 20, 40, 50, 60, 80, 100, 120].filter(t => t <= s.episode.durationSec);
   $('#ruler').innerHTML = ruler.map(t => `<span style="left:${t / s.episode.durationSec * 100}%">${t}s</span>`).join('');
   track($('#track-current'), s.layout);
 
   const open = Object.values(s.proposals).filter(p => ['negotiating', 'awaiting_proposer', 'awaiting_approval'].includes(p.status)).pop();
   const latest = open || Object.values(s.proposals).pop();
+  // Only a plan the Showrunner has validated (awaiting approval) is drawn. Before that the request is shown as
+  // text: drawing the raw request would show the confirmed slot moving, which the rules never allow.
   if (open) {
-    const d = Object.fromEntries(s.layout.map(e => [e.segmentId, e.duration]));
     const changes = [...open.changes, ...open.concessions, ...open.houseChanges];
-    for (const c of changes) if (c.duration !== undefined) d[c.segmentId] = c.duration;
-    let at = 0; const preview = s.order.map(id => { const e = {segmentId: id, start: at, duration: d[id]}; at += d[id]; return e; });
-    $('#preview-wrap').hidden = false; $('#preview-label').textContent = `${open.id} v${open.version} · ${at}s total`;
-    track($('#track-preview'), preview, new Set(changes.map(c => c.segmentId)));
+    $('#preview-wrap').hidden = false;
+    if (open.status === 'awaiting_approval' && open.preview) {
+      const total = open.preview.reduce((n, e) => n + e.duration, 0);
+      $('#preview-label').textContent = `${open.id} v${open.version} · ${total}s total · waiting for approval`;
+      $('#track-preview').hidden = false; track($('#track-preview'), open.preview, new Set(changes.map(c => c.segmentId)));
+    } else {
+      const asked = (open.history[0]?.changes || open.changes).map(c => `${s.segments[c.segmentId].title} → ${c.duration ?? s.segments[c.segmentId].duration}s`).join(', ');
+      $('#preview-label').textContent = `${open.id} v${open.version} · requested ${asked} · does not fit yet: the Showrunner is negotiating`;
+      $('#track-preview').hidden = true;
+    }
   } else $('#preview-wrap').hidden = true;
 
   $('#people').innerHTML = Object.values(s.people).map(p => {
@@ -102,9 +109,78 @@ function render() {
   if (me?.role === 'producer') {
     $('#producer-actions').hidden = false;
     $('#live-btn').disabled = s.broadcast.state !== 'ready';
-    $('#publish-btn').disabled = s.broadcast.state === 'on_air' || !!open;
+    // Publish only when nothing is open and the current revision is not already the ready publication.
+    $('#publish-btn').disabled = s.broadcast.state === 'on_air' || !!open || (s.broadcast.state === 'ready' && s.broadcast.publishRevision === s.showRevision);
   }
-  playhead();
+  playhead(); renderGuide();
+}
+
+// "starting" during the countdown, "on air" from onAirAt (server clock); refreshed on the clock tick, not only on events.
+function broadcastLabel() {
+  const b = state?.broadcast; if (!b) return;
+  const text = b.state === 'on_air' && Date.now() + clockOffset < b.onAirAt ? 'starting' : b.state.replace('_', ' ');
+  if ($('#broadcast-state').textContent !== text) $('#broadcast-state').textContent = text;
+}
+// ---------- guided flow (3.2, judge-facing) ----------
+// Five steps derived only from the server state; the buttons call the same API as the board below and the server
+// decides. Georgian first, English underneath. Nothing here reports success before the server state shows it.
+const STEPS = [['აირჩიე სეგმენტი', 'Choose a segment'], ['მოითხოვე თავისუფალი დრო', 'Request available airtime'], ['გადახედე ცვლილებას', 'Review the change'], ['დაადასტურე', 'Approve'], ['უყურე ეთერს', 'Watch the broadcast']];
+const mmss = t => `${Math.floor(Math.max(0, t) / 60)}:${String(Math.floor(Math.max(0, t) % 60)).padStart(2, '0')}`;
+const line = (ka, en, cls = '') => `<p class="g-line ${cls}"><span lang="ka">${esc(ka)}</span><small>${esc(en)}</small></p>`;
+function confirmedOutcome(s, layout) {
+  return Object.values(s.bookings).filter(b => b.state === 'confirmed').map(b => {
+    const at = layout.find(e => e.segmentId === b.segmentId)?.start, kept = at === b.start, title = s.segments[b.segmentId].title;
+    return kept ? line(`🔒 ${title} — ისევ ${mmss(b.start)}-ზეა`, `🔒 ${title} still starts at ${mmss(b.start)} (confirmed slot protected)`, 'ok')
+      : line(`⚠ ${title}: ${mmss(at)} (დადასტურებული ${mmss(b.start)})`, `⚠ ${title} would start at ${mmss(at)}, confirmed ${mmss(b.start)}`, 'bad');
+  }).join('');
+}
+function renderGuide() {
+  const s = state, el = $('#guide');
+  if (!s || !el) return;
+  const b = s.broadcast, now = Date.now() + clockOffset, props = Object.values(s.proposals), open = props.filter(p => ['negotiating', 'awaiting_proposer', 'awaiting_approval'].includes(p.status)).pop(), latest = open || props.pop();
+  const person = me?.type === 'person' ? me : null, producer = person?.role === 'producer';
+  let step = 0, body = '', action = '';
+  if (b.state === 'on_air' || (b.state === 'ready' && b.publishRevision === s.showRevision) || b.state === 'completed' || b.state === 'failed' || (b.withdrawn && !open && s.showRevision === b.withdrawn.publishRevision)) {
+    step = 4;
+    if (b.state === 'ready') { body = line(`გამოქვეყნდა #${b.manifest.publicationId} — ეთერისთვის მზადაა`, `Published #${b.manifest.publicationId}: ready for air`); if (producer) action = `<button class="primary" data-g="golive">ეთერში გაშვება <small>Go live</small></button>`; }
+    else if (b.state === 'on_air' && now < b.onAirAt) body = line(`ეთერამდე ${Math.ceil((b.onAirAt - now) / 1000)} წამი`, `Going live in ${Math.ceil((b.onAirAt - now) / 1000)} s`);
+    else if (b.state === 'on_air') body = line(`პირდაპირ ეთერში · ${mmss((now - b.onAirAt) / 1000)} / ${mmss(b.manifest.durationSec)}`, `Live · ${mmss((now - b.onAirAt) / 1000)} / ${mmss(b.manifest.durationSec)}`, 'live');
+    else if (b.state === 'completed') body = line('ეთერი დასრულდა', 'Ended');
+    else if (b.state === 'failed') body = line('ეთერი შეწყდა — პროდიუსერმა გააჩერა', 'Stopped by the producer', 'bad');
+    else body = line(`გამოქვეყნება #${b.withdrawn.publicationId} გაუქმდა — ეთერში არ გავა`, `Publication #${b.withdrawn.publicationId} withdrawn: will not air (${b.withdrawn.reason})`, 'bad');
+    if (b.manifest) body += confirmedOutcome(s, b.manifest.segments.map(x => ({segmentId: x.id, start: x.start})));
+    if (b.state !== 'failed' && !b.withdrawn) action += `<a class="g-open" href="/broadcast/" target="_blank" rel="noopener">ეთერის გახსნა <small>Open broadcast ↗</small></a>`;
+  } else if (open && open.status !== 'awaiting_approval') {
+    step = 1;
+    const waiting = Object.values(s.requests).filter(r => r.proposalId === open.id && r.status === 'open').map(r => s.agents[r.toAgentId]);
+    body = line('აგენტები თანხმდებიან…', 'Agents are negotiating with the Showrunner') + (waiting.length ? line(`ველოდებით აგენტს: ${waiting.map(a => name(a.ownerId)).join(', ')}`, `Waiting for: ${waiting.map(a => a.label).join(', ')}`) : '')
+      + line('დადასტურებული დრო დაცულია', 'Confirmed airtime is protected: it cannot move without its owner', 'ok');
+  } else if (open) {
+    const waiting = open.requiredApprovals.filter(id => open.approvals[id]?.version !== open.version), done = open.requiredApprovals.length - waiting.length;
+    step = person && waiting.includes(person.id) ? 3 : 2;
+    const changed = open.preview.filter(e => e.duration !== s.layout.find(x => x.segmentId === e.segmentId)?.duration)
+      .map(e => `${s.segments[e.segmentId].title}: ${s.layout.find(x => x.segmentId === e.segmentId).duration}s → ${e.duration}s`);
+    body = line(`ცვლილება · ვერსია ${open.version}: ${changed.join(' · ')}`, `Change · version ${open.version}: ${changed.join(' · ')}`) + confirmedOutcome(s, open.preview)
+      + line(`დაადასტურა ${done}/${open.requiredApprovals.length}: ${open.requiredApprovals.map(id => `${name(id)}${open.approvals[id]?.version === open.version ? ' ✓' : ''}`).join(' · ')}`, `Approved ${done} of ${open.requiredApprovals.length}. Agents cannot approve, only people.`);
+    if (person && waiting.includes(person.id)) action = `<p class="g-turn" lang="ka">შენი ჯერია — შენს დადასტურებას ველოდებით <small>Your turn: your approval is needed</small></p><button class="primary" data-g="approve">ვადასტურებ · ვერსია ${open.version} <small>Approve version ${open.version}</small></button><button data-g="reject">უარყოფა <small>Reject</small></button>`;
+  } else if (latest && ['no_agreement', 'rejected', 'stale'].includes(latest.status) && s.showRevision === latest.baseRevision) {
+    step = 1; body = line('შეთანხმება ვერ შედგა — გადაცემა უცვლელია', 'No agreement: the programme is unchanged', 'bad');
+  } else if (s.showRevision > 1) {
+    step = 4; body = line('ყველამ დაადასტურა', 'Everyone approved the change') + confirmedOutcome(s, s.layout);
+    if (producer) action = `<button class="primary" data-g="publish">გამოქვეყნება <small>Publish</small></button>`;
+    else body += line('ველოდებით პროდიუსერს: გამოქვეყნება', 'Waiting for the producer to publish');
+  } else {
+    step = 0;
+    const mine = person && !producer ? s.order.map(id => s.segments[id]).filter(x => x.ownerId === person.id) : [];
+    body = mine.length ? line('შენი სეგმენტები — უთხარი შენს აგენტს, რა გინდა', 'Your segments: tell your agent what you want') + mine.map(x => { const locked = s.bookings[x.id]?.state === 'confirmed'; return line(`${x.title} · ${x.duration}წმ${locked ? ' 🔒' : ` · შეიძლება ${x.minDuration}–${x.maxDuration}წმ`}`, `${x.title} · ${x.duration}s${locked ? ' · confirmed slot' : ` · can be ${x.minDuration}–${x.maxDuration}s`}`); }).join('')
+      : line('შემქმნელები ირჩევენ სეგმენტს და ავალებენ თავიანთ აგენტებს', 'Creators choose a segment and instruct their own agents');
+    body += confirmedOutcome(s, s.layout);
+  }
+  el.innerHTML = `<ol class="g-steps">${STEPS.map(([ka, en], i) => `<li class="${i < step ? 'done' : i === step ? 'current' : ''}"${i === step ? ' aria-current="step"' : ''}><b lang="ka">${i + 1}. ${ka}</b><small>${en}</small></li>`).join('')}</ol><div class="g-card">${body}<div class="g-actions">${action}</div></div>`;
+  const button = n => el.querySelector(`[data-g="${n}"]`);
+  if (button('approve')) { button('approve').onclick = act(() => api('POST', `/api/proposals/${open.id}/decision`, {version: open.version, decision: 'approve'}), button('approve')); button('reject').onclick = act(() => api('POST', `/api/proposals/${open.id}/decision`, {version: open.version, decision: 'reject'}), button('reject')); }
+  if (button('publish')) button('publish').onclick = act(() => api('POST', '/api/publish'), button('publish'));
+  if (button('golive')) button('golive').onclick = act(() => api('POST', '/api/golive', {delayMs: 5000, publicationId: b.manifest.publicationId, hash: b.manifest.hash}), button('golive'));
 }
 
 function renderNegotiation(p) {
@@ -161,7 +237,7 @@ function playhead() {
   if (t < 0 || t > b.manifest.durationSec) { el.hidden = true; return; }
   el.hidden = false; el.style.left = `${track.offsetLeft + track.offsetWidth * t / b.manifest.durationSec}px`;
 }
-setInterval(playhead, 250);
+setInterval(() => { playhead(); broadcastLabel(); if (state?.broadcast.state === 'on_air') renderGuide(); }, 250);
 
 $('#publish-btn').onclick = act(() => api('POST', '/api/publish'), $('#publish-btn'));
 // Go live with exactly the publication shown on this board; the server refuses if it is no longer current.

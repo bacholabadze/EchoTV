@@ -132,3 +132,15 @@ One step strip above the existing board: **Choose a segment → Request availabl
 - Outlined disabled buttons with the reason underneath.
 - Mobile: step bar and turn banner first, with a sticky Approve bar.
 - In-page dialogs instead of native ones.
+
+## 5. Implemented in 3.2 (this branch only; the 3.1 release is unchanged)
+
+| Item | What was built | Test |
+|---|---|---|
+| P0-1 step bar + "your turn" | `#guide` above the board: 5 steps in Georgian, with English underneath. The current step, card text and buttons are derived from server state on every update. "შენი ჯერია" plus Approve/Reject appear only for people whose approval is still needed. On mobile the guide is sticky and shows only the current step | `tests/browser/guided-flow.mjs` |
+| P0-2 conflict preview | The proposed track is drawn only from the Showrunner's validated plan (`proposal.preview`, awaiting approval). Before that, the request is shown as text: "requested … · does not fit yet" | same: no track while negotiating; the plan keeps the premiere at 50 s |
+| P0-3 outcome | "🔒 Music premiere — ისევ 0:50-ზეა", computed from the layout or plan versus the booking, at every step. It shows ⚠ if a plan ever disagreed | same |
+| P0-4 producer | The guide offers Publish only when everyone has approved and the revision is unpublished, then Go live, then a countdown and the live clock. `#publish-btn` is disabled once the current revision is the ready publication. The summary says "starting" during the countdown, not "on air" | same |
+| Not done yet | P1-5 wording/hashes, P1-6 per-role boards, P1-7 broadcast sound-button overlap and ticker contrast, P2-8 availability estimate, a human "tell my agent" intent | — |
+
+The guide's buttons call exactly the same endpoints as the existing board (`/api/proposals/:id/decision`, `/api/publish`, `/api/golive`), and the server still decides. Agents still get 403 on approval (asserted).
