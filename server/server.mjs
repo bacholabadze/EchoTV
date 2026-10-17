@@ -308,6 +308,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     ['GET', /^\/api\/interviews\/(\w+)$/, ({actor, m}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); return desk.interviewView(actor, m[1]); }],
     ['POST', /^\/api\/interviews$/, ({actor}) => mutate(d => d.startInterview(actor))],
     ['POST', /^\/api\/interviews\/(\w+)\/(answer|skip|goto|review|quotes|approve|withdraw)$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.interviewAct(actor, m[1], m[2], body)); }],
+    ['POST', /^\/api\/briefs\/(\w+)\/prepare$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.prepareSegment(actor, {interviewId: m[1], segmentId: body.segmentId, assets: body.assets || {}})); }],
     ['GET', /^\/api\/library$/, ({actor}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); return desk.libraryView(actor); }],
     ['GET', /^\/api\/library\/media\/(\w+)\/file$/, ({actor, m, req, res}) => { const item = desk.mediaOf(actor, m[1]); serveFile(req, res, join(dataDir, 'uploads', item.file)); return SENT; }],
     ['POST', /^\/api\/library\/media$/, ({actor, req, raw}) => {

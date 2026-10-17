@@ -208,6 +208,53 @@ export class BroadcastDesk {
       this.withdrawIfPublished(actor, seg, 'rejected', note);
     }
   }
+  // Segment preparation: the creator turns their approved brief and authorised library files into their own segment.
+  // A new revision that needs content review; only air-facing brief fields enter the (public) programme.
+  prepareSegment(actor, {interviewId, segmentId, assets = {}}) {
+    const person = this.requireHuman(actor), iv = this.interviewFor(actor, interviewId), seg = this.segment(segmentId);
+    if (seg.ownerId !== person.id) fail('forbidden', `Only ${this.state.people[seg.ownerId].name} can prepare ${seg.title}`);
+    if (iv.status !== 'approved') fail('brief_not_approved', 'Approve your brief first');
+    const briefMedia = new Set(iv.brief.media.map(m => m.id)), replaced = [];
+    for (const [assetId, mediaId] of Object.entries(assets)) {
+      const slot = seg.assets.find(a => a.id === assetId) || fail('bad_request', `${seg.title} has no asset ${assetId}`);
+      const m = this.library(person.id).media[mediaId];
+      if (!m || m.status === 'withdrawn') fail('not_found', `No media ${mediaId}`);
+      if (!briefMedia.has(m.id)) fail('bad_request', `${m.title} is not part of your approved brief`);
+      if (!m.technical?.decodable) fail('undecodable_media', `${m.title} did not pass the technical check: ${m.technical?.reason}`);
+      if (!m.rights?.publicBroadcast) fail('rights_required', `${m.title}: public broadcast is not among the uses you declared`);
+      if (m.kind !== slot.kind) fail('bad_request', `${assetId} needs ${slot.kind === 'audio' ? 'an audio file' : 'an image'}`);
+      replaced.push([assetId, m]);
+    }
+    for (const [assetId, m] of replaced) {
+      const asset = {id: assetId, kind: m.kind, sha256: m.sha256, file: m.file, upload: true, libraryMediaId: m.id, title: iv.brief.work.title || m.title, credit: iv.brief.creator.displayName,
+        license: `Creator-declared uses: ${['publicBroadcast', 'editing', 'replays', 'promoExcerpts'].filter(k => m.rights[k]).join(', ')}`, rightsDeclared: true,
+        decodable: true, verification: {method: m.technical.method, sha256: m.sha256}, ...(m.technical.durationSec ? {durationSec: m.technical.durationSec} : {}), ...(m.technical.width ? {width: m.technical.width, height: m.technical.height} : {})};
+      seg.assets = [...seg.assets.filter(a => a.id !== assetId), asset];
+      this.indexMedia(m.sha256, asset); // from now on servable by hash: it is going to the programme
+    }
+    const b = iv.brief;
+    seg.content = {...seg.content, brief: {interviewId: iv.id, version: b.version, hash: b.hash, displayName: b.creator.displayName, title: b.work.title, category: b.work.category, aiInvolvement: b.process.aiInvolvement, quotes: b.story.quotes}};
+    seg.revision++; seg.state = 'submitted'; seg.approval = null;
+    this.log(actor, 'segment_prepared', `${person.name} prepared ${seg.title} from their approved brief (v${b.version})${replaced.length ? ` with ${replaced.length} authorised file(s)` : ''}; revision ${seg.revision} needs content review`, {segmentId, revision: seg.revision});
+    this.contentChanged(actor, `${seg.title} prepared from a creator brief`, [segmentId]);
+    return clone(seg);
+  }
+  // Broadcast authorisation of a prepared segment: its brief is still approved at the prepared version, and every
+  // library file in it is still offered for public broadcast. Checked at review, publication and start.
+  permissionProblems(seg) {
+    const out = [], ref = seg.content?.brief;
+    if (ref) {
+      const iv = this.state.interviews?.[ref.interviewId];
+      if (!iv || iv.status === 'withdrawn') out.push(`${seg.title}: the creator withdrew its brief`);
+      else if (iv.status !== 'approved' || iv.brief.version !== ref.version) out.push(`${seg.title}: the brief changed since this segment was prepared; prepare it again`);
+    }
+    for (const a of seg.assets.filter(x => x.libraryMediaId)) {
+      const m = this.state.library?.[seg.ownerId]?.media[a.libraryMediaId];
+      if (!m || m.status === 'withdrawn') out.push(`${seg.title}: ${a.id} was withdrawn by its creator`);
+      else if (!m.rights?.publicBroadcast) out.push(`${seg.title}: ${a.id} has no public-broadcast permission`);
+    }
+    return out;
+  }
   briefWithdrawn(actor, iv) {
     for (const seg of Object.values(this.state.segments)) if (seg.content?.brief?.interviewId === iv.id) {
       this.log(actor, 'segment_unauthorised', `${seg.title}: the creator withdrew its brief; it cannot be published or aired`, {segmentId: seg.id});
@@ -277,6 +324,7 @@ export class BroadcastDesk {
     if (revision !== seg.revision) fail('stale_revision', `Review is for revision ${revision}; current is ${seg.revision}`, {current: seg.revision});
     if (!['approved', 'needs_changes', 'rejected'].includes(decision)) fail('bad_request', 'Unknown review decision');
     if (decision === 'approved' && seg.assets.some(a => !a.rightsDeclared)) fail('rights_required', 'Every asset needs declared rights before approval');
+    if (decision === 'approved' && this.permissionProblems(seg).length) fail('rights_required', this.permissionProblems(seg).join('; '));
     if (decision === 'approved' && seg.assets.some(a => !playable(a))) fail('undecodable_media', `${seg.title} cannot be approved: ${seg.assets.filter(a => !playable(a)).map(whyUnplayable).join('; ')}`);
     // A revision that was turned down stays turned down: corrected content (a new revision) must be reviewed instead.
     if (decision === 'approved' && seg.declined?.revision === seg.revision)
@@ -603,6 +651,7 @@ export class BroadcastDesk {
       const seg = this.state.segments[e.segmentId];
       // Fail closed: only media positively verified as decodable can be published.
       for (const a of seg.assets) if (!playable(a)) unplayable.push(`${seg.title}: ${whyUnplayable(a)}`);
+      unplayable.push(...this.permissionProblems(seg));
       const audio = seg.module === 'music' && seg.assets.find(a => a.id === seg.content?.assetId);
       if (audio?.durationSec !== undefined && audio.durationSec + .05 < (seg.content.offset || 0) + e.duration)
         unplayable.push(`${seg.title}: audio is ${audio.durationSec.toFixed(1)}s but the slot needs ${(seg.content.offset || 0) + e.duration}s`);
@@ -634,6 +683,8 @@ export class BroadcastDesk {
     // Nothing unplayable starts: the server re-checks the actual bytes just before this call.
     const bad = b.manifest.segments.flatMap(x => this.state.segments[x.id].assets.filter(a => !playable(a)).map(a => `${x.title}: ${whyUnplayable(a)}`));
     if (bad.length) fail('undecodable_media', `Publication #${b.manifest.publicationId} cannot go live: ${bad.join('; ')}`, {unplayable: bad});
+    const denied = b.manifest.segments.flatMap(x => this.permissionProblems(this.state.segments[x.id]));
+    if (denied.length) fail('rights_required', `Publication #${b.manifest.publicationId} cannot go live: ${denied.join('; ')}`, {denied});
     if (!Number.isInteger(delayMs) || delayMs < 0 || delayMs > 600000) fail('bad_request', 'delayMs must be 0–600000');
     b.state = 'on_air'; b.onAirAt = this.now() + delayMs;
     this.log(actor, 'on_air', `Revision ${b.publishRevision} on air`, {revision: b.publishRevision});

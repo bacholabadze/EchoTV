@@ -166,7 +166,9 @@ function playArt(seg, local) {
 function playMusic(seg, local) {
   const asset = assetOf(seg, seg.content.assetId), expected = (seg.content.offset || 0) + local;
   setText('#music-badge', seg.confirmed ? `Premiere · confirmed slot ${fmt(seg.start)}` : seg.title);
-  setText('#music-name', asset.title || seg.title); setText('#music-credit', `${seg.title} · ${seg.owner} · ${asset.license || ''}`);
+  // A segment prepared from a creator brief credits the creator's approved display name and discloses AI use.
+  const brief = seg.content.brief, AI = {none: 'შექმნილია AI-ს გარეშე', assisted: 'შექმნილია AI-ს დახმარებით', substantial: 'ნამუშევრის დიდი ნაწილი AI-მ შექმნა', unsure: 'AI-ის როლი ზუსტდება'};
+  setText('#music-name', (brief?.title || asset.title || seg.title)); setText('#music-credit', brief ? `${brief.displayName} · ${AI[brief.aiInvolvement] || ''}` : `${seg.title} · ${seg.owner} · ${asset.license || ''}`);
   $('#lower').hidden = true;
   syncAudio(asset.url, expected, Math.min(local / .4, (seg.duration - local) / .8));
   drawViz(local);
