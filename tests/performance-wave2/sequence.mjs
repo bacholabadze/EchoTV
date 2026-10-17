@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {room,THREE} from './rig.mjs';
-import {applyPerformance} from '../../dist/studio/room.js';
+import {applyPerformance,resetPerformance} from '../../dist/studio/room.js';
 import {bodyPerformance,gestureEnvelope} from '../../dist/studio/body-performance.js';
 import {PerformanceDirector,crossedPerformance,handoffTarget} from '../../dist/studio/performance-direction.js';
 import {captionAt} from '../../dist/studio/core.js';
@@ -61,6 +61,9 @@ assert(maxLift>.015,'Gesture must visibly lift beyond the old motion');assert(ma
 if(penetrations)console.error({hitBones,minHandY});
 assert.equal(penetrations,0,'Sampled hands and arms stay above the tabletop');
 for(const a of now.actors){const beforePose=Object.values(a.bones).map(b=>b.bone.quaternion.toArray());applyPerformance(a,99,.03,{paused:true},false);assert.deepEqual(Object.values(a.bones).map(b=>b.bone.quaternion.toArray()),beforePose,'Pause freezes the pose');}
+const replayActor=now.actors[1];
+function replayPose(){resetPerformance(replayActor);for(let i=0;i<90;i++)applyPerformance(replayActor,i/30,1/30,{speaker:'nova',speaking:true,directed:true,expressive:true,audioTime:i/30,performance:turns[1].performance,gestures:turns[1].gestures,attention:turns[1].attention},false);return Object.values(replayActor.bones).map(b=>b.bone.quaternion.toArray());}
+assert.deepEqual(replayPose(),replayPose(),'Reset/replay reproduces the same posed skeleton');
 const s={speaker:'nova',speaking:true,audioTime:.9,gestures:[{at:0,duration:2,strength:1}],performance:[]};
 assert.deepEqual(bodyPerformance('nova',4,s),bodyPerformance('nova',4,s));assert.equal(bodyPerformance('nova',4,s,true).left,0);assert.equal(bodyPerformance('nova',4,s,true).chest[0],0);
 assert.equal(gestureEnvelope(NaN,2),0);assert.equal(gestureEnvelope(1,0),0);assert.equal(gestureEnvelope(-1,2),0);

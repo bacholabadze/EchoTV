@@ -115,6 +115,11 @@ export function cameraFrame(shot,aspect){
   return positions[shot]||positions.wide;
 }
 
+export function resetPerformance(actor){
+  for(const entry of Object.values(actor.bones))entry.bone.quaternion.copy(entry.rest);
+  for(const {mesh,index}of actor.morphBindings)mesh.morphTargetInfluences[index]=0;
+  actor.performanceSampled=false;
+}
 export function applyPerformance(actor,t,dt,state,reduced){
   if(state.paused&&actor.performanceSampled)return;
   actor.performanceSampled=true;

@@ -8,7 +8,7 @@ export class PerformanceDirector extends Director {
   if(event.type==='turn-start'){
    const turn=event.utterance||{};this.pending=event.shot||turn.shot||event.speaker;this.reacted=false;
   }
-  if(this.mode!=='auto'||time-this.lastCut<(this.reacting?this.reactionHold:this.minHold))return this.shot;
+  if(this.mode!=='auto'||time-this.lastCut<(this.reacting?this.reactionHold:event.type==='turn-start'?2.8:this.minHold))return this.shot;
   const cue=event.cue;
   const explicitReaction=event.type==='sentence'?event.reaction:event.type==='turn-end'?event.target:null;
   const performanceReaction=event.type==='performance'&&cue?.actor!==event.speaker&&
@@ -29,7 +29,7 @@ export function crossedPerformance(turn,previous,current){
  if(!Number.isFinite(current)||current<previous)return [];
  return (turn.performance||[]).filter(cue=>cue.at>previous&&cue.at<=current);
 }
-export function handoffTarget(turn){
+export function handoffTarget(turn={}){
  const target=turn.attention?.at(-1)?.target;
  return actors.has(target)&&target!==turn.speaker?target:null;
 }
