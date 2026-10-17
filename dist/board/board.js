@@ -175,12 +175,35 @@ function renderGuide() {
     body = mine.length ? line('შენი სეგმენტები — უთხარი შენს აგენტს, რა გინდა', 'Your segments: tell your agent what you want') + mine.map(x => { const locked = s.bookings[x.id]?.state === 'confirmed'; return line(`${x.title} · ${x.duration}წმ${locked ? ' 🔒' : ` · შეიძლება ${x.minDuration}–${x.maxDuration}წმ`}`, `${x.title} · ${x.duration}s${locked ? ' · confirmed slot' : ` · can be ${x.minDuration}–${x.maxDuration}s`}`); }).join('')
       : line('შემქმნელები ირჩევენ სეგმენტს და ავალებენ თავიანთ აგენტებს', 'Creators choose a segment and instruct their own agents');
     body += confirmedOutcome(s, s.layout);
+    // Two ways for a creator to prepare their appearance; both end in a brief the creator approves.
+    if (person && !producer) {
+      const agent = Object.values(s.agents).find(a => a.ownerId === person.id), on = agent?.lastSeenAt && s.serverTime - agent.lastSeenAt < 90000;
+      action = `<a class="g-open primary-link" href="/interview/">ესაუბრე ECHO-ს <small>Talk to ECHO: a short interview, by voice or text</small></a>
+        <details class="g-agent"><summary>დააკავშირე შენი აგენტი <small>Connect your own agent</small></summary>
+          <p lang="ka">შენს AI აგენტს შეუძლია ECHO-ს კითხვებს შენ ნაცვლად უპასუხოს — მხოლოდ იმით, რაც შენ უთხარი. ბრიფს, ფაილებს და უფლებებს მაინც შენ ადასტურებ.</p>
+          <p lang="ka">მიეცი დავალება: „მოამზადე ჩემი ECHO-ს ბრიფი ECHO-ს ხელსაწყოებით“. შემდეგ გახსენი „ესაუბრე ECHO-ს“ და გადახედე.</p>
+          <p class="fine">${esc(agent?.label || 'Your agent')}: ${on ? `connected (${esc(agent.client || 'MCP client')})` : agent?.lastSeenAt ? `last seen ${time(agent.lastSeenAt)}` : 'not connected yet'}</p>
+          <details class="fine"><summary>Technical details</summary>MCP (stdio) with the agent's own token, issued by the producer. Interview tools: start_interview, get_interview, answer_interview, skip_interview_question, review_creator_brief, list_my_library. No tool can approve, declare rights, upload, publish or move confirmed airtime.</details>
+        </details>`;
+    }
   }
+  renderTech();
   el.innerHTML = `<ol class="g-steps">${STEPS.map(([ka, en], i) => `<li class="${i < step ? 'done' : i === step ? 'current' : ''}"${i === step ? ' aria-current="step"' : ''}><b lang="ka">${i + 1}. ${ka}</b><small>${en}</small></li>`).join('')}</ol><div class="g-card">${body}<div class="g-actions">${action}</div></div>`;
   const button = n => el.querySelector(`[data-g="${n}"]`);
   if (button('approve')) { button('approve').onclick = act(() => api('POST', `/api/proposals/${open.id}/decision`, {version: open.version, decision: 'approve'}), button('approve')); button('reject').onclick = act(() => api('POST', `/api/proposals/${open.id}/decision`, {version: open.version, decision: 'reject'}), button('reject')); }
   if (button('publish')) button('publish').onclick = act(() => api('POST', '/api/publish'), button('publish'));
   if (button('golive')) button('golive').onclick = act(() => api('POST', '/api/golive', {delayMs: 5000, publicationId: b.manifest.publicationId, hash: b.manifest.hash}), button('golive'));
+}
+
+// Technical view for judges: what agents actually called and what changed, straight from server state.
+function renderTech() {
+  const s = state, el = $('#tech-body');
+  if (!el || !$('#tech').open) return;
+  const calls = (s.agentCalls || []).slice(-40).reverse();
+  const events = s.audit.filter(e => /^(brief_|segment_prepared|segment_unauthorised|proposal_|revision_committed|approvals_reset|published|on_air|publication_withdrawn|voice_rendered)/.test(e.action)).slice(-30).reverse();
+  el.innerHTML = `<h3>Agent tool calls <small>(${calls.length})</small></h3><table class="tech-table"><thead><tr><th>Time</th><th>Agent</th><th>Client</th><th>Tool</th><th>Request</th><th>Result</th></tr></thead><tbody>${calls.map(c => `<tr><td>${time(c.at)}</td><td>${esc(name(c.agentId))}</td><td>${esc(c.client || '—')}</td><td class="mono">${esc(c.tool || '—')}</td><td class="mono">${esc(c.method)} ${esc(c.path)}</td><td class="${c.status < 300 ? 'ok' : 'bad'}">${c.status}</td></tr>`).join('') || '<tr><td colspan="6">No agent calls yet.</td></tr>'}</tbody></table>
+    <h3>State changes and approvals</h3><ol class="feed">${events.map(e => `<li><span class="time">${time(e.at)}</span><b>${esc(e.action)}</b> ${esc(e.summary)}</li>`).join('') || '<li>—</li>'}</ol>
+    <p class="fine">Programme revision r${s.showRevision}${s.broadcast.manifest ? ` · publication #${s.broadcast.manifest.publicationId} · ${esc(s.broadcast.manifest.hash.slice(0, 16))}` : ''}. Interview answers and creator libraries are private and never appear here.</p>`;
 }
 
 function renderNegotiation(p) {
@@ -239,6 +262,7 @@ function playhead() {
 }
 setInterval(() => { playhead(); broadcastLabel(); if (state?.broadcast.state === 'on_air') renderGuide(); }, 250);
 
+$('#tech').addEventListener('toggle', () => renderTech());
 $('#publish-btn').onclick = act(() => api('POST', '/api/publish'), $('#publish-btn'));
 // Go live with exactly the publication shown on this board; the server refuses if it is no longer current.
 $('#live-btn').onclick = act(() => api('POST', '/api/golive', {delayMs: 5000, publicationId: state.broadcast.manifest?.publicationId, hash: state.broadcast.manifest?.hash}), $('#live-btn'));

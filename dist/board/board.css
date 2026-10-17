@@ -76,3 +76,13 @@ footer{color:var(--muted);font-size:12px;padding:18px 3% 30px;border-top:1px sol
 .g-turn{flex-basis:100%;margin:0;font-size:20px;font-weight:700;color:#f3c969}.g-turn small{display:block;font-size:13px;font-weight:400;opacity:.85}
 #track-preview[hidden]{display:none}
 @media (max-width:760px){.g-steps{grid-template-columns:1fr}.g-steps li:not(.current){display:none}.guide{position:sticky;top:0;z-index:5}}
+
+/* ---------- creator entry options + technical view (3.2) ---------- */
+.primary-link{background:#f3c969;color:#142b23!important;border-color:#f3c969!important;font-weight:700}
+.g-agent{flex-basis:100%;margin-top:4px;padding:10px 14px;border:1px solid rgba(255,255,255,.3);border-radius:10px}
+.g-agent summary{cursor:pointer;font-size:17px;font-weight:600}.g-agent summary small{display:block;font-weight:400;font-size:12px;opacity:.8}
+.g-agent p{margin:8px 0;font-size:16px}
+.tech{margin:0 0 16px}.tech summary{cursor:pointer;font-size:16px;font-weight:600}.tech summary small{font-weight:400;opacity:.75}
+.tech h3{font-size:14px;letter-spacing:.06em;text-transform:uppercase;margin:14px 0 6px}
+.tech-table{width:100%;border-collapse:collapse;font-size:14px}.tech-table th,.tech-table td{text-align:left;padding:4px 8px;border-bottom:1px solid var(--line)}
+.tech-table .ok{color:#c4e0a8}.tech-table .bad{color:#ffb3a7}

@@ -74,14 +74,15 @@ export function contradictions(iv, {library = []} = {}) {
   return out;
 }
 
-// The question to show now: the current step's follow-up (if one is due), else the step's main question.
-export function nextPrompt(iv, ctx = {}) {
-  if (iv.status !== 'in_progress') return null;
-  const step = STEP[iv.step], idx = STEPS.indexOf(step), follow = iv.pendingFollowUp;
+// Any question's definition, with the creator's current values (for answering or correcting it).
+export function promptFor(iv, stepId, follow = null) {
+  const step = STEP[stepId], idx = STEPS.indexOf(step);
   return {stepId: step.id, index: idx + 1, total: STEPS.length, question: follow ? {ka: follow.ka, en: follow.en} : {ka: step.ask[0], en: step.ask[1]}, followUp: !!follow,
     hint: step.hint ? {ka: step.hint[0], en: step.hint[1]} : null, answerField: step.answerField, fields: Object.entries(step.fields).map(([key, kind]) => ({key, kind, ...(kind === 'choice' ? {options: Object.entries(CHOICES[key]).map(([v, [ka, en]]) => ({value: v, ka, en}))} : {}), value: fieldValue(iv, key)})),
-    current: iv.answers[step.id] && !iv.answers[step.id].skipped ? {text: iv.answers[step.id].text, fields: iv.answers[step.id].fields} : null};
+    current: iv.answers[step.id] && !iv.answers[step.id].skipped ? {text: iv.answers[step.id].text, fields: iv.answers[step.id].fields, source: iv.answers[step.id].source} : null, skipped: !!iv.answers[step.id]?.skipped};
 }
+// The question to show now: the current step's follow-up (if one is due), else the step's main question.
+export function nextPrompt(iv) { return iv.status === 'in_progress' ? promptFor(iv, iv.step, iv.pendingFollowUp) : null; }
 
 function advance(iv, ctx) {
   // A follow-up only when it is useful: a required field of this step is missing, or this step created a contradiction.

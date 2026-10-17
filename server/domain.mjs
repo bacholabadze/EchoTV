@@ -149,7 +149,7 @@ export class BroadcastDesk {
   }
   interviewView(actor, id) {
     const iv = this.interviewFor(actor, id);
-    return {id: iv.id, status: iv.status, step: iv.step, prompt: Interview.nextPrompt(iv), consent: iv.consent || {voice: false}, answers: iv.answers, brief: iv.brief, history: iv.history, briefRevisions: iv.briefRevisions, updatedAt: iv.updatedAt};
+    return {id: iv.id, status: iv.status, step: iv.step, prompt: Interview.nextPrompt(iv), questions: Interview.STEPS.map(st => Interview.promptFor(iv, st.id)), consent: iv.consent || {voice: false}, answers: iv.answers, brief: iv.brief, history: iv.history, briefRevisions: iv.briefRevisions, updatedAt: iv.updatedAt};
   }
   interviewAct(actor, id, action, body = {}) {
     const iv = this.interviewFor(actor, id), by = actor.id, now = this.now(), ctx = this.ivCtx(iv.ownerId);
@@ -164,6 +164,8 @@ export class BroadcastDesk {
       else if (action === 'approve') Interview.approve(iv, {version: body.version, hash: body.hash, by, now});
       else if (action === 'withdraw') Interview.withdraw(iv, {by, now, reason: body.reason});
       else fail('bad_request', 'Unknown interview action');
+      // Reaching the end of the questions (by answering or skipping) drafts the brief straight away.
+      if (iv.status === 'review' && !iv.brief) { Interview.review(iv, ctx, {now}); action = 'review'; }
     });
     // Only the fact that something happened is logged publicly, never the content.
     if (action === 'review') this.log(actor, 'brief_drafted', `${this.state.people[iv.ownerId].name}: creator brief ${id} draft v${iv.brief?.version}`, {interviewId: id, private: true});
