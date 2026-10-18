@@ -9,6 +9,7 @@ import {timingSafeEqual} from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
 import {BroadcastDesk, DomainError, sha256, MEDIA_CHECKS} from './domain.mjs';
 import {seedState} from './seed.mjs';
+import {kaMessage} from './i18n-ka.mjs';
 import {voiceServiceFromEnv, sttFromEnv, ProviderError, BudgetError} from './voice/index.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -483,7 +484,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       send(res, 200, result);
     } catch (error) {
       if (error instanceof DomainError) {
-        const status = STATUS[error.code] || 409, body = {error: error.code, message: error.message, details: error.details};
+        const status = STATUS[error.code] || 409, body = {error: error.code, message: error.message, ka: kaMessage(error.code, error.message) || undefined, details: error.details};
         if (replayKey && error.code !== 'idempotency_conflict') remember(replayKey, status, body, url.pathname.match(/^\/api\/(?:interviews|briefs)\/(\w+)(?:\/|$)/)?.[1] || null);
         send(res, status, body);
       } else { if (!quiet) console.error(error); send(res, 500, {error: 'internal', message: 'Internal error'}); }
