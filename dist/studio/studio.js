@@ -6,12 +6,17 @@ import {makeEditorialCharacter} from './editorial-characters.js?v=6';
 import {PerformanceDirector,crossedPerformance,handoffTarget} from './performance-direction.js';
 import {Director,MockAdapter,captionAt} from './core.js?v=2';
 import {createRoom,cameraFrame,applyPerformance,resetPerformance} from './room.js?v=5';
+import {CinematicDirector,cameraMotion,framedPosition,cinematicFrame} from './direction-wave3.js';
+import {createOpening} from './opening.js';
 const $=s=>document.querySelector(s),stage=$('#stage'),canvas=$('#scene');
-const legacy=new URLSearchParams(location.search).get('edition')==='2';
+const params=new URLSearchParams(location.search),legacy=params.get('edition')==='2';
+// Wave 3 is the default visual mode; ?visual=wave2 keeps the Wave 2 direction and performance exactly.
+const wave3=!legacy&&params.get('visual')!=='wave2',openingWanted=wave3&&params.get('opening')==='1';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const names={echo:'ECHO',nova:'Nova',atlas:'Atlas'};
-const shotNames={wide:'Establishing',echo:'Moderator',nova:'Nova',atlas:'Atlas',two:'Two-person',};
-const director=legacy?new Director():new PerformanceDirector();
+const shotNames={wide:'Establishing',echo:'Moderator',nova:'Nova',atlas:'Atlas',two:'Two-person','two-atlas':'Two-person'};
+const director=legacy?new Director():wave3?new CinematicDirector():new PerformanceDirector();
+let cutAt=0,baseFrame=null,opening=null,openingPlayed=false,sentenceAt=NaN;
 let performanceCursor=-1,handoff=null;
 let renderer,scene,camera,actors=[],adapter,raf=0,last=0,visualTime=0,ready=false,sentence=-1,reaction=null,reactionAt=0,frameSamples=[],quality=1,frames=0,cueCursor=0,renderedShot=null,environment=null,resizeObserver=null;
 const audio=new Audio();audio.preload='auto';
@@ -21,12 +26,19 @@ function setText(selector,text){const element=$(selector);if(element.textContent
 function updateLabels(){
   const who=adapter?.turn?.speaker||'echo',shot=director.shot;
   setText('#caption-speaker',`${names[who]} / ${who==='echo'?'MODERATOR':'GUEST'}`);
-  setText('#speaker-name',shot==='wide'?'ECHO · Nova · Atlas':shot==='two'?'ECHO / Nova':names[shot]);
-  setText('#speaker-role',shot==='wide'?'AT THE TABLE':shot==='two'?'IN CONVERSATION':shot!==who?'LISTENING':shot==='echo'?'MODERATOR':'GUEST');
+  setText('#speaker-name',shot==='wide'?'ECHO · Nova · Atlas':shot==='two'?'ECHO / Nova':shot==='two-atlas'?'ECHO / Atlas':names[shot]);
+  setText('#speaker-role',shot==='wide'?'AT THE TABLE':shot==='two'||shot==='two-atlas'?'IN CONVERSATION':shot!==who?'LISTENING':shot==='echo'?'MODERATOR':'GUEST');
 }
 function selectShot(shot){
-  director.shot=shot;renderedShot=shot;stage.dataset.shot=shot;setText('#shot',shotNames[shot]||'Listening reaction');updateLabels();
-  if(camera){const p=(legacy?cameraFrame:conversationFrame)(shot,stage.clientWidth/stage.clientHeight);camera.position.set(...p.slice(0,3));camera.fov=p[6];camera.lookAt(...p.slice(3,6));camera.updateProjectionMatrix();}requestFrame();
+  const renderedShotBefore=renderedShot;director.shot=shot;renderedShot=shot;stage.dataset.shot=shot;setText('#shot',shotNames[shot]||'Listening reaction');updateLabels();
+  if(shot!==renderedShotBefore)cutAt=visualTime;
+  if(camera){const aspect=stage.clientWidth/stage.clientHeight;baseFrame=legacy?cameraFrame(shot,aspect):wave3?cinematicFrame(shot,aspect):conversationFrame(shot,aspect);placeCamera();}requestFrame();
+}
+// Wave 3: the camera breathes within the composition. A cut is still a cut; motion restarts from it.
+function placeCamera(){
+  if(!camera||!baseFrame||opening)return;
+  const p=baseFrame,m=wave3?cameraMotion(director.shot,visualTime-cutAt,reduced):{push:0,drift:0,rise:0};
+  camera.position.set(...framedPosition(p,m));camera.fov=p[6];camera.lookAt(...p.slice(3,6));camera.updateProjectionMatrix();
 }
 function resize(){if(!renderer)return;const w=stage.clientWidth,h=stage.clientHeight;renderer.setPixelRatio(Math.min(devicePixelRatio||1,quality));renderer.setSize(w,h,false);camera.aspect=w/h;selectShot(director.shot);}
 function requestFrame(){if(!raf&&!document.hidden&&renderer&&canvas.hidden===false)raf=requestAnimationFrame(frame);}
@@ -34,10 +46,11 @@ function frame(ms){raf=0;if(document.hidden||!renderer||canvas.hidden)return;
   const playing=adapter?.state==='playing';
   if(playing&&last&&ms-last<32){requestFrame();return;}
   const delta=last?(ms-last)/1000:1/30;last=ms;const dt=Math.min(delta,.08);
+  if(opening){if(opening.update(dt)){opening=null;placeCamera();adapter?.play();}else{for(const actor of actors)applyPerformance(actor,visualTime,dt,{speaker:adapter?.turn?.speaker,speaking:false,expressive:!legacy,directed:!legacy,attention:[],gestures:[],performance:[],audioTime:0,cue:null,cinematic:wave3},reduced);renderer.render(scene,camera);frames++;requestFrame();return;}}
   if(playing)visualTime+=dt;
   if(playing&&!adapter.gap){
     const turn=adapter.turn,segments=turn.captions||[];const index=segments.findIndex(c=>audio.currentTime>=c.start&&audio.currentTime<c.end);
-    if(index!==-1&&index!==sentence){sentence=index;const event={type:'sentence',speaker:turn.speaker,reaction:turn.reaction&&Math.abs(segments[index].start-(turn.reactionAt??-1))<.1?turn.reaction:null};
+    if(index!==-1&&index!==sentence){sentence=index;sentenceAt=segments[index].start;const event={type:'sentence',speaker:turn.speaker,audioTime:audio.currentTime,remaining:turn.duration-audio.currentTime,reaction:turn.reaction&&Math.abs(segments[index].start-(turn.reactionAt??-1))<.1?turn.reaction:null};
       if(event.reaction){reaction=event.reaction;reactionAt=visualTime;}const next=director.event(event,adapter.time);if(next!==renderedShot)selectShot(next);}
     if(!legacy){
       if(audio.currentTime<performanceCursor)performanceCursor=-1;
@@ -52,8 +65,9 @@ function frame(ms){raf=0;if(document.hidden||!renderer||canvas.hidden)return;
   const cues=adapter?.turn?.cues||[];
   if(cueCursor>=cues.length||audio.currentTime<(cues[cueCursor]?.start||0))cueCursor=0;
   while(cueCursor<cues.length&&audio.currentTime>=cues[cueCursor].end)cueCursor++;
-  const cue=cues[cueCursor],performanceState={speaker:adapter?.turn?.speaker,speaking:playing&&!adapter.gap,mouthStrength:legacy?.78:.56,expressive:!legacy,directed:!legacy,attention:adapter?.turn?.attention||[],gestures:adapter?.turn?.gestures||[],performance:adapter?.turn?.performance||[],audioTime:audio.currentTime,cue:cue&&audio.currentTime>=cue.start?cue:null,reaction,reactionAge:visualTime-reactionAt,paused:adapter?.state==='paused',handoff:handoff?{...handoff,age:visualTime-handoff.at}:null};
+  const cue=cues[cueCursor],performanceState={speaker:adapter?.turn?.speaker,speaking:playing&&!adapter.gap,mouthStrength:legacy?.78:.56,expressive:!legacy,directed:!legacy,attention:adapter?.turn?.attention||[],gestures:adapter?.turn?.gestures||[],performance:adapter?.turn?.performance||[],audioTime:audio.currentTime,cue:cue&&audio.currentTime>=cue.start?cue:null,reaction,reactionAge:visualTime-reactionAt,paused:adapter?.state==='paused',handoff:handoff?{...handoff,age:visualTime-handoff.at}:null,cinematic:wave3,sentenceAt:playing&&!adapter.gap?sentenceAt:NaN};
   for(const actor of actors)applyPerformance(actor,visualTime,dt,performanceState,reduced);
+  if(wave3&&playing)placeCamera();
   renderer.render(scene,camera);frames++;
   if(playing){frameSamples.push(delta);if(frameSamples.length===90){const avg=frameSamples.reduce((a,b)=>a+b,0)/90;if(avg>.05&&quality>1){quality=1;resize();}frameSamples=[];}requestFrame();}
 }
@@ -73,13 +87,13 @@ function enrichCaptions(turn){
 async function init(){
   try{const response=await fetch('dialogue.json?v=5');if(!response.ok)throw Error('Dialogue could not load. Reload the studio to retry.');const turns=(await response.json()).map(enrichCaptions);adapter=new MockAdapter(turns,audio);
     for(const turn of turns){const p=document.createElement('p'),b=document.createElement('b');b.textContent=names[turn.speaker];p.append(b,document.createTextNode(turn.text));$('#transcript').append(p);}
-    adapter.addEventListener('turn-start',event=>{sentence=-1;cueCursor=0;performanceCursor=-1;reaction=null;$('#error').hidden=true;selectShot(director.event(event.detail,adapter.time));updateCaption();});
+    adapter.addEventListener('turn-start',event=>{sentence=-1;sentenceAt=NaN;cueCursor=0;performanceCursor=-1;reaction=null;$('#error').hidden=true;selectShot(director.event(event.detail,adapter.time));updateCaption();});
     adapter.addEventListener('turn-end',event=>{
       const target=handoffTarget(event.detail.utterance);handoff=target?{target,at:visualTime}:null;
       if(!legacy){const next=director.event({...event.detail,target},adapter.time);if(next!==renderedShot)selectShot(next);}
     });
     adapter.addEventListener('state',()=>{last=0;frameSamples=[];ui();});adapter.addEventListener('timing',updateCaption);adapter.addEventListener('failure',e=>report(e.detail.message));adapter.addEventListener('interruption',()=>{report('Turn interrupted. Press Resume to restart this turn.');requestFrame();});
-    adapter.addEventListener('reset',()=>{cueCursor=0;performanceCursor=-1;handoff=null;visualTime=0;for(const actor of actors)resetPerformance(actor);const mode=director.mode;director.reset();director.mode=mode;selectShot(mode==='auto'?'wide':$('#camera').value);});
+    adapter.addEventListener('reset',()=>{cueCursor=0;performanceCursor=-1;handoff=null;visualTime=0;cutAt=0;sentenceAt=NaN;opening?.cancel();opening=null;for(const actor of actors)resetPerformance(actor);const mode=director.mode;director.reset();director.mode=mode;selectShot(mode==='auto'?'wide':$('#camera').value);});
     $('#timer').textContent=`00:00 / ${format(adapter.duration)}`;
   }catch(error){fallback(error.message);report(error.message);$('#play').textContent='Unavailable';return;}
   try{
@@ -96,7 +110,8 @@ async function init(){
   }catch(error){fallback('The 3D room could not load. You can still play the recorded conversation and read its transcript.');console.warn('Studio renderer unavailable:',error.message);}
   ready=true;ui();
 }
-$('#play').onclick=()=>{if(adapter?.state==='playing')adapter.pause();else adapter?.play();};
+function playOpening(){if(!scene||!camera||opening||legacy)return false;opening=createOpening({scene,camera,frame:conversationFrame('wide',stage.clientWidth/stage.clientHeight),stage,reduced});openingPlayed=true;selectShot('wide');requestFrame();return true;}
+$('#play').onclick=()=>{if(adapter?.state==='playing')adapter.pause();else if(opening){opening.cancel();opening=null;placeCamera();adapter?.play();}else if(openingWanted&&!openingPlayed&&adapter?.state==='ready'&&adapter.index===0&&playOpening()){$('#status').textContent='Opening';}else adapter?.play();};
 $('#replay').onclick=()=>adapter?.replay();$('#interrupt').onclick=()=>adapter?.interrupt();$('#retry').onclick=()=>location.reload();
 $('#mute').onclick=()=>{const value=!audio.muted;if(adapter)adapter.mute(value);else audio.muted=value;$('#mute').textContent=value?'Unmute':'Mute';$('#mute').setAttribute('aria-pressed',String(value));};
 $('#director').onchange=()=>{director.mode=$('#director').value;$('#camera').hidden=director.mode==='auto';if(director.mode==='fixed'){director.select($('#camera').value,adapter?.time||0);selectShot($('#camera').value);}else{director.pending=adapter?.turn?.shot||adapter?.turn?.speaker;director.lastCut=adapter?.time||0;}};
@@ -105,6 +120,6 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){if(adapter
 window.addEventListener('pagehide',event=>{cancelAnimationFrame(raf);raf=0;if(event.persisted){adapter?.pause();}else{adapter?.dispose();resizeObserver?.disconnect();environment?.dispose();renderer?.dispose();}});
 window.addEventListener('pageshow',()=>{last=0;requestFrame();});
 // A live provider can replace MockAdapter while retaining these semantic events and timing fields.
-window.EchoStudio={interrupt:()=>adapter?.interrupt(),cancel:()=>adapter?.cancel(),getState:()=>({edition:legacy?2:6,state:adapter?.state,turn:adapter?.index,shot:director.shot,mode:director.mode,rendererAvailable:!!scene,renderedFrames:frames,drawCalls:renderer?.info.render.calls,triangles:renderer?.info.render.triangles,pixelRatio:renderer?.getPixelRatio()})};
+window.EchoStudio={interrupt:()=>adapter?.interrupt(),cancel:()=>adapter?.cancel(),playOpening,getState:()=>({edition:legacy?2:6,visual:legacy?'legacy':wave3?'wave3':'wave2',opening:!!opening,openingAge:opening?.age??null,visualTime,cutAt,state:adapter?.state,turn:adapter?.index,audioTime:audio.currentTime,shot:director.shot,mode:director.mode,rendererAvailable:!!scene,renderedFrames:frames,drawCalls:renderer?.info.render.calls,triangles:renderer?.info.render.triangles,pixelRatio:renderer?.getPixelRatio()})};
 if(legacy){$('.eyebrow').textContent='THE TABLE / STUDIO EDITION 02';$('.edition-link').textContent='Open updated Studio ↗';$('.edition-link').href='/studio/';}
 init();

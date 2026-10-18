@@ -9,9 +9,9 @@ export const materialPalettes={
 export function characterMaterial(source,index){
  const p=materialPalettes[index];let color,roughness=.8,metalness=0,surface;
  const name=source.name;
- if(name.includes('porcelain skin')){color=p.skin;surface='skin';}
+ if(name.includes('porcelain skin')){color=p.skin;roughness=.68;surface='skin';} // Wave 3: slight specular life instead of fully matte skin
  else if(name.includes('ivory knit')){color=p.shirt;roughness=.95;surface='cloth';}
- else if(name.includes('brows')||name.startsWith('Hair / ')){color=p.hair;roughness=.86;surface=name.startsWith('Hair / ')?'hair':'brows';}
+ else if(name.includes('brows')||name.startsWith('Hair / ')){const hair=name.startsWith('Hair / ');color=p.hair;roughness=hair?.74:.86;surface=hair?'hair':'brows';}
  else if(name.includes('teeth_base')){color=0xd9d2ba;roughness=.6;surface='teeth';}
  else if(name.includes('tongue01')){color=0x7d413c;surface='tongue';}
  else if(name.includes('sclera')){color=0xd2cec0;roughness=.44;surface='sclera';}

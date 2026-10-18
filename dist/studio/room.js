@@ -128,7 +128,9 @@ export function applyPerformance(actor,t,dt,state,reduced){
   const values=facial?{...facial.weights}:{};const phase=(t+i*.91)%(3.7+i*.67);if(!facial)values.eyeBlinkLeft=values.eyeBlinkRight=phase<.14?Math.sin(phase/.14*Math.PI):0;
   if(active){const cue=state.cue;if(cue?.key)values['viseme_'+cue.key]=state.mouthStrength??.78;if(!facial)values.browInnerUp=.10;}
   else if(!facial){values.mouthSmileLeft=.035;values.mouthSmileRight=.035;}
-  for(const {mesh,name,index}of actor.morphBindings)mesh.morphTargetInfluences[index]=facial&&name.startsWith('eyeBlink')?(values[name]||0):!active&&name.startsWith('viseme_')?0:THREE.MathUtils.damp(mesh.morphTargetInfluences[index],values[name]||0,24,dt);
+  // Wave 3: brows, cheeks and smiles ease at 11/s so expressions arrive and leave instead of snapping; speech shapes keep 24/s.
+  const expressionRate=state.cinematic?11:24;
+  for(const {mesh,name,index}of actor.morphBindings)mesh.morphTargetInfluences[index]=facial&&name.startsWith('eyeBlink')?(values[name]||0):!active&&name.startsWith('viseme_')?0:THREE.MathUtils.damp(mesh.morphTargetInfluences[index],values[name]||0,name.startsWith('viseme_')||name.startsWith('eye')?24:expressionRate,dt);
   const speaker=seats.find(s=>s.id===state.speaker);
   const directed=state.directed?conversationGaze(actor,state):null;
   const gaze=speaker&&!active?THREE.MathUtils.clamp(Math.atan2(speaker.x-actor.seat.x,1.7)-actor.seat.yaw,-.43,.43):active?(actor.id==='nova'?.15:actor.id==='atlas'?-.15:0):0;
@@ -139,10 +141,12 @@ export function applyPerformance(actor,t,dt,state,reduced){
   pose('Head',nod+(facial?.nod||0)+(body?.head[0]||0),directed?directed.head*.88:gaze*.78,body?.head[2]||0);
   pose('LeftEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0,18);pose('RightEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0,18);
   if(body){
-    pose('Spine1',...body.spine);pose('Spine2',...body.chest);
+    // Wave 3: the torso settles slower than the arms, so speaking turns into listening instead of stopping.
+    const torso=state.cinematic?4.2:7;
+    pose('Spine1',...body.spine,torso);pose('Spine2',...body.chest,torso);
     for(const [side,sign,amount] of [['Left',1,body.left],['Right',-1,body.right]]){
       // Keep the other palm supported. Maximum gesture is ~4 cm above its seated contact.
-      pose(side+'Shoulder',0,sign*amount*.006,0);
+      pose(side+'Shoulder',0,sign*amount*.006,0,state.cinematic?5:7);
       pose(side+'Arm',0,0,sign*amount*.015);
       pose(side+'ForeArm',-amount*.065,sign*amount*body.open*.035,sign*amount*.07);
       pose(side+'Hand',0,sign*amount*.045,sign*amount*.035);
