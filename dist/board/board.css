@@ -46,7 +46,8 @@ main{padding:18px 3% 30px;display:flex;flex-direction:column;gap:16px;max-width:
 .approve-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .feed,.revisions{margin:0;padding-left:30px;max-height:430px;overflow:auto;display:flex;flex-direction:column;gap:8px;font-size:13px}
 .feed li::marker,.revisions li::marker{color:var(--muted);font-size:11px}
-.feed .time{color:var(--muted);font-size:11px;margin-right:6px}
+.feed .time{color:var(--muted);font-size:11px;margin-right:6px}.feed .by{color:var(--sage);font-size:12px}
+.feed .src{display:block;color:var(--muted);font-size:11px;line-height:1.35;margin-top:1px}
 .feed li.fresh{animation:flash 1.6s ease}@keyframes flash{from{background:#e3bb7840}to{background:transparent}}
 .segments{width:100%;border-collapse:collapse;font-size:13px}.segments th{text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:700;padding:4px}
 .segments td{border-top:1px solid var(--line);padding:7px 4px;vertical-align:middle}.mono{font:12px ui-monospace,Menlo,monospace;color:var(--muted)}
@@ -86,3 +87,8 @@ footer{color:var(--muted);font-size:12px;padding:18px 3% 30px;border-top:1px sol
 .tech h3{font-size:14px;letter-spacing:.06em;text-transform:uppercase;margin:14px 0 6px}
 .tech-table{width:100%;border-collapse:collapse;font-size:14px}.tech-table th,.tech-table td{text-align:left;padding:4px 8px;border-bottom:1px solid var(--line)}
 .tech-table .ok{color:#c4e0a8}.tech-table .bad{color:#ffb3a7}
+
+/* ---------- Georgian-first: no forced uppercase (it would switch Georgian to Mtavruli) ---------- */
+.label,.track-label,h2,.pill,.status,.segments th,.step .who-line,.tech h3{text-transform:none;letter-spacing:.2px}
+.label,.track-label,h2{font-size:12px}.segments th{font-size:11px}
+.status,.segments button{white-space:nowrap}

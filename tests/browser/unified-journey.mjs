@@ -76,7 +76,7 @@ try {
   await prod.waitForFunction(() => (document.querySelector('#voice-panel').textContent.match(/elevenlabs-sample/g) || []).length >= 2);
   await shot(prod, 'u9-board-voice-panel');
   check('board: too-long samples are disabled for a 10 s slot', await prod.evaluate(() => [...document.querySelectorAll('[data-voice-for="outro"] option')].some(o => o.disabled && /არ ჯდება/.test(o.textContent))));
-  for (const id of ['interstitial', 'outro', 'premiere']) { const b = await prod.waitForSelector(`[data-review="${id}"]`); await b.click(); await prod.waitForFunction(i => /approved r/.test(document.querySelector(`[data-review="${i}"]`)?.closest('tr')?.textContent || '') || !document.querySelector(`[data-review="${i}"]`), id); }
+  for (const id of ['interstitial', 'outro', 'premiere']) { const b = await prod.waitForSelector(`[data-review="${id}"]`); await b.click(); await prod.waitForFunction(i => /დამტკიცებულია/.test(document.querySelector(`[data-review="${i}"]`)?.closest('tr')?.textContent || '') || !document.querySelector(`[data-review="${i}"]`), id); }
   await prod.waitForSelector('#publish-btn:not([disabled])'); await prod.click('#publish-btn');
   await prod.waitForFunction(() => /#1/.test(document.querySelector('#publish').textContent));
   await shot(prod, 'u10-board-published');

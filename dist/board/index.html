@@ -1,73 +1,73 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#142b23">
-<title>Production Board — ECHO TV</title><meta name="description" content="Live shared production board: creators, their agents and the Showrunner coordinating one broadcast.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%23142b23%22/%3E%3Ccircle cx=%228%22 cy=%228%22 r=%224%22 fill=%22%23c4d0ac%22/%3E%3C/svg%3E"><link rel="stylesheet" href="board.css?v=3"><style>.appnav{display:flex;gap:12px;margin-left:14px;font-size:.92rem}.appnav a{color:inherit;opacity:.8}.appnav span{font-weight:600}.voice-panel{margin-top:12px;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:10px}.voice-panel h3{margin:0 0 6px;font-size:1rem}.voice-panel .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}.voice-panel select{max-width:100%}.voice-panel .now{opacity:.85}</style></head>
+<html lang="ka"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#142b23">
+<title>გადაცემის დაფა — ECHO TV</title><meta name="description" content="გადაცემის საერთო დაფა: ავტორები, მათი აგენტები და Showrunner ერთ ეთერს ერთად აწყობენ.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%23142b23%22/%3E%3Ccircle cx=%228%22 cy=%228%22 r=%224%22 fill=%22%23c4d0ac%22/%3E%3C/svg%3E"><link rel="stylesheet" href="board.css?v=4"><style>.appnav{display:flex;gap:12px;margin-left:14px;font-size:.92rem}.appnav a{color:inherit;opacity:.8}.appnav span{font-weight:600}.voice-panel{margin-top:12px;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:10px}.voice-panel h3{margin:0 0 6px;font-size:1rem}.voice-panel .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}.voice-panel select{max-width:100%}.voice-panel .now{opacity:.85}</style></head>
 <body>
 <header class="bar">
-  <a class="brand" href="/" aria-label="ECHO TV home">ECHO<span>TV</span></a>
-  <span class="title">Production Board</span>
-  <span id="connection" class="pill" data-state="connecting">Connecting</span>
-  <span id="who" class="who">Viewer · read-only</span>
+  <a class="brand" href="/" aria-label="ECHO TV — მთავარი">ECHO<span>TV</span></a>
+  <span class="title">გადაცემის დაფა</span>
+  <span id="connection" class="pill" data-state="connecting">კავშირი…</span>
+  <span id="who" class="who">მაყურებელი · მხოლოდ ნახვა</span>
   <nav class="appnav" aria-label="ECHO"><a href="/">მთავარი</a><a id="nav-create" href="/interview/">შექმნა</a><span aria-current="page">წარმოება</span></nav>
-  <a class="watch" href="/broadcast/" target="_blank" rel="noopener">ეთერი · Open broadcast ↗</a>
+  <a class="watch" href="/broadcast/" target="_blank" rel="noopener">ეთერის გახსნა ↗</a>
 </header>
 <main>
-  <section id="guide" class="guide" aria-label="Guided demonstration · ნაბიჯები" aria-live="polite"></section>
+  <section id="guide" class="guide" aria-label="ნაბიჯ-ნაბიჯ" aria-live="polite"></section>
   <section id="editorial-desk" class="panel editorial-desk" aria-label="რედაქცია და მაყურებლის კითხვები" hidden></section>
-  <details id="tech" class="panel tech"><summary>ტექნიკური ხედი <small>Technical view: agent tool calls, state changes, approvals</small></summary><div id="tech-body"></div></details>
-  <section class="summary" aria-label="Programme status">
-    <div><span class="label">Episode</span><strong id="episode">—</strong></div>
-    <div><span class="label">Show revision</span><strong id="revision">—</strong></div>
-    <div><span class="label">On-air manifest</span><strong id="publish">not published</strong></div>
-    <div><span class="label">Broadcast</span><strong id="broadcast-state">—</strong></div>
+  <details id="tech" class="panel tech"><summary>ტექნიკური ხედი <small>აგენტების გამოძახებები, მდგომარეობის ცვლილებები, დადასტურებები</small></summary><div id="tech-body"></div></details>
+  <section class="summary" aria-label="გადაცემის მდგომარეობა">
+    <div><span class="label">ეპიზოდი</span><strong id="episode">—</strong></div>
+    <div><span class="label">გეგმის ვერსია</span><strong id="revision">—</strong></div>
+    <div><span class="label">გამოქვეყნება</span><strong id="publish">არ გამოქვეყნებულა</strong></div>
+    <div><span class="label">ეთერი</span><strong id="broadcast-state">—</strong></div>
     <div id="producer-actions" class="actions" hidden>
-      <button id="publish-btn">Publish approved revision</button>
-      <button id="live-btn" class="primary">Go live</button>
-      <button id="reset-btn" class="quiet">Reset rehearsal</button>
+      <button id="publish-btn">დამტკიცებული ვერსიის გამოქვეყნება</button>
+      <button id="live-btn" class="primary">ეთერში გაშვება</button>
+      <button id="reset-btn" class="quiet">რეპეტიციის თავიდან დაწყება</button>
     </div>
   </section>
 
   <section class="panel timeline-panel" aria-labelledby="timeline-h">
-    <div class="panel-head"><h2 id="timeline-h">Running order</h2><span class="hint">🔒 confirmed airtime cannot move without its owner</span></div>
+    <div class="panel-head"><h2 id="timeline-h">ეთერის რიგი</h2><span class="hint">🔒 დადასტურებული ეთერის დრო ავტორის თანხმობის გარეშე არ იძვრის</span></div>
     <div class="ruler" id="ruler"></div>
-    <div class="track" id="track-current" aria-label="Committed running order"></div>
-    <div id="preview-wrap" hidden><p class="track-label">Proposed <span id="preview-label"></span></p><div class="track proposed" id="track-preview"></div></div>
+    <div class="track" id="track-current" aria-label="მიღებული ეთერის რიგი"></div>
+    <div id="preview-wrap" hidden><p class="track-label">შეთავაზება <span id="preview-label"></span></p><div class="track proposed" id="track-preview"></div></div>
     <div class="playhead" id="playhead" hidden></div>
   </section>
 
   <div class="grid">
     <section class="panel" aria-labelledby="people-h">
-      <h2 id="people-h">People and their agents</h2>
+      <h2 id="people-h">მონაწილეები და მათი აგენტები</h2>
       <ul id="people" class="people"></ul>
-      <p class="fine">Agents can read the shared state, propose and answer. They cannot approve, publish or move confirmed airtime.</p>
+      <p class="fine">აგენტები ხედავენ საერთო გეგმას, სთავაზობენ ცვლილებებს და პასუხობენ. დამტკიცება, გამოქვეყნება და დადასტურებული ეთერის დროის გადატანა მათ არ შეუძლიათ.</p>
     </section>
 
     <section class="panel negotiation" aria-labelledby="neg-h">
-      <h2 id="neg-h">Negotiation</h2>
-      <div id="negotiation"><p class="empty">No open proposal. The last approved revision stands.</p></div>
+      <h2 id="neg-h">მოლაპარაკება</h2>
+      <div id="negotiation"><p class="empty">ღია შეთავაზება არ არის. ძალაშია ბოლო დამტკიცებული ვერსია.</p></div>
     </section>
 
     <section class="panel" aria-labelledby="feed-h">
-      <h2 id="feed-h">Live activity</h2>
+      <h2 id="feed-h">რა ხდება ახლა</h2>
       <ol id="feed" class="feed" reversed></ol>
     </section>
   </div>
 
   <div class="grid two">
     <section class="panel" aria-labelledby="seg-h">
-      <h2 id="seg-h">Segments and editorial approval</h2>
-      <table class="segments"><thead><tr><th>Segment</th><th>Owner</th><th>Rev</th><th>Media</th><th>Approval</th><th></th></tr></thead><tbody id="segments"></tbody></table>
-      <p class="fine">Approval is bound to a segment revision and the SHA-256 of its media. Any change needs a new approval.</p>
+      <h2 id="seg-h">სეგმენტები და რედაქციის დამტკიცება</h2>
+      <table class="segments"><thead><tr><th>სეგმენტი</th><th>ავტორი</th><th>ვერსია</th><th>ფაილები</th><th>დამტკიცება</th><th></th></tr></thead><tbody id="segments"></tbody></table>
+      <p class="fine">დამტკიცება ეხება სეგმენტის კონკრეტულ ვერსიას და მისი ფაილების ზუსტ ანაბეჭდს (SHA-256). ნებისმიერი ცვლილება ახალ დამტკიცებას საჭიროებს.</p>
       <div id="voice-panel" class="voice-panel" hidden></div>
     </section>
     <section class="panel" aria-labelledby="rev-h">
-      <h2 id="rev-h">Revision history</h2>
+      <h2 id="rev-h">ვერსიების ისტორია</h2>
       <ol id="revisions" class="revisions" reversed></ol>
     </section>
   </div>
   <p id="error" class="error" role="alert" hidden></p>
 </main>
-<footer>ECHO TV · Many creators. Many agents. One shared broadcast. · Agents shown here are real MCP sessions; a rule-based fallback is labelled as such.</footer>
+<footer>ECHO TV · ბევრი შემქმნელი. ბევრი აგენტი. ერთი საერთო ეთერი. · აქ ნაჩვენები აგენტები ნამდვილი MCP სესიებია; წესებზე დაფუძნებული სარეზერვო რეჟიმი ცალკეა მონიშნული.</footer>
 <script type="module" src="board.js?v=1"></script>
 <script type="module" src="editorial.js?v=1"></script>
 </body></html>

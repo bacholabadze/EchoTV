@@ -27,11 +27,15 @@ async function api(method, path, body, headers = {}) {
   const raw = body instanceof Blob;
   const res = await fetch(path, {method, headers: {...(token ? {authorization: `Bearer ${token}`} : {}), ...(method === 'POST' ? {'idempotency-key': requestKey()} : {}), ...(body && !raw ? {'content-type': 'application/json'} : {}), ...headers}, body: raw ? body : body && JSON.stringify(body)});
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw Object.assign(new Error(data.message || data.error || `HTTP ${res.status}`), {code: data.error, status: res.status});
+  if (!res.ok) throw Object.assign(new Error(data.message || data.error || `HTTP ${res.status}`), {code: data.error, status: res.status, ka: data.ka});
   return data;
 }
 const ui = {me: null, iv: null, lib: null, mode: 'text', editing: null, rec: null, transcript: null, busy: false, spoken: null};
-function showError(e, ka) { const el = $('#error'); el.innerHTML = `${esc(ka || 'რაღაც ვერ გამოვიდა.')}${e ? `<br><small>${esc(e.message)}</small>` : ''}`; el.hidden = false; }
+// People read the server's Georgian sentence (`ka`); the precise English message stays on the element's title.
+function showError(e, ka) {
+  const el = $('#error'), detail = e?.ka || (e?.status ? e.message : '');
+  el.innerHTML = `${esc(ka || 'რაღაც ვერ გამოვიდა.')}${detail ? `<br><small>${esc(detail)}</small>` : ''}`; el.title = e?.message || ''; el.hidden = false;
+}
 const clearError = () => { $('#error').hidden = true; };
 // Read the form first, then act: buttons are disabled in place (re-rendering before the action would reset the inputs).
 async function run(fn, ka) { clearError(); ui.busy = true; for (const b of document.querySelectorAll('#view button')) b.disabled = true; try { await fn(); } catch (e) { showError(e, ka); } finally { ui.busy = false; render(); } }
@@ -39,10 +43,10 @@ async function run(fn, ka) { clearError(); ui.busy = true; for (const b of docum
 // ---------- data ----------
 async function refresh() { ui.iv = ui.iv && await api('GET', `/api/interviews/${ui.iv.id}`); ui.lib = await api('GET', '/api/library'); }
 async function boot() {
-  if (!token) { $('#view').innerHTML = `<h1>გახსენი შენი პირადი ბმული</h1><p class="hint">ინტერვიუ შემქმნელის პირადი ბმულით იხსნება (დაფაზე „ესაუბრე ECHO-ს“).</p>`; return; }
+  if (!token) { $('#view').innerHTML = `<h1>გახსენი შენი პირადი ბმული</h1><p class="hint">ინტერვიუ ავტორის პირადი ბმულით იხსნება (დაფაზე „ესაუბრე ECHO-ს“).</p>`; return; }
   try { ui.me = await api('GET', '/api/me'); } catch { $('#view').innerHTML = '<h1>ბმული ვერ ვიცანი</h1>'; return; }
   $('#who').textContent = ui.me.name || ui.me.label;
-  if (ui.me.role !== 'creator') { $('#view').innerHTML = '<h1>ინტერვიუ შემქმნელებისთვისაა</h1><p class="hint">Interviews are for creators.</p>'; return; }
+  if (ui.me.role !== 'creator') { $('#view').innerHTML = '<h1>ინტერვიუ ავტორებისთვისაა</h1><p class="hint">პროდიუსერი ავტორების ინტერვიუებს გადაცემის დაფაზე ხედავს.</p>'; return; }
   const list = await api('GET', '/api/interviews'), open = list.filter(i => i.status !== 'withdrawn').pop();
   if (open) ui.iv = await api('GET', `/api/interviews/${open.id}`);
   ui.lib = await api('GET', '/api/library');
@@ -53,7 +57,7 @@ async function boot() {
 function render() {
   const v = $('#view'), iv = ui.iv;
   if (!ui.me) return;
-  if (!iv) { v.innerHTML = `<h1>მოემზადე ეთერისთვის<span class="en">Prepare your appearance</span></h1>
+  if (!iv) { v.innerHTML = `<h1>მოემზადე ეთერისთვის</h1>
     <p>რამდენიმე მოკლე კითხვა — შენი პასუხებით ECHO შენს ეთერს მოამზადებს. ბოლოს ყველაფერს გადახედავ და მხოლოდ შენ დაადასტურებ.</p>
     <p class="hint">შეგიძლია ხმით ან ტექსტით უპასუხო, ნებისმიერი კითხვა გამოტოვო და მოგვიანებით დაბრუნდე. თუ შენი AI აგენტი გყავს, ის იმავე კითხვებს შენ ნაცვლად უპასუხებს.</p>
     <div class="row"><button class="primary" id="begin" ${ui.busy ? 'disabled' : ''}>დავიწყოთ</button></div>`;
@@ -81,7 +85,7 @@ function mediaPicker(selected) {
   const items = ui.lib.media.filter(m => m.status !== 'withdrawn');
   return `<label>${KA.fields.mediaIds} <small>(აირჩიე, რისი გამოყენების უფლებასაც გვაძლევ)</small></label>
     <ul class="media">${items.map(m => `<li><label style="display:flex;gap:8px;font-weight:600;margin:0"><input type="checkbox" name="media" value="${m.id}"${selected.includes(m.id) ? ' checked' : ''}> ${esc(m.title)} <span class="tag">${esc({audio: 'აუდიო', image: 'სურათი', video: 'ვიდეო', document: 'დოკუმენტი'}[m.kind] || m.kind)}</span></label>
-      <div class="meta">${m.kind === 'document' ? (m.technical?.decodable ? '<span class="ok">მიღებულია</span> <small>(შემოწმდა მხოლოდ PDF ფორმატის ნიშანი; შიგთავსი არ მოწმდება)</small>' : `<span class="bad">მიუღებელია</span> <small>${esc(m.technical?.reason || '')}</small>`) : m.technical?.decodable ? '<span class="ok">ტექნიკური შემოწმება გაიარა</span>' : `<span class="bad">ტექნიკური შემოწმება ვერ გაიარა</span> <small>${esc(m.technical?.reason || '')}</small>`}${m.kind === 'video' ? ' · ვიდეოს ეთერში ჩვენება ჯერ არ არის ხელმისაწვდომი' : m.kind === 'document' ? ' · დამხმარე დოკუმენტი, ეთერში არ გავა' : ''}</div>
+      <div class="meta">${m.kind === 'document' ? (m.technical?.decodable ? '<span class="ok">მიღებულია</span> <small>(შემოწმდა მხოლოდ PDF ფორმატის ნიშანი; შიგთავსი არ მოწმდება)</small>' : `<span class="bad" title="${esc(m.technical?.reason || '')}">მიუღებელია</span>`) : m.technical?.decodable ? '<span class="ok">ტექნიკური შემოწმება გაიარა</span>' : `<span class="bad" title="${esc(m.technical?.reason || '')}">ტექნიკური შემოწმება ვერ გაიარა</span>`}${m.kind === 'video' ? ' · ვიდეოს ეთერში ჩვენება ჯერ არ არის ხელმისაწვდომი' : m.kind === 'document' ? ' · დამხმარე დოკუმენტი, ეთერში არ გავა' : ''}</div>
       ${rightsEditor(m)}<div class="row"><button data-delete-media="${m.id}">ფაილის წაშლა</button></div></li>`).join('') || '<li class="meta">ბიბლიოთეკა ცარიელია.</li>'}</ul>
     <label for="upload">ახალი ფაილის ატვირთვა <small>(აუდიო, სურათი, ვიდეო ან PDF; არსებული ნამუშევარი — არაფერს ვაგენერირებთ)</small></label>
     <input id="upload" type="file" accept="audio/*,image/*,video/mp4,video/quicktime,video/webm,application/pdf">`;
@@ -98,7 +102,7 @@ function questionView(p) {
   const iv = ui.iv, editing = !!ui.editing, agent = p.current?.source === 'agent';
   speak(p);
   $('#view').innerHTML = `${progress(p.index)}<p class="step-label">კითხვა ${p.index} / ${p.total}${p.followUp ? ' <span class="tag">დამატებითი კითხვა</span>' : ''}${agent ? ' <span class="tag">ეს პასუხი შენმა აგენტმა მოამზადა</span>' : ''}${editing ? ' <span class="tag">შესწორება</span>' : ''}</p>
-    <h1>${esc(p.question.ka)}<span class="en">${esc(p.question.en)}</span></h1>${p.hint ? `<p class="hint">${esc(p.hint.ka)}</p>` : ''}
+    <h1>${esc(p.question.ka)}</h1>${p.hint ? `<p class="hint">${esc(p.hint.ka)}</p>` : ''}
     <div class="modes" role="group" aria-label="პასუხის ფორმა"><button data-mode="text" aria-pressed="${ui.mode === 'text'}">ტექსტით</button><button data-mode="voice" aria-pressed="${ui.mode === 'voice'}">🎙 ხმით</button></div>
     ${ui.mode === 'voice' ? voicePanel() : `<label for="answer">${esc(KA.answerFields[p.answerField] || 'პასუხი')}</label><textarea id="answer" maxlength="2000" placeholder="შენი პასუხი…">${esc(p.current?.text || '')}</textarea>`}
     ${p.fields.map(fieldInput).join('')}
@@ -175,7 +179,7 @@ function reviewView() {
   const choice = (key, v) => iv.questions.flatMap(q => q.fields).find(f => f.key === key)?.options?.find(o => o.value === v)?.ka || '—';
   const agentSteps = Object.entries(iv.answers).filter(([, a]) => a.source === 'agent').map(([k]) => k);
   caption('გადახედე შენს ბრიფს. თუ ყველაფერი სწორია, დაადასტურე.');
-  $('#view').innerHTML = `<h1>შენი ბრიფი <span class="tag">ვერსია ${b.version}</span><span class="en">Your Creator Brief: nothing airs until you approve it</span></h1>
+  $('#view').innerHTML = `<h1>შენი ბრიფი <span class="tag">ვერსია ${b.version}</span><span class="en">ეთერში არაფერი გავა, სანამ შენ არ დაადასტურებ</span></h1>
     ${agentSteps.length ? `<div class="notice">ზოგიერთი პასუხი შენმა აგენტმა მოამზადა. გადაამოწმე, სანამ დაადასტურებ.</div>` : ''}
     <dl class="brief"><dt>სახელი ეთერისთვის</dt><dd>${esc(b.creator.displayName || '—')}</dd><dt>ნამუშევარი</dt><dd>${esc(b.work.title || '—')} · ${esc(choice('category', b.work.category))}</dd>
       <dt>შენ შესახებ</dt><dd>${esc(b.work.description || '—')}</dd><dt>შთაგონება</dt><dd>${esc(b.story.inspiration || '—')}</dd>
@@ -185,7 +189,7 @@ function reviewView() {
       <dt>წამყვანისთვის</dt><dd>${esc(b.presenterNotes || '—')}</dd></dl>
     ${b.missing.length ? `<h2>აკლია</h2><p>${b.missing.map(k => esc(KA.missing[k] || (k.startsWith('rights:') ? 'ფაილის უფლებები' : k.startsWith('broadcastPermission:') ? 'ეთერის ნებართვა ფაილზე' : k))).join(' · ')}</p>` : ''}
     ${b.contradictions.length ? `<h2>დასაზუსტებელი</h2>${b.contradictions.map(c => `<p class="bad">${esc(c.ka)}</p>`).join('')}` : ''}
-    <h2>ციტატები ეთერისთვის <span class="en">Only sentences you said; choose up to 5</span></h2>
+    <h2>ციტატები ეთერისთვის <span class="en">მხოლოდ შენი ნათქვამი წინადადებები; აირჩიე 5-მდე</span></h2>
     ${own.flatMap(k => sentences(textOf(k))).map((s, i) => `<label style="display:flex;gap:8px;font-weight:400"><input type="checkbox" name="quote" value="${esc(s)}"${b.story.quotes.includes(s) ? ' checked' : ''}> „${esc(s)}“</label>`).join('') || '<p class="hint">—</p>'}
     <div class="row"><button id="quotes">ციტატების შენახვა</button></div>
     <h2>შესწორება</h2><div class="row">${iv.questions.map(q => `<button data-edit="${q.stepId}">${q.index}. ${esc(q.question.ka.replace(/\?$/, ''))}</button>`).join('')}</div>
@@ -208,7 +212,7 @@ async function approvedView() {
   const prepared = !!life?.segmentId && !life.stale, stale = !!life?.segmentId && life.stale;
   const segTitle = life?.segmentId ? state.segments[life.segmentId]?.title : '';
   caption(stale ? 'ბრიფი შეიცვალა — განაახლე მომზადებული სეგმენტი.' : 'მადლობა! შენი ბრიფი დადასტურებულია.');
-  $('#view').innerHTML = `<h1>✓ ბრიფი დადასტურებულია <span class="tag">ვერსია ${b.version}</span><span class="en">Approved by you</span></h1>
+  $('#view').innerHTML = `<h1>✓ ბრიფი დადასტურებულია <span class="tag">ვერსია ${b.version}</span><span class="en">შენ დაადასტურე</span></h1>
     <ol class="life">${(life?.steps || []).map(s => `<li class="${s.done ? 'done' : ''}">${esc(KA.life[s.step])}</li>`).join('')}</ol>
     ${prepared ? `<p>სეგმენტი: <b>${esc(segTitle)}</b> — შემდეგი ნაბიჯები გადაცემის დაფაზე ჩანს: რედაქციის დამტკიცება, ეთერის დრო, გამოქვეყნება.</p><div class="row"><a class="primary-link" href="/board/">გადაცემის დაფა →</a><a href="/broadcast/">ეთერი →</a></div>`
       : `<h2>${stale ? 'მომზადებული სეგმენტის განახლება' : 'გადაცემაში ჩასმა'}</h2>
@@ -236,7 +240,7 @@ async function approvedView() {
     };
     const slots = () => {
       const seg = state.segments[$('#seg').value];
-      $('#slots').innerHTML = seg.assets.map(a => { const {files, keep} = choices(a); return `<label for="slot-${a.id}">${esc(a.id)} <small>(${a.kind === 'audio' ? 'აუდიო' : 'სურათი'})</small></label><select id="slot-${a.id}" data-slot="${a.id}"><option value="">— აირჩიე —</option>${keep ? `<option value="keep:${keep.sha256}" selected>დატოვე: ${esc(keep.title)} (იგივე ფაილი)</option>` : ''}${files.map(m => `<option value="${m.id}">${esc(m.title)}</option>`).join('')}</select>`; }).join('')
+      $('#slots').innerHTML = seg.assets.map(a => { const {files, keep} = choices(a); return `<label for="slot-${a.id}">${a.kind === 'audio' ? 'აუდიო' : 'სურათი'} <small>(${esc(a.id)})</small></label><select id="slot-${a.id}" data-slot="${a.id}"><option value="">— აირჩიე —</option>${keep ? `<option value="keep:${keep.sha256}" selected>დატოვე: ${esc(keep.title)} (იგივე ფაილი)</option>` : ''}${files.map(m => `<option value="${m.id}">${esc(m.title)}</option>`).join('')}</select>`; }).join('')
         || '<p class="hint">ამ სეგმენტს ფაილის ადგილი არ აქვს.</p>';
       if (!b.media.some(m => m.rights?.publicBroadcast)) $('#slots').insertAdjacentHTML('beforeend', '<p class="warn">ბრიფში საჯარო ეთერის უფლებით ფაილი არ არის. შესწორებაში „რომელი ფაილების უფლებას გვაძლევ?" კითხვაზე აირჩიე ფაილი და განაცხადე უფლებები.</p>');
       for (const sel of document.querySelectorAll('[data-slot]')) sel.onchange = preview;

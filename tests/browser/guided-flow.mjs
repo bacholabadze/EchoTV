@@ -39,7 +39,7 @@ try {
   await pub.waitForFunction(() => document.querySelector('#guide li.current b').textContent.startsWith('2.'));
   assert.match(await guide(pub), /აგენტები თანხმდებიან/); assert.match(await guide(pub), /ველოდებით აგენტს: ქეთი/);
   assert.equal(await pub.isVisible('#track-preview'), false, 'no proposed track before the Showrunner has a valid plan');
-  assert.match(await pub.textContent('#preview-label'), /requested Art gallery → 45s · does not fit yet/);
+  assert.match(await pub.textContent('#preview-label'), /მოთხოვნა: Art gallery → 45წმ · ჯერ არ ეტევა/);
   await pub.screenshot({path: join(out, 'guide-2-request-public.png')});
   // B's agent concedes; A's agent adapts → a valid plan awaiting approval.
   const req = Object.values(echo.desk.state.requests).find(r => r.toAgentId === 'agent-b');
@@ -48,8 +48,8 @@ try {
   // 3. Review: the plan is drawn, and the premiere is at 50 s in it.
   await pub.waitForFunction(() => document.querySelector('#guide li.current b').textContent.startsWith('3.'));
   const plan = await pub.$$eval('#track-preview .seg', els => els.map(e => e.getAttribute('title')));
-  assert.ok(plan.some(t => /^Music premiere 50s–110s$/.test(t)), `plan keeps the premiere at 50s: ${plan.join(' | ')}`);
-  assert.match(await guide(pub), /Art gallery: 30s → 45s/); assert.match(await guide(pub), /დაადასტურა 0\/3/);
+  assert.ok(plan.some(t => /^Music premiere · 0:50–1:50$/.test(t)), `plan keeps the premiere at 50s: ${plan.join(' | ')}`);
+  assert.match(await guide(pub), /Art gallery: 30წმ → 45წმ/); assert.match(await guide(pub), /დაადასტურა 0\/3/);
   // 4. Approve: each required person sees "your turn" in their own window; an agent cannot approve.
   for (const page of [a, b, producer]) { await page.waitForSelector('#guide [data-g="approve"]'); assert.equal(await current(page), '4. დაადასტურე'); }
   assert.equal(await pub.$('#guide [data-g="approve"]'), null, 'no approve button on the public board');
@@ -72,11 +72,11 @@ try {
   assert.match(await guide(pub), /გამოქვეყნდა #1 — ეთერისთვის მზადაა/);
   await producer.click('#guide [data-g="golive"]');
   await pub.waitForFunction(() => /ეთერამდე \d წამი/.test(document.querySelector('#guide').textContent));
-  assert.equal(await pub.textContent('#broadcast-state'), 'starting', 'not "on air" during the countdown');
+  assert.equal(await pub.textContent('#broadcast-state'), 'იწყება', 'not "on air" during the countdown');
   await pub.screenshot({path: join(out, 'guide-5-countdown-public.png')});
   await pub.waitForFunction(() => /პირდაპირ ეთერში · 0:0\d/.test(document.querySelector('#guide').textContent), null, {timeout: 9000});
   await pub.screenshot({path: join(out, 'guide-5-live-public.png')});
-  await pub.waitForFunction(() => document.querySelector('#broadcast-state').textContent === 'on air', null, {timeout: 3000});
+  await pub.waitForFunction(() => document.querySelector('#broadcast-state').textContent === 'ეთერშია', null, {timeout: 3000});
   assert.deepEqual(errors, []);
   console.log(`PASS: guided flow on the real board: 1 choose (own segments, 🔒 0:50) → 2 request (no plan drawn while it does not fit) → 3 review (plan keeps the premiere at 50 s) → 4 approve (your-turn in each person's window, visible on mobile at ${Math.round(turnTop)}px; agent 403) → 5 publish → countdown ("starting") → live. Screenshots in ${out}`);
 } finally { await browser.close(); echo.server.closeAllConnections(); echo.server.close(); }

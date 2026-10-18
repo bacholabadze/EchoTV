@@ -38,11 +38,11 @@ try {
   }
   assert.equal(await viewer.evaluate(() => window.EchoBroadcast.getState().onAirLabel), 'Off air');
   assert.equal(echo.desk.state.broadcast.state, 'queued');
-  assert.match(await producer.textContent('#publish'), /withdrawn/, 'the board shows the publication withdrawn');
+  assert.match(await producer.textContent('#publish'), /გაუქმდა/, 'the board shows the publication withdrawn');
   assert.equal(await producer.isDisabled('#live-btn'), true, 'Go live unavailable after withdrawal');
   const again = await fetch(`${base}/api/golive`, {method: 'POST', headers: {authorization: `Bearer ${P}`, 'content-type': 'application/json'}, body: JSON.stringify({delayMs: 0, publicationId: m.publicationId, hash: m.hash})});
   assert.equal(again.status, 409); assert.equal((await again.json()).error, 'withdrawn');
-  assert.match(warning, /cancels the start and withdraws the publication/, 'the board warned before rejecting');
+  assert.match(warning, /გააუქმებს ეთერის დაწყებას/, 'the board warned before rejecting');
   assert.deepEqual(errors, []);
   console.log(`PASS: rejected through the board ${rejectedBy} ms before the scheduled start; viewer showed ${[...labels].join(' → ')} and never Live through +3 s; board shows withdrawn; Go live refused (409 withdrawn).`);
 } finally { await browser.close(); echo.server.closeAllConnections(); echo.server.close(); }

@@ -37,16 +37,16 @@ try {
   await producer.screenshot({path: join(out, 'board-awaiting-approval.png'), fullPage: true});
   assert.match(await b.textContent('#negotiation'), /Premiere stays at 50s/);
   for (const page of [a, b, producer]) await page.click('#approve');
-  for (const page of [a, b, producer]) await page.waitForFunction(() => document.querySelector('#revision').textContent === 'r2');
-  assert.match(await a.textContent('#revisions'), /Art gallery: 10s\+30s → 5s\+45s/);
+  for (const page of [a, b, producer]) await page.waitForFunction(() => document.querySelector('#revision').textContent === 'ვერსია 2');
+  assert.match(await a.textContent('#revisions'), /Art gallery: 0:10 · 30წმ → 0:05 · 45წმ/);
   await producer.click('#publish-btn');
-  await producer.waitForFunction(() => /^#1 · r2 · [0-9a-f]{10}$/.test(document.querySelector('#publish').textContent));
+  await producer.waitForFunction(() => /^#1 · ვერსია 2 · [0-9a-f]{10}$/.test(document.querySelector('#publish').textContent));
   await producer.screenshot({path: join(out, 'board-committed-published.png'), fullPage: true});
   // N04: the producer turns down published content through the board; the publication is withdrawn before air.
   assert.equal(await a.isVisible('[data-reject="gallery"]'), false, 'creators have no reject control');
-  producer.once('dialog', d => { assert.match(d.message(), /withdraws the ready publication/); d.accept('Rights for art-2 not confirmed'); });
+  producer.once('dialog', d => { assert.match(d.message(), /მზა გამოქვეყნებას ეთერამდე გააუქმებს/); d.accept('Rights for art-2 not confirmed'); });
   await producer.click('[data-reject="gallery"]');
-  await producer.waitForFunction(() => document.querySelector('#publish').textContent === '#1 withdrawn');
+  await producer.waitForFunction(() => document.querySelector('#publish').textContent === '#1 გაუქმდა');
   assert.equal(await producer.isDisabled('#live-btn'), true, 'Go live unavailable after withdrawal');
   assert.match(await producer.textContent('#feed'), /Publication #1 \(revision 2\) withdrawn before air by ECHO Producer: Rights for art-2 not confirmed/);
   assert.equal(await producer.isVisible('[data-reject="gallery"]'), false, 'the rejected revision offers no second reject');
