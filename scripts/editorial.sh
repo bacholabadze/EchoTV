@@ -51,7 +51,7 @@ start)
   [ -e "$ROOT/node_modules/@modelcontextprotocol" ] || { echo "node_modules missing in $ROOT"; exit 1; }
   mkdir -p "$DATA" "$RUN"
   PEOPLE="$(node -e 'process.stdout.write(JSON.stringify({a:{name:process.argv[1],specialty:process.argv[2]},producer:{name:"ECHO პროდიუსერი"}}))' "$NAME" "$SPEC")"
-  (cd "$ROOT" && PORT="$PORT" ECHO_FORMAT=editorial ECHO_DATA_DIR="$DATA" ECHO_PEOPLE="$PEOPLE" ECHO_REHEARSAL="${ECHO_REHEARSAL:-1}" nohup node server/server.mjs > "$RUN/server.log" 2>&1 & echo $! > "$RUN/server.pid")
+  (cd "$ROOT" && PORT="$PORT" ECHO_FORMAT=editorial ECHO_DATA_DIR="$DATA" ECHO_PEOPLE="$PEOPLE" ECHO_REHEARSAL="${ECHO_REHEARSAL:-1}" nohup node server/server.mjs < /dev/null > "$RUN/server.log" 2>&1 & echo $! > "$RUN/server.pid") > /dev/null 2>&1
   for _ in $(seq 1 40); do curl -sf "$url/api/state" >/dev/null 2>&1 && break; sleep 0.25; done
   curl -sf "$url/api/state" >/dev/null || { echo "Server did not start; see $RUN/server.log"; exit 1; }
   agents; links ;;

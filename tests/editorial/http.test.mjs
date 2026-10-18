@@ -26,6 +26,8 @@ test('nothing is publishable before a person approves a rundown; placeholders ne
   const c = await readyShow();
   try {
     await c.ok('POST', '/api/segments/work/review', c.T.P, {revision: c.S().segments.work.revision, decision: 'approved'});
+    const ph = await c.req('POST', '/api/segments/opening/review', c.T.P, {revision: c.S().segments.opening.revision, decision: 'approved'});
+    assert.equal(ph.status, 409, 'a placeholder cannot be approved'); assert.ok(ph.body.ka);
     const r = await c.req('POST', '/api/publish', c.T.P);
     assert.equal(r.status, 409); assert.match(r.body.message, /not approved|rundown has not been approved/);
     assert.ok(r.body.ka, 'people get a Georgian message');

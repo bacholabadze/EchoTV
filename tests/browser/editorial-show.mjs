@@ -20,7 +20,7 @@ const c = await startEditorial(fx, {dataDir: OUT ? join(OUT, 'data') : undefined
 const browser = await chromium.launch({channel: 'chrome', args: ['--autoplay-policy=no-user-gesture-required']});
 const errors = [];
 const page = async (url, who, viewport = {width: 1280, height: 900}) => { const p = await (await browser.newContext({viewport})).newPage(); p.on('pageerror', e => errors.push(`${who}: ${e.message}`)); await p.goto(c.base + url); return p; };
-const shot = async (p, name) => { if (OUT) await p.screenshot({path: join(OUT, `${name}.png`)}); };
+const shot = async (p, name) => { if (OUT) { await p.evaluate(() => scrollTo(0, 0)); await p.screenshot({path: join(OUT, `${name}.png`)}); } };
 try {
   note(`scenario ${fx === ART ? 'art' : 'music'}; server ${c.base}`);
   await creatorJourney(c, fx, {log: m => note(m)});

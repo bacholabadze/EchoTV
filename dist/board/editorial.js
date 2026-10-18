@@ -54,7 +54,7 @@ function renderProducer() {
       ${booking?.state === 'held' ? `<p>ავტორმა მოითხოვა ეთერის დრო: ${mmss(booking.start)}-დან ${booking.duration} წმ. <button id="ed-confirm" class="primary">დროის დადასტურება</button></p>` : ''}
       ${booking?.state === 'confirmed' ? `<p class="ok">🔒 ავტორის დრო დადასტურებულია: ${mmss(booking.start)}–${mmss(booking.start + booking.duration)}</p>` : ''}
       <h3>2. ფაქტები (ეთერში მხოლოდ შენ მიერ გადამოწმებული)</h3>
-      <p class="fine">${esc(d.factPackStatus || '')}</p>
+      <p class="fine">მონახაზი: ფაქტი ეთერში მხოლოდ მაშინ გავა, როცა შენ მას წყაროსთან გადაამოწმებ. ორივე ფაქტი აშშ-ს ეხება და საქართველოს კანონად არ უნდა წარვადგინოთ.</p>
       <ul class="facts">${d.facts.map(f => `<li><p>${esc(f.ka)}</p><p class="fine">წყარო: <a href="${esc(f.source.url)}" target="_blank" rel="noopener">${esc(f.source.title)}</a> · ${esc(f.scope || '')}</p>
         <button data-fact="${esc(f.id)}" data-verified="${f.verified ? 'yes' : 'no'}">${f.verified ? '✓ გადამოწმებულია — გაუქმება' : 'წყაროსთან გადავამოწმე'}</button></li>`).join('')}</ul>
     </div>
@@ -140,6 +140,7 @@ async function start() {
   events.addEventListener('state', e => {
     state = JSON.parse(e.data);
     root.hidden = state.episode?.format !== 'editorial';
+    document.body.classList.toggle('editorial-format', !root.hidden); // the 3.1 negotiation guide does not apply to this format
     // Do not re-render while a person is typing an answer; otherwise refresh at most twice a second.
     if (root.hidden || document.activeElement?.id === 'ed-answer' || document.activeElement?.tagName === 'INPUT') return;
     clearTimeout(pending); pending = setTimeout(() => refresh().catch(() => {}), 300);
@@ -147,6 +148,7 @@ async function start() {
 }
 start();
 document.head.insertAdjacentHTML('beforeend', `<style>
+.editorial-format #guide{display:none}
 .editorial-desk h3{font:16px Georgia,serif;margin:14px 0 6px}.editorial-desk h4{margin:6px 0}
 .ed-grid{display:grid;grid-template-columns:minmax(260px,1fr) minmax(0,2fr);gap:18px}.ed-col{min-width:0}
 @media (max-width:900px){.ed-grid{grid-template-columns:1fr}}

@@ -46,5 +46,6 @@ function render(state) {
   }
 }
 $('#ask-form').addEventListener('submit', send);
-new EventSource('/api/events').addEventListener('state', e => render(JSON.parse(e.data)));
+let lastSel = null;
+new EventSource('/api/events').addEventListener('state', e => { const st = JSON.parse(e.data); render(st); const sel = JSON.stringify([st.qa?.selected?.id, st.qa?.answer?.releasedAt]); if (sel !== lastSel) { lastSel = sel; poll(); } });
 setInterval(poll, 6000); poll();

@@ -427,6 +427,7 @@ export class BroadcastDesk {
     const seg = this.segment(segmentId);
     if (revision !== seg.revision) fail('stale_revision', `Review is for revision ${revision}; current is ${seg.revision}`, {current: seg.revision});
     if (!['approved', 'needs_changes', 'rejected'].includes(decision)) fail('bad_request', 'Unknown review decision');
+    if (decision === 'approved' && seg.content?.placeholder) fail('not_publishable', `${seg.title} is a placeholder until an editorial rundown is approved; it can never air`);
     if (decision === 'approved' && seg.assets.some(a => !a.rightsDeclared)) fail('rights_required', 'Every asset needs declared rights before approval');
     if (decision === 'approved' && this.permissionProblems(seg).length) fail('rights_required', this.permissionProblems(seg).join('; '));
     if (decision === 'approved' && seg.assets.some(a => !playable(a))) fail('undecodable_media', `${seg.title} cannot be approved: ${seg.assets.filter(a => !playable(a)).map(whyUnplayable).join('; ')}`);
