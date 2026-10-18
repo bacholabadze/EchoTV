@@ -53,12 +53,14 @@ links() {
 
 ECHO demo — $url   (private links: do not project or share the token URLs)
 
+  ECHO home (anyone)             $url/
   TV viewer (projector, anyone)  $url/broadcast/
   Production Board (read-only)   $url/board/
-  Producer board (founder)       $url/board/#token=$(token_of '(producer) board')
-  $a board (Creator A)    $url/board/#token=$(token_of "$a (creator) board")
-  $b board (Creator B)    $url/board/#token=$(token_of "$b (creator) board")
-  Channel home                   $url/
+  Producer: home / board         $url/#token=$(token_of '(producer) board')
+  $a (Creator A): home    $url/#token=$(token_of "$a (creator) board")
+  $a: interview / board   $url/interview/#token=$(token_of "$a (creator) board")
+  $b (Creator B): home    $url/#token=$(token_of "$b (creator) board")
+  $b: interview / board   $url/interview/#token=$(token_of "$b (creator) board")
 
   $a's agent (Claude Code):  $DEMO/agent-a.sh
   $b's agent (Codex):        $DEMO/agent-b.sh

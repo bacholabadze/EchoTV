@@ -14,7 +14,7 @@ import {voiceServiceFromEnv, sttFromEnv, ProviderError, BudgetError} from './voi
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary',
   '.hdr': 'application/octet-stream', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.m4a': 'audio/mp4', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8'};
-const STATUS = {in_use: 409, consent_required: 403, transcription_failed: 503, voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
+const STATUS = {in_use: 409, consent_required: 403, transcription_failed: 503, voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, media_selection_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
 const MAX_UPLOAD = 25 * 1024 * 1024, SENT = Symbol('sent');
 
 const MAGIC = {
@@ -215,6 +215,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
 
   // Voices go through the provider-neutral voice service (3.2). The 3.1 house lines keep their behaviour: Piper,
   // or the same captions-only fallback when no voice is available.
+  const voiceOwners = new Map(); // draft voice cache key -> owner id (this process only; fail closed after restart)
   const voices = voice || voiceServiceFromEnv({root: ROOT, dataDir, probe: path => { const {reason, ...p} = probeMedia(path); return {...p, reason}; }, log: (event, data) => quiet || console.log(`voice: ${event} ${JSON.stringify(data)}`)});
   const speech = stt || sttFromEnv({dataDir});
   async function hostVoice(lines) {
@@ -306,11 +307,12 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     // as these exact bytes. Agents cannot call this.
     ['POST', /^\/api\/segments\/(\w+)\/voice$/, async ({actor, json, m}) => {
       const body = json();
-      desk.requireVoiceRights(actor, m[1]);
+      const voicedSeg = desk.requireVoiceRights(actor, m[1]);
       if (!Array.isArray(body.lines)) throw new DomainError('bad_request', 'lines must be a list of {presenter, text}');
       let r;
       try { r = await voices.synthesize({lines: body.lines, lang: body.lang || 'en', ...(Array.isArray(body.order) ? {order: body.order} : {})}); }
       catch (e) { if (e instanceof ProviderError) throw new DomainError('voice_unavailable', e.message); throw e; }
+      if (r.key) voiceOwners.set(r.key, voicedSeg.ownerId);
       if (!r.audioFile) throw new DomainError('voice_unavailable', `No voice could render this script: ${r.attempts.map(a => `${a.provider}: ${a.skipped || a.error}`).join('; ') || 'captions only'}`, {attempts: r.attempts});
       const bytes = readFileSync(r.audioFile), hash = sha256(bytes), file = `${hash}.mp3`, path = join(dataDir, 'uploads', file);
       writeFileSync(path, bytes);
@@ -355,7 +357,8 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       if (!prompt) throw new DomainError('not_found', 'No open question');
       // Spoken questions are part of the voice interview: only for the creator, after their voice consent.
       if (actor.type !== 'person' || !view.consent?.voice) return {stepId: prompt.stepId, text: prompt.question.ka, audio: null, captions: [{start: 0, end: 4, text: prompt.question.ka}], cues: [], provider: 'captions', reason: 'spoken questions start after the creator allows voice answers'};
-      const r = await voices.synthesize({lines: [{presenter: 'interviewer', text: prompt.question.ka}], lang: 'ka', order: ['elevenlabs', 'captions']});
+      const r = await voices.synthesize({lines: [{presenter: 'interviewer', text: prompt.question.ka}], lang: 'ka', order: ['elevenlabs-sample', 'elevenlabs', 'captions']});
+      if (r.key) voiceOwners.set(r.key, desk.ownerOf(actor));
       return {stepId: prompt.stepId, text: prompt.question.ka, audio: r.audioFile ? `/voice/${r.key}.mp3` : null, duration: r.duration, captions: r.captions, cues: r.cues, provider: r.provider,
         ...(r.audioFile ? {} : {reason: r.attempts.map(a => a.skipped || a.error).join('; ') || 'captions only'})};
     }],
@@ -377,6 +380,8 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     ['POST', /^\/api\/library\/media\/(\w+)\/delete$/, ({actor, m}) => { const r = mutate(d => d.deleteLibraryMedia(actor, m[1])); if (r.removeFile) rmSync(join(dataDir, 'uploads', r.removeFile), {force: true}); return {id: r.id, deleted: true}; }],
     ['POST', /^\/api\/library\/media\/(\w+)\/withdraw$/, ({actor, m}) => mutate(d => d.withdrawLibraryMedia(actor, m[1]))],
     ['GET', /^\/api\/voice\/status$/, () => ({budget: voices.budget()})],
+    // Approved fixed Georgian samples (scripts only, no files): what the producer can voice without a paid call.
+    ['GET', /^\/api\/voice\/samples$/, ({actor}) => { if (actor?.type !== 'person') throw new DomainError('unauthorized', 'Sign in'); return {provider: 'elevenlabs-sample', dynamic: false, note: 'Fixed samples from the founder-approved test of 2026-10-18; approximate caption timing; no new generation', samples: voices.samples ? voices.samples() : []}; }],
     // House host lines are written from the programme and voiced offline with Piper; captions-only if unavailable.
     ['POST', /^\/api\/publish$/, async ({actor}) => {
       desk.requireProducer(actor);
@@ -384,6 +389,9 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       verifyAssets(Object.keys(desk.state.segments)); // immediately before publishing: no await in between
       return mutate(d => {
         const manifest = d.publish(actor, {host});
+        // Host lines rendered at publish time live in the voice cache: their keys become public with this publication.
+        d.state.publishedVoice ??= {};
+        for (const h of Object.values(host)) { const k = h.audio?.match(/^\/voice\/([0-9a-f]{64})\.mp3$/)?.[1]; if (k) d.state.publishedVoice[k] = manifest.publicationId; }
         const silent = Object.entries(host).filter(([, h]) => !h.audio).map(([id]) => d.state.segments[id].title);
         if (silent.length) d.log({type: 'system', id: 'playout'}, 'host_voice_unavailable', `Host voice unavailable for ${silent.join(', ')}: captions only`);
         return manifest;
@@ -397,7 +405,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       const keep = {people: desk.state.people, agents: desk.state.agents, interviews: desk.state.interviews, library: desk.state.library};
       const next = fresh(); next.people = keep.people; next.agents = keep.agents;
       // Publication numbers are never reused and old media stays reachable across rehearsals.
-      next.counters.publication = desk.state.counters.publication || 0; next.media = {...desk.state.media, ...next.media}; next.idempotency = {};
+      next.counters.publication = desk.state.counters.publication || 0; next.media = {...desk.state.media, ...next.media}; next.publishedVoice = {...(desk.state.publishedVoice || {})}; next.idempotency = {};
       // Creators' private interviews and libraries are not rehearsal data: they survive a reset (ids keep counting).
       next.interviews = keep.interviews; next.library = keep.library; next.counters.interview = desk.state.counters.interview || 0; next.counters.media = desk.state.counters.media || 0;
       desk = new BroadcastDesk(next, {now});
@@ -406,9 +414,10 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     }],
   ];
 
-  function remember({replayKey, fingerprint}, status, body) {
+  function remember({replayKey, fingerprint}, status, body, interviewId = null) {
     const store = desk.state.idempotency;
-    store[replayKey] = {fingerprint, status, body, at: now()};
+    // Retry records that concern a creator interview are tagged, so deleting the interview erases them (Q1).
+    store[replayKey] = {fingerprint, status, body, at: now(), ...(interviewId ? {interviewId} : {})};
     const keys = Object.keys(store);
     for (const k of keys.slice(0, Math.max(0, keys.length - 500))) delete store[k];
     persist();
@@ -423,7 +432,17 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       return;
     }
     if (url.pathname.startsWith('/media/')) return serveMedia(req, res, url.pathname.slice(7));
-    if (/^\/voice\/[0-9a-f]{64}\.mp3$/.test(url.pathname) && existsSync(join(dataDir, 'voice-cache', url.pathname.slice(7)))) return serveFile(req, res, join(dataDir, 'voice-cache', url.pathname.slice(7)));
+    if (/^\/voice\/[0-9a-f]{64}\.mp3$/.test(url.pathname) && existsSync(join(dataDir, 'voice-cache', url.pathname.slice(7)))) {
+      // Q2 (independent audit): a rendered voice is public only once a publication carries it. Before that, only a
+      // signed-in person (the creator who asked for it or the producer) can fetch the draft bytes; agents and anonymous
+      // viewers get 404. Keys of every published host line stay public so earlier publications remain playable.
+      const key = url.pathname.slice(7, 71), published = desk.state.publishedVoice?.[key];
+      const who = published ? null : actorFor((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+      const person = who?.type === 'person' && desk.state.people[who.id];
+      // Owner of the draft (set when it was rendered in this process) or the producer; after a restart, producer only.
+      if (!published && !(person && (person.role === 'producer' || voiceOwners.get(key) === person.id))) return send(res, 404, {error: 'not_found'});
+      return serveFile(req, res, join(dataDir, 'voice-cache', url.pathname.slice(7)));
+    }
     if (/^\/host\/[\w-]+\.mp3$/.test(url.pathname) && existsSync(join(dataDir, 'host', url.pathname.slice(6)))) return serveFile(req, res, join(dataDir, 'host', url.pathname.slice(6)));
     if (!url.pathname.startsWith('/api/')) return serveStatic(req, res, url.pathname);
     const route = routes.find(([method, re]) => method === req.method && re.test(url.pathname));
@@ -458,12 +477,13 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       }
       const result = await route[2]({actor, req, res, url, raw, json: () => parseJson(raw), m: url.pathname.match(route[1])});
       if (result === SENT) return; // the route streamed its own response (owner-only file)
-      if (replayKey && !url.pathname.endsWith('/transcribe')) remember(replayKey, 200, result); // transcripts are never kept for retries
+      const ivId = url.pathname.match(/^\/api\/(?:interviews|briefs)\/(\w+)(?:\/|$)/)?.[1] || (url.pathname === '/api/interviews' && result?.id) || null;
+      if (replayKey && !url.pathname.endsWith('/transcribe')) remember(replayKey, 200, result, ivId); // transcripts are never kept for retries
       send(res, 200, result);
     } catch (error) {
       if (error instanceof DomainError) {
         const status = STATUS[error.code] || 409, body = {error: error.code, message: error.message, details: error.details};
-        if (replayKey && error.code !== 'idempotency_conflict') remember(replayKey, status, body);
+        if (replayKey && error.code !== 'idempotency_conflict') remember(replayKey, status, body, url.pathname.match(/^\/api\/(?:interviews|briefs)\/(\w+)(?:\/|$)/)?.[1] || null);
         send(res, status, body);
       } else { if (!quiet) console.error(error); send(res, 500, {error: 'internal', message: 'Internal error'}); }
     }
@@ -471,7 +491,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
 
   const server = http.createServer((req, res) => { handle(req, res).catch(() => { if (!res.headersSent) send(res, 500, {error: 'internal'}); }); });
   server.on('close', () => { clearInterval(timer); for (const res of clients) res.end(); });
-  return {server, get desk() { return desk; }, publicState};
+  return {server, get desk() { return desk; }, publicState, dataDir};
 }
 
 // Local links for the people and MCP settings for the agents. Never published.

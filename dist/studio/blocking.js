@@ -24,11 +24,12 @@ export function conversationGaze(actor,state){
 export function conversationFrame(shot,aspect){
  const portrait=aspect<1.15;
  const frames={
- wide:portrait?[.10,1.60,Math.max(4.5,4.8*.82/aspect),0,.95,.02,36]:[.20,1.48,3.75,0,.94,.03,38],
+ wide:portrait?[0,1.65,Math.max(4.8,5.6*.82/aspect),0,1.22,-.20,36]:[.16,1.58,4.65,0,1.28,-.22,35],
  echo:[.12,1.30,.64,-.02,1.20,-.30,30],
  nova:[-.28,1.31,.78,-1.11,1.20,.09,30],
  atlas:[.28,1.31,.78,1.11,1.20,.09,30],
- two:portrait?[-.65,1.42,Math.max(3.25,3.25*.82/aspect),-.61,1.05,-.10,34]:[-.61,1.34,2.4,-.61,1.08,-.10,33]
+ two:portrait?[-.35,1.48,Math.max(3.8,4.4*.82/aspect),-.35,1.32,-.10,34]:[-.61,1.30,2.4,-.61,.88,-.10,33],
+ 'two-atlas':portrait?[.35,1.48,Math.max(3.8,4.4*.82/aspect),.35,1.32,-.10,34]:[.61,1.30,2.4,.61,.88,-.10,33]
  };
  return frames[shot]||frames.wide;
 }

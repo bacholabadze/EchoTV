@@ -102,6 +102,7 @@ function render() {
   }, b);
   for (const b of document.querySelectorAll('[data-pick]')) b.onclick = () => document.querySelector(`[data-upload="${b.dataset.pick}"]`).click();
   for (const input of document.querySelectorAll('[data-upload]')) input.onchange = act(() => upload(input.dataset.upload, input.files[0]));
+  renderVoicePanel(s);
 
   $('#revisions').innerHTML = s.revisions.slice().reverse().map(r => `<li value="${r.revision}"><b>r${r.revision}</b> ${r.proposalId ? `from ${r.proposalId} (base r${r.baseRevision}) · ${time(r.at)}` : 'seeded programme'}
     ${r.diff.map(d => `<div class="diff">${esc(s.segments[d.segmentId].title)}: ${d.before.start}s+${d.before.duration}s → <b>${d.after.start}s+${d.after.duration}s</b></div>`).join('')}</li>`).join('');
@@ -280,3 +281,27 @@ async function start() {
   events.onerror = () => { $('#connection').dataset.state = 'lost'; $('#connection').textContent = 'Reconnecting'; };
 }
 start();
+
+// ---------- unified build: the producer gives the house host segments an approved Georgian voice ----------
+// Fixed, already-paid ElevenLabs samples only (exact scripts); the rendered audio is a new revision the producer
+// must approve as exact bytes, then publish. No dynamic TTS, no paid call. Captions are approximate.
+let sampleCatalogue = null;
+async function renderVoicePanel(s) {
+  const panel = $('#voice-panel');
+  if (me?.role !== 'producer') { panel.hidden = true; return; }
+  if (!sampleCatalogue) { try { sampleCatalogue = (await api('GET', '/api/voice/samples')).samples; } catch { sampleCatalogue = []; } }
+  const hosts = s.order.map(id => s.segments[id]).filter(seg => seg.module === 'host' && seg.house);
+  const WHO = {'presenter-1': 'Manana · ECHO-ს წამყვანი', 'presenter-2': 'Luka · სტუმარი (Atlas)', 'presenter-3': 'Tamar · ანალიტიკოსი (Nova)'};
+  panel.hidden = false;
+  panel.innerHTML = `<h3>ქართული ხმა წამყვანის სეგმენტებისთვის <small class="fine">Georgian voice for house segments · fixed approved samples, no new generation</small></h3>` + hosts.map(seg => {
+    const v = seg.content?.voice, a = v && seg.assets.find(x => x.id === v.assetId);
+    const now = v ? `<div class="now">ახლა: „${esc(v.lines.map(l => l.text).join(' '))}" · ${esc(a?.voice?.provider || '')}${a?.voice?.approximateTiming ? ' · სუბტიტრები მიახლოებით' : ''} · r${seg.revision}${s.segmentsValid[seg.id] ? ' ✓ დამტკიცებული' : ' · საჭიროა დამტკიცება ზემოთ'}</div>` : `<div class="now">ახლა: ინგლისური სტანდარტული ხაზი (Piper ან მხოლოდ სუბტიტრები)</div>`;
+    const opts = sampleCatalogue.map(x => { const fits = x.duration <= seg.duration + .05; return `<option value="${esc(x.id)}" ${fits ? '' : 'disabled'}>${esc(WHO[x.presenter] || x.presenter)} · ${x.duration.toFixed(1)} წმ${fits ? '' : ' · არ ჯდება'} — ${esc(x.text.slice(0, 70))}${x.text.length > 70 ? '…' : ''}</option>`; }).join('');
+    return `<div class="row"><b>${esc(seg.title)}</b> <span class="fine">${seg.duration} წმ</span></div>${now}<div class="row"><select data-voice-for="${seg.id}" aria-label="sample for ${esc(seg.title)}"><option value="">— აირჩიე ნიმუში —</option>${opts}</select><button data-voice="${seg.id}">ხმის დაყენება</button></div>`;
+  }).join('') + `<p class="fine">ხმის დაყენების შემდეგ სეგმენტი ახალ რევიზიად ითვლება: დაამტკიცე „Approve rN" ზემოთ, შემდეგ გამოაქვეყნე. ხმა საჯარო ხდება მხოლოდ გამოქვეყნებისას.</p>`;
+  for (const b of panel.querySelectorAll('[data-voice]')) b.onclick = act(async () => {
+    const sel = panel.querySelector(`[data-voice-for="${b.dataset.voice}"]`), x = sampleCatalogue.find(z => z.id === sel.value);
+    if (!x) return;
+    await api('POST', `/api/segments/${b.dataset.voice}/voice`, {lines: [{presenter: x.presenter, text: x.text}], lang: 'ka'});
+  }, b);
+}

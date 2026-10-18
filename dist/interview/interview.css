@@ -39,3 +39,8 @@ dl.brief{display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:6px 14px;
 .life{list-style:none;padding:0;margin:8px 0;display:grid;gap:4px}.life li::before{content:"○ ";color:var(--muted)}.life li.done::before{content:"● ";color:var(--ok)}
 .fine{color:var(--muted);font-size:14px;max-width:1500px;margin:0 auto;padding:0 20px 24px}
 @media (max-width:900px){main{grid-template-columns:1fr;padding:12px}.stage{aspect-ratio:16/9}.caption{font-size:18px}h1{font-size:23px}}
+
+/* unified build: stale segment / final media preview */
+.warn{background:#3a2a14;border:1px solid #8a6a2a;color:#f3e3bf;padding:10px 12px;border-radius:8px;margin:0 0 12px}
+.final{margin:8px 0 4px}.final h3{margin:8px 0 4px;font-size:1rem}.final ul{margin:0 0 8px;padding-left:18px}
+.primary-link{font-weight:600}

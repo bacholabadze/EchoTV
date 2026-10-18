@@ -236,9 +236,22 @@ export class BroadcastDesk {
     const person = this.person(this.ownerOf(actor)), iv = this.interviewFor(actor, interviewId), seg = this.segment(segmentId);
     if (seg.ownerId !== person.id) fail('forbidden', `Only ${this.state.people[seg.ownerId].name} can prepare ${seg.title}`);
     if (iv.status !== 'approved') fail('brief_not_approved', 'Approve your brief first');
-    const briefMedia = new Set(iv.brief.media.map(m => m.id)), replaced = [];
-    for (const [assetId, mediaId] of Object.entries(assets)) {
+    const briefMedia = new Set(iv.brief.media.map(m => m.id)), replaced = [], mapping = assets && typeof assets === 'object' ? assets : {};
+    // Q4 (independent audit): nothing airs under a creator's name that they did not select. Every slot of the segment
+    // must be chosen explicitly from the approved brief, or kept by exact hash when it is already the creator's own
+    // prepared file. Seeded or previous media is never retained silently; a brief without media cannot be prepared.
+    const unmapped = seg.assets.filter(a => !(a.id in mapping)).map(a => a.id);
+    if (unmapped.length) fail('media_selection_required', `Choose the file for ${unmapped.join(', ')} from your approved brief; ${seg.title} keeps nothing you did not select`, {slots: unmapped, briefMedia: [...briefMedia]});
+    for (const [assetId, choice] of Object.entries(mapping)) {
       const slot = seg.assets.find(a => a.id === assetId) || fail('bad_request', `${seg.title} has no asset ${assetId}`);
+      if (choice && typeof choice === 'object') {
+        const kept = slot.libraryMediaId && this.library(person.id).media[slot.libraryMediaId];
+        if (!choice.keep || !kept || kept.status === 'withdrawn' || slot.sha256 !== choice.keep || kept.sha256 !== choice.keep) fail('media_selection_required', `${assetId}: only a file you prepared yourself can be kept, by its exact hash`);
+        if (!briefMedia.has(kept.id)) fail('bad_request', `${kept.title} is no longer part of your approved brief`);
+        if (!kept.rights?.publicBroadcast) fail('rights_required', `${kept.title}: public broadcast is not among the uses you declared`);
+        continue;
+      }
+      const mediaId = choice;
       const m = this.library(person.id).media[mediaId];
       if (!m || m.status === 'withdrawn') fail('not_found', `No media ${mediaId}`);
       if (!briefMedia.has(m.id)) fail('bad_request', `${m.title} is not part of your approved brief`);
@@ -294,8 +307,21 @@ export class BroadcastDesk {
     const iv = this.interviewFor(actor, id);
     if (iv.status !== 'withdrawn') { Interview.withdraw(iv, {by: actor.id, now: this.now(), reason: 'deleted by the creator'}); this.briefWithdrawn(actor, iv); }
     this.state.interviews[id] = {id, ownerId: iv.ownerId, status: 'deleted', deletedAt: this.now(), deletedBy: actor.id};
-    this.log(actor, 'interview_deleted', `${this.state.people[iv.ownerId].name} deleted interview ${id}`, {private: true});
+    // Q1 (independent audit of 41b67cd): retry records are part of persisted state and carried the deleted answers,
+    // transcripts and brief. Every cached outcome that touched this interview is erased, for every identity (the
+    // owner and their agent), so a replayed request neither discloses deleted content nor revives it. A later
+    // replay runs again and gets 404 like any other request for a deleted interview. Other interviews are untouched.
+    const purged = this.purgeIdempotency(id);
+    this.log(actor, 'interview_deleted', `${this.state.people[iv.ownerId].name} deleted interview ${id}`, {private: true, purgedRetryRecords: purged});
     return {id, status: 'deleted'};
+  }
+  purgeIdempotency(interviewId) {
+    const store = this.state.idempotency || {}, needle = `"${interviewId}"`;
+    let n = 0;
+    for (const [key, entry] of Object.entries(store)) {
+      if (entry.interviewId === interviewId || JSON.stringify(entry.body ?? null).includes(needle)) { delete store[key]; n++; }
+    }
+    return n;
   }
   deleteLibraryMedia(actor, id) {
     const m = this.mediaOf(actor, id), inUse = this.state.media?.[m.sha256] || Object.values(this.state.segments).some(s => s.assets.some(a => a.libraryMediaId === id));
@@ -312,10 +338,17 @@ export class BroadcastDesk {
   }
   briefLifecycle(iv) {
     const seg = Object.values(this.state.segments).find(s => s.content?.brief?.interviewId === iv.id), b = this.state.broadcast;
-    const steps = [['interview', true], ['draft', !!iv.brief], ['creator_approved', iv.status === 'approved' || !!seg], ['segment_prepared', !!seg], ['content_reviewed', !!seg && this.approvalValid(seg)],
+    // Q3 (independent audit): "prepared" means prepared from the brief version that is approved now. A corrected and
+    // reapproved brief makes the segment stale: the creator must prepare it again (the UI offers that action).
+    const stale = !!seg && !(iv.status === 'approved' && iv.brief?.version === seg.content.brief.version);
+    const prepared = !!seg && !stale;
+    const steps = [['interview', true], ['draft', !!iv.brief], ['creator_approved', iv.status === 'approved'], ['segment_prepared', prepared], ['content_reviewed', prepared && this.approvalValid(seg)],
       ['airtime_requested', !!seg && Object.values(this.state.proposals).some(p => [...p.changes, ...p.concessions].some(c => c.segmentId === seg.id))], ['booking_confirmed', !!seg && this.state.bookings[seg.id]?.state === 'confirmed'],
       ['published', !!seg && !!b.manifest?.segments.some(x => x.id === seg.id)], ['on_air', !!seg && ['on_air', 'completed'].includes(b.state) && !!b.manifest?.segments.some(x => x.id === seg.id)]];
-    return {withdrawn: iv.status === 'withdrawn', segmentId: seg?.id || null, steps: steps.map(([step, done]) => ({step, done}))};
+    return {withdrawn: iv.status === 'withdrawn', segmentId: seg?.id || null, stale, preparedVersion: seg?.content.brief.version ?? null,
+      // What the prepared segment currently carries (exact identity), so a creator can see and re-select it.
+      assets: seg ? seg.assets.map(a => ({id: a.id, kind: a.kind, sha256: a.sha256, title: a.title, credit: a.credit, libraryMediaId: a.libraryMediaId || null, creatorBound: !!a.libraryMediaId})) : [],
+      steps: steps.map(([step, done]) => ({step, done}))};
   }
 
   // ---------- voice (3.2) ----------
@@ -334,7 +367,9 @@ export class BroadcastDesk {
     seg.assets = [...seg.assets.filter(a => a.id !== 'voice'), voiceAsset];
     seg.content = {...seg.content, voice: {assetId: 'voice', lang, lines: clone(lines)}};
     seg.revision++; seg.state = 'submitted'; seg.approval = null;
-    this.indexMedia(asset.sha256, voiceAsset);
+    // Q2 (independent audit): rendered voice is a draft until it is published. Its bytes are served only to the
+    // segment's owner and the producer (reviewers) until a publication includes this exact hash.
+    this.indexMedia(asset.sha256, {...voiceAsset, private: true, ownerId: seg.ownerId});
     this.log(actor, 'voice_rendered', `${seg.title}: ${lines.length} line(s) voiced by ${asset.voice.provider}${asset.voice.cacheHit ? ' (cached)' : ''}; revision ${seg.revision} needs review of this exact audio`, {segmentId, revision: seg.revision, sha256: asset.sha256, provider: asset.voice.provider});
     this.contentChanged(actor, `${seg.title} voice rendered`, [segmentId]);
     return clone(seg);
@@ -357,7 +392,7 @@ export class BroadcastDesk {
     // Append-only: a published manifest can always fetch the exact bytes it was approved with. A creator's library
     // file stays private (owner and producer only) until it is part of a publication.
     this.state.media ??= {};
-    this.state.media[hash] ??= {file: meta.file, upload: !!meta.upload, kind: meta.kind, at: this.now(), ...(meta.libraryMediaId ? {private: true, ownerId: meta.ownerId} : {})};
+    this.state.media[hash] ??= {file: meta.file, upload: !!meta.upload, kind: meta.kind, at: this.now(), ...(meta.libraryMediaId || meta.private ? {private: true, ownerId: meta.ownerId} : {})};
   }
   segmentRevisions(proposal) {
     const ids = new Set([...proposal.changes, ...proposal.concessions, ...proposal.houseChanges].map(c => c.segmentId));

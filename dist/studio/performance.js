@@ -5,10 +5,11 @@ const smooth=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
 const seed={echo:7,nova:23,atlas:41};
 function random(n){const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);}
 export const intents={
- question:{browInnerUp:.21,browOuterUpLeft:.15,eyeWideLeft:.07,eyeWideRight:.055},
+ question:{browInnerUp:.24,browOuterUpLeft:.17,browOuterUpRight:.10,eyeWideLeft:.075,eyeWideRight:.06},
  consider:{browInnerUp:.10,browDownRight:.09,eyeSquintLeft:.06,eyeSquintRight:.045},
- doubt:{browOuterUpLeft:.23,browDownRight:.10,mouthPressLeft:.10,mouthPressRight:.05},
- warmth:{mouthSmileLeft:.20,mouthSmileRight:.15,cheekSquintLeft:.11,cheekSquintRight:.08},
+ surprise:{browInnerUp:.27,browOuterUpLeft:.19,browOuterUpRight:.19,eyeWideLeft:.15,eyeWideRight:.15},
+ doubt:{browOuterUpLeft:.26,browDownRight:.14,mouthPressLeft:.10,mouthPressRight:.05},
+ warmth:{mouthSmileLeft:.28,mouthSmileRight:.23,cheekSquintLeft:.15,cheekSquintRight:.12},
  resolve:{browDownLeft:.11,browDownRight:.085,mouthPressLeft:.09,mouthPressRight:.09},
  acknowledge:{browInnerUp:.09,mouthSmileLeft:.10,mouthSmileRight:.08,cheekSquintLeft:.05,cheekSquintRight:.05}
 };
@@ -29,7 +30,8 @@ export function facePerformance(id,time,state,reduced=false){
  }
  let blink=0;
  for(const at of blinkSchedules[id]||[]){const age=time-at;if(age<0)break;if(age>.25)continue;blink=age<.065?smooth(age/.065):age<.11?1:1-smooth((age-.11)/.14);}
- weights.eyeBlinkLeft=weights.eyeBlinkRight=blink;
+ // A tiny eyelid offset avoids perfectly mechanical bilateral closure.
+ weights.eyeBlinkLeft=blink;weights.eyeBlinkRight=blink>.95?blink:blink*.97;
  for(const key of ['eyeSquintLeft','eyeSquintRight','eyeWideLeft','eyeWideRight'])weights[key]=(weights[key]||0)*(1-blink);
  for(const key of Object.keys(weights))weights[key]=clamp(weights[key],0,key.startsWith('eyeBlink')?1:.32);
  // Occasional tiny eye refixations. A stable target between movements, no sine wobble.
@@ -37,6 +39,6 @@ export function facePerformance(id,time,state,reduced=false){
  const move=smooth(u/.075),old=(random(seed[id]+cycle-1)-.5)*.022,next=(random(seed[id]+cycle)-.5)*.022;
  const gaze=reduced?0:old+(next-old)*move;
  let nod=0;
- if(!reduced)for(const cue of state.performance||[]){if(cue.actor===id&&cue.nod){const age=state.audioTime-cue.at;if(age>=0&&age<.9)nod+=Math.sin(age/.9*Math.PI*2)*.018;}}
+ if(!reduced)for(const cue of state.performance||[]){if(cue.actor===id&&cue.nod){const age=state.audioTime-cue.at;if(age>=0&&age<.9)nod+=Math.sin(age/.9*Math.PI)**2*.052;}}
  return {weights,gaze,nod};
 }

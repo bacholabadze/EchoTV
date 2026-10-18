@@ -203,23 +203,50 @@ function wireErase() {
 async function approvedView() {
   const iv = ui.iv, b = iv.brief, entry = ui.lib.briefs.find(x => x.interviewId === iv.id), life = entry?.lifecycle;
   const state = await api('GET', '/api/state'), mine = state.order.map(id => state.segments[id]).filter(s => s.ownerId === ui.me.id);
-  caption('მადლობა! შენი ბრიფი დადასტურებულია.');
+  // Q3/Q4 (independent audit): "prepared" is true only for the brief version approved now; a corrected brief offers
+  // an explicit update, and every slot must be chosen by the creator (nothing is kept silently).
+  const prepared = !!life?.segmentId && !life.stale, stale = !!life?.segmentId && life.stale;
+  const segTitle = life?.segmentId ? state.segments[life.segmentId]?.title : '';
+  caption(stale ? 'ბრიფი შეიცვალა — განაახლე მომზადებული სეგმენტი.' : 'მადლობა! შენი ბრიფი დადასტურებულია.');
   $('#view').innerHTML = `<h1>✓ ბრიფი დადასტურებულია <span class="tag">ვერსია ${b.version}</span><span class="en">Approved by you</span></h1>
     <ol class="life">${(life?.steps || []).map(s => `<li class="${s.done ? 'done' : ''}">${esc(KA.life[s.step])}</li>`).join('')}</ol>
-    ${life?.segmentId ? `<p>სეგმენტი: <b>${esc(state.segments[life.segmentId].title)}</b> — შემდეგი ნაბიჯები გადაცემის დაფაზე ჩანს.</p><div class="row"><a href="/board/">დაფის გახსნა →</a></div>`
-      : `<h2>გადაცემაში ჩასმა</h2><p class="hint">აირჩიე შენი სეგმენტი და ფაილი, რომლის საჯარო ეთერის უფლებაც მოგვეცი. რედაქცია მას ნახავს და დაამტკიცებს.</p>
-      <label for="seg">სეგმენტი</label><select id="seg">${mine.map(s => `<option value="${s.id}">${esc(s.title)}</option>`).join('')}</select>
-      <div id="slots"></div><div class="row"><button class="primary" id="prepare">მომზადება</button></div>`}
+    ${prepared ? `<p>სეგმენტი: <b>${esc(segTitle)}</b> — შემდეგი ნაბიჯები გადაცემის დაფაზე ჩანს: რედაქციის დამტკიცება, ეთერის დრო, გამოქვეყნება.</p><div class="row"><a class="primary-link" href="/board/">გადაცემის დაფა →</a><a href="/broadcast/">ეთერი →</a></div>`
+      : `<h2>${stale ? 'მომზადებული სეგმენტის განახლება' : 'გადაცემაში ჩასმა'}</h2>
+      ${stale ? `<p class="warn">ბრიფი შესწორდა (ვერსია ${b.version}); სეგმენტი „${esc(segTitle)}" ძველ ვერსიაზეა (ვერსია ${life.preparedVersion}). აირჩიე საბოლოო ფაილები და განაახლე — რედაქცია მას ხელახლა დაამტკიცებს და თანხმობები განახლდება.</p>`
+        : `<p class="hint">აირჩიე შენი სეგმენტი და ყოველი ადგილისთვის ფაილი, რომლის საჯარო ეთერის უფლებაც მოგვეცი. არაფერი არ რჩება „უცვლელად": ეთერში მხოლოდ შენ მიერ არჩეული ფაილი გავა, შენი სახელით.</p>`}
+      <label for="seg">სეგმენტი</label><select id="seg" ${stale ? 'disabled' : ''}>${mine.map(s => `<option value="${s.id}" ${s.id === life?.segmentId ? 'selected' : ''}>${esc(s.title)}</option>`).join('')}</select>
+      <div id="slots"></div><div id="final" class="final"></div><div class="row"><button class="primary" id="prepare" disabled>${stale ? 'განახლება' : 'მომზადება'}</button></div>`}
     <div class="row"><button id="edit">შესწორება</button><button id="erase">ინტერვიუს წაშლა</button></div>`;
   wireErase();
   $('#edit').onclick = () => { ui.editing = 'who'; render(); };
-  if (!life?.segmentId) {
-    const slots = () => { const seg = state.segments[$('#seg').value]; $('#slots').innerHTML = seg.assets.map(a => `<label for="slot-${a.id}">${esc(a.id)} <small>(${a.kind === 'audio' ? 'აუდიო' : 'სურათი'})</small></label><select id="slot-${a.id}" data-slot="${a.id}"><option value="">— უცვლელი —</option>${b.media.filter(m => m.kind === a.kind && m.rights?.publicBroadcast).map(m => `<option value="${m.id}">${esc(m.title)}</option>`).join('')}</select>`).join(''); };
+  if (!prepared) {
+    const choices = (slot) => {
+      const files = b.media.filter(m => m.kind === slot.kind && m.rights?.publicBroadcast);
+      const current = (life?.assets || []).find(a => a.id === slot.id);
+      const keep = stale && current?.creatorBound && files.some(m => m.id === current.libraryMediaId) ? current : null;
+      return {files, keep};
+    };
+    const preview = () => {
+      const seg = state.segments[$('#seg').value], selects = [...document.querySelectorAll('[data-slot]')];
+      const rows = selects.map(sel => { const slot = seg.assets.find(a => a.id === sel.dataset.slot), {files, keep} = choices(slot); const v = sel.value; const m = v.startsWith('keep:') ? {title: keep?.title, technical: null} : files.find(f => f.id === v); return {slot, v, m}; });
+      const complete = rows.length > 0 && rows.every(r => r.v);
+      $('#prepare').disabled = ui.busy || !complete;
+      $('#final').innerHTML = complete ? `<h3>ეთერში გავა</h3><ul>${rows.map(r => `<li><b>${esc(b.work.title || r.m?.title || '')}</b> · ${esc(b.creator.displayName)} · ${esc(r.slot.id)}: ${esc(r.m?.title || '')}${r.m?.technical?.durationSec ? ` (${Math.round(r.m.technical.durationSec)} წმ)` : ''}${r.v.startsWith('keep:') ? ' · იგივე ფაილი, ზუსტი ჰეში' : ''}</li>`).join('')}</ul><p class="hint">რედაქცია ამ ზუსტ ფაილებს დაამტკიცებს; ჰეში ჩანს დაფაზე.</p>`
+        : `<p class="hint">${rows.length ? 'აირჩიე ფაილი ყველა ადგილისთვის.' : 'ამ სეგმენტს ფაილი არ სჭირდება.'}</p>`;
+    };
+    const slots = () => {
+      const seg = state.segments[$('#seg').value];
+      $('#slots').innerHTML = seg.assets.map(a => { const {files, keep} = choices(a); return `<label for="slot-${a.id}">${esc(a.id)} <small>(${a.kind === 'audio' ? 'აუდიო' : 'სურათი'})</small></label><select id="slot-${a.id}" data-slot="${a.id}"><option value="">— აირჩიე —</option>${keep ? `<option value="keep:${keep.sha256}" selected>დატოვე: ${esc(keep.title)} (იგივე ფაილი)</option>` : ''}${files.map(m => `<option value="${m.id}">${esc(m.title)}</option>`).join('')}</select>`; }).join('')
+        || '<p class="hint">ამ სეგმენტს ფაილის ადგილი არ აქვს.</p>';
+      if (!b.media.some(m => m.rights?.publicBroadcast)) $('#slots').insertAdjacentHTML('beforeend', '<p class="warn">ბრიფში საჯარო ეთერის უფლებით ფაილი არ არის. შესწორებაში „რომელი ფაილების უფლებას გვაძლევ?" კითხვაზე აირჩიე ფაილი და განაცხადე უფლებები.</p>');
+      for (const sel of document.querySelectorAll('[data-slot]')) sel.onchange = preview;
+      preview();
+    };
     $('#seg').onchange = slots; slots();
     $('#prepare').onclick = () => run(async () => {
-      const assets = Object.fromEntries([...document.querySelectorAll('[data-slot]')].filter(s => s.value).map(s => [s.dataset.slot, s.value]));
+      const assets = Object.fromEntries([...document.querySelectorAll('[data-slot]')].map(s => [s.dataset.slot, s.value.startsWith('keep:') ? {keep: s.value.slice(5)} : s.value]));
       await api('POST', `/api/briefs/${iv.id}/prepare`, {segmentId: $('#seg').value, assets}); await refresh();
-    }, 'სეგმენტი ვერ მომზადდა.');
+    }, stale ? 'სეგმენტი ვერ განახლდა.' : 'სეგმენტი ვერ მომზადდა.');
   }
 }
 

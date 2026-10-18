@@ -1,4 +1,5 @@
 import {conversationGaze} from './blocking.js?v=5';
+import {bodyPerformance} from './body-performance.js';
 import {facePerformance} from './performance.js?v=4';
 import * as THREE from 'three';
 import {makeCharacter} from './characters.js?v=2';
@@ -34,7 +35,14 @@ export function seatActor(actor){
     aimBone(model,b(side+'ForeArm'),b(side+'Hand'),new THREE.Vector3(sign*.20,1.285,.49));
     // Flatten palms toward the tabletop by aligning a finger base along the forearm.
     const finger=bones[side+'HandMiddle1']?.bone;
-    if(finger)aimBone(model,b(side+'Hand'),finger,new THREE.Vector3(sign*.17,1.285,.60));
+    if(finger){
+      aimBone(model,b(side+'Hand'),finger,new THREE.Vector3(sign*.17,1.285,.60));
+      // Measured palm pronation: align all four finger rows above the tabletop, not just the middle finger.
+      b(side+'Hand').rotateY(sign*.95);
+      // Unopposed thumb rests beside the fingers instead of dropping through the table.
+      bones[side+'HandThumb1']?.bone.rotateZ(sign*.58);
+      b(side+'Arm').rotateZ(sign*.018); // Millimetres of clearance for the forearm's skin envelope.
+    }
   }
   for(const entry of Object.values(bones))entry.rest.copy(entry.bone.quaternion);
   model.position.y=-.43;
@@ -54,15 +62,17 @@ export function createRoom(base,{actorFactory=makeCharacter,cast=seats,practical
   // Soft authored grounding, without shadow-map passes or screen-space effects.
   const contactMaterial=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{opacity:{value:.26}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'varying vec2 vUv;uniform float opacity;void main(){float d=length((vUv-.5)*2.0);gl_FragColor=vec4(.035,.052,.035,(1.0-smoothstep(.08,1.0,d))*opacity);}'});
   function contact(x,y,z,w,d){const m=mesh(new THREE.PlaneGeometry(w,d),contactMaterial,x,y,z);m.rotation.x=-Math.PI/2;return m;}
-  box(14,.1,12,mats.forest,0,-.065,0);box(12,5,.15,mats.forest,0,2.1,-2.1);
+  box(14,.1,12,mats.forest,0,-.065,0);
+  const backdrop=new THREE.Group();backdrop.name='ECHO original backdrop';scene.add(backdrop);
+  box(12,5,.15,mats.forest,0,2.1,-2.1,backdrop);
   const slats=new THREE.InstancedMesh(new THREE.BoxGeometry(.038,3.6,.055),mats.wood,49),transform=new THREE.Matrix4();
-  for(let i=0;i<49;i++){transform.makeTranslation((i-24)*.15,1.75,-2);slats.setMatrixAt(i,transform);}scene.add(slats);
+  for(let i=0;i<49;i++){transform.makeTranslation((i-24)*.15,1.75,-2);slats.setMatrixAt(i,transform);}slats.name='ECHO original slats';scene.add(slats);
   // Deep architectural arch replaces the flat panel and luminous ring.
   const arch=new THREE.Shape();arch.moveTo(-1.48,.1);arch.lineTo(-1.48,1.7);arch.absarc(0,1.7,1.48,Math.PI,0,true);arch.lineTo(1.48,.1);arch.closePath();
-  mesh(new THREE.ExtrudeGeometry(arch,{depth:.14,bevelEnabled:true,bevelSize:.035,bevelThickness:.025,bevelSegments:3,steps:1,curveSegments:32}),mats.forest,0,0,-1.94);
-  for(const x of [-1.62,1.62]){box(.012,2.7,.025,mats.brass,x,1.35,-1.86);box(.05,2.7,.06,mats.dark,x+.035,1.35,-1.92);}
+  mesh(new THREE.ExtrudeGeometry(arch,{depth:.14,bevelEnabled:true,bevelSize:.035,bevelThickness:.025,bevelSegments:3,steps:1,curveSegments:32}),mats.forest,0,0,-1.94,backdrop);
+  for(const x of [-1.62,1.62]){box(.012,2.7,.025,mats.brass,x,1.35,-1.86,backdrop);box(.05,2.7,.06,mats.dark,x+.035,1.35,-1.92,backdrop);}
   const canvas=typeof document!=='undefined'?document.createElement('canvas'):null;
-  if(canvas){canvas.width=1024;canvas.height=256;const c=canvas.getContext('2d');c.clearRect(0,0,1024,256);c.fillStyle='#d3dbc5';c.font='500 120px Arial';c.textAlign='center';c.fillText('E C H O',512,145);c.font='22px Arial';c.fillText('T H E   T A B L E',512,205);const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;mesh(new THREE.PlaneGeometry(1.6,.4),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}),0,1.78,-1.77);}
+  if(canvas){canvas.width=1024;canvas.height=256;const c=canvas.getContext('2d');c.clearRect(0,0,1024,256);c.fillStyle='#d3dbc5';c.font='500 120px Arial';c.textAlign='center';c.fillText('E C H O',512,145);c.font='22px Arial';c.fillText('T H E   T A B L E',512,205);const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;mesh(new THREE.PlaneGeometry(1.6,.4),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}),0,1.78,-1.77,backdrop);}
   const rug=cyl(2.35,.012,mats.sage,0,.001,.3);rug.scale.z=.68;
   const rugBorder=cyl(2.39,.006,mats.dark,0,-.002,.3);rugBorder.scale.z=.68;
   contact(0,.012,.57,3.6,2.2);
@@ -105,26 +115,45 @@ export function cameraFrame(shot,aspect){
   return positions[shot]||positions.wide;
 }
 
+export function resetPerformance(actor){
+  for(const entry of Object.values(actor.bones))entry.bone.quaternion.copy(entry.rest);
+  for(const {mesh,index}of actor.morphBindings)mesh.morphTargetInfluences[index]=0;
+  actor.performanceSampled=false;
+}
 export function applyPerformance(actor,t,dt,state,reduced){
+  if(state.paused&&actor.performanceSampled)return;
+  actor.performanceSampled=true;
   const i=seats.findIndex(s=>s.id===actor.id),active=state.speaker===actor.id&&state.speaking;
   const facial=state.expressive?facePerformance(actor.id,t,state,reduced):null;
   const values=facial?{...facial.weights}:{};const phase=(t+i*.91)%(3.7+i*.67);if(!facial)values.eyeBlinkLeft=values.eyeBlinkRight=phase<.14?Math.sin(phase/.14*Math.PI):0;
   if(active){const cue=state.cue;if(cue?.key)values['viseme_'+cue.key]=state.mouthStrength??.78;if(!facial)values.browInnerUp=.10;}
   else if(!facial){values.mouthSmileLeft=.035;values.mouthSmileRight=.035;}
-  for(const {mesh,name,index}of actor.morphBindings)mesh.morphTargetInfluences[index]=facial&&name.startsWith('eyeBlink')?(values[name]||0):!active&&name.startsWith('viseme_')?0:THREE.MathUtils.damp(mesh.morphTargetInfluences[index],values[name]||0,24,dt);
+  // Wave 3: brows, cheeks and smiles ease at 11/s so expressions arrive and leave instead of snapping; speech shapes keep 24/s.
+  const expressionRate=state.cinematic?11:24;
+  for(const {mesh,name,index}of actor.morphBindings)mesh.morphTargetInfluences[index]=facial&&name.startsWith('eyeBlink')?(values[name]||0):!active&&name.startsWith('viseme_')?0:THREE.MathUtils.damp(mesh.morphTargetInfluences[index],values[name]||0,name.startsWith('viseme_')||name.startsWith('eye')?24:expressionRate,dt);
   const speaker=seats.find(s=>s.id===state.speaker);
   const directed=state.directed?conversationGaze(actor,state):null;
   const gaze=speaker&&!active?THREE.MathUtils.clamp(Math.atan2(speaker.x-actor.seat.x,1.7)-actor.seat.yaw,-.43,.43):active?(actor.id==='nova'?.15:actor.id==='atlas'?-.15:0):0;
-  function pose(name,x,y,z){const b=actor.bones[name];if(!b)return;poseEuler.set(x,y,z);poseQuaternion.setFromEuler(poseEuler).premultiply(b.rest);b.bone.quaternion.slerp(poseQuaternion,1-Math.exp(-7*dt));}
+  function pose(name,x,y,z,speed=7){const b=actor.bones[name];if(!b)return;poseEuler.set(x,y,z);poseQuaternion.setFromEuler(poseEuler).premultiply(b.rest);b.bone.quaternion.slerp(poseQuaternion,1-Math.exp(-speed*dt));}
   const nod=!reduced&&state.reaction===actor.id?Math.sin(Math.min(state.reactionAge,1.1)/1.1*Math.PI*2)*.035:0;
-  pose('Head',nod+(facial?.nod||0),directed?directed.head:gaze*.78,0);pose('LeftEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0);pose('RightEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0);pose('Spine2',reduced?0:Math.sin(t*1.15+i*2)*.0035,0,0);
-  // Sparse shoulder emphasis leaves forearms close to their authored support position.
-  let gesture=active&&!reduced&&!state.directed&&state.audioTime>2&&state.audioTime<3.1?Math.sin((state.audioTime-2)/1.1*Math.PI)*.025:0;
-  let emphasis=0;
-  if(state.directed&&active&&!reduced)for(const cue of state.gestures||[]){const age=state.audioTime-cue.at;if(age>=0&&age<cue.duration)emphasis=Math.max(emphasis,Math.sin(age/cue.duration*Math.PI)*(cue.strength??1));}
-  // A restrained wrist/forearm accent; upper arm movement stays below .015 rad.
-  if(state.directed)gesture=emphasis*.012;
-  pose('RightArm',0,gesture,gesture*.3);
-  if(state.directed){pose('RightForeArm',0,emphasis*.045,0);pose('RightHand',0,0,emphasis*.055);}
-
+  const body=state.directed?bodyPerformance(actor.id,t,state,reduced):null;
+  if(directed)pose('Neck',0,directed.head*.12,0);
+  pose('Head',nod+(facial?.nod||0)+(body?.head[0]||0),directed?directed.head*.88:gaze*.78,body?.head[2]||0);
+  pose('LeftEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0,18);pose('RightEye',0,(directed?directed.eyes:gaze*.16)+(facial?.gaze||0),0,18);
+  if(body){
+    // Wave 3: the torso settles slower than the arms, so speaking turns into listening instead of stopping.
+    const torso=state.cinematic?4.2:7;
+    pose('Spine1',...body.spine,torso);pose('Spine2',...body.chest,torso);
+    for(const [side,sign,amount] of [['Left',1,body.left],['Right',-1,body.right]]){
+      // Keep the other palm supported. Maximum gesture is ~4 cm above its seated contact.
+      pose(side+'Shoulder',0,sign*amount*.006,0,state.cinematic?5:7);
+      pose(side+'Arm',0,0,sign*amount*.015);
+      pose(side+'ForeArm',-amount*.065,sign*amount*body.open*.035,sign*amount*.07);
+      pose(side+'Hand',0,sign*amount*.045,sign*amount*.035);
+    }
+  }else{
+    pose('Spine2',reduced?0:Math.sin(t*1.15+i*2)*.0035,0,0);
+    const gesture=active&&!reduced&&state.audioTime>2&&state.audioTime<3.1?Math.sin((state.audioTime-2)/1.1*Math.PI)*.025:0;
+    pose('RightArm',0,gesture,gesture*.3);
+  }
 }

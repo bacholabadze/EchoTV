@@ -9,12 +9,16 @@ import {cacheKey, createCache, createLedger, BudgetError} from './store.mjs';
 import {piperProvider, elevenLabsProvider, captionsProvider, approximateTiming, ProviderError} from './providers.mjs';
 import {elevenLabsStt} from './stt.mjs';
 import {normalizeText} from './align.mjs';
+import {sampleProvider} from './samples.mjs';
 
 export {BudgetError, ProviderError};
 export const DEFAULT_ORDER = {en: ['piper', 'captions'], ka: ['elevenlabs', 'piper', 'captions']};
+// Unified build: a fixed, already-paid Georgian sample answers first when the exact script has one (never a paid
+// call for it); otherwise the configured ElevenLabs key, then Piper, then captions only.
+export const SAMPLE_ORDER = {en: ['piper', 'captions'], ka: ['elevenlabs-sample', 'elevenlabs', 'piper', 'captions']};
 const MAX_CHARS = 2000; // ElevenLabs recommends ≤ 2,000 characters per dialogue request
 
-export function createVoiceService({providers, cacheDir, ledger, probe, log = () => {}}) {
+export function createVoiceService({providers, cacheDir, ledger, probe, log = () => {}, defaultOrder = DEFAULT_ORDER}) {
   const cache = createCache(cacheDir), inflight = new Map();
   const prepare = lines => {
     const out = (lines || []).map(l => ({presenter: String(l.presenter || 'echo'), text: normalizeText(l.text)})).filter(l => l.text);
@@ -32,7 +36,7 @@ export function createVoiceService({providers, cacheDir, ledger, probe, log = ()
   };
   return {
     // Dry run: which provider would answer, whether it is cached, and how many characters would be billed. No network.
-    estimate({lines, lang = 'en', order = DEFAULT_ORDER[lang] || ['captions']}) {
+    estimate({lines, lang = 'en', order = defaultOrder[lang] || ['captions']}) {
       const clean = prepare(lines);
       return order.map(name => { const x = plan(name, clean, lang); return {provider: name, usable: x.usable, reason: x.reason, cached: !!(x.key && cache.get(x.key)), billedChars: x.paid && x.usable && !(x.key && cache.get(x.key)) ? x.chars : 0}; });
     },
@@ -43,7 +47,7 @@ export function createVoiceService({providers, cacheDir, ledger, probe, log = ()
       if (!inflight.has(key)) inflight.set(key, this.render(request).finally(() => inflight.delete(key)));
       return inflight.get(key);
     },
-    async render({lines, lang = 'en', order = DEFAULT_ORDER[lang] || ['captions']}) {
+    async render({lines, lang = 'en', order = defaultOrder[lang] || ['captions']}) {
       const clean = prepare(lines), attempts = [];
       for (const name of order) {
         const x = plan(name, clean, lang);
@@ -84,9 +88,12 @@ export function voiceServiceFromEnv({root, dataDir, probe, env = process.env, lo
   const providers = {
     piper: piperProvider({root}),
     elevenlabs: elevenLabsProvider({apiKey, voices, model: env.ELEVENLABS_MODEL || 'eleven_v3', baseUrl: env.ELEVENLABS_BASE_URL || 'https://api.elevenlabs.io'}),
+    'elevenlabs-sample': sampleProvider({dir: env.ECHO_VOICE_SAMPLES || join(root, 'media', 'voice-samples')}),
     captions: captionsProvider(),
   };
-  return createVoiceService({providers, cacheDir: join(dataDir, 'voice-cache'), ledger: createLedger(join(dataDir, 'voice-ledger.json'), +env.ECHO_VOICE_BUDGET_CHARS || 0), probe, log});
+  const service = createVoiceService({providers, cacheDir: join(dataDir, 'voice-cache'), ledger: createLedger(join(dataDir, 'voice-ledger.json'), +env.ECHO_VOICE_BUDGET_CHARS || 0), probe, log, defaultOrder: SAMPLE_ORDER});
+  service.samples = () => providers['elevenlabs-sample'].catalogue();
+  return service;
 }
 
 // Speech-to-text for spoken interview answers: off unless both a key and a seconds budget are set.

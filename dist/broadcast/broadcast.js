@@ -6,6 +6,7 @@ import {conversationSeats, conversationFrame, conversationPracticals} from '/stu
 import {lightEditorialRoom} from '/studio/materials.js?v=6';
 import {makeEditorialCharacter} from '/studio/editorial-characters.js?v=6';
 import {createRoom, applyPerformance} from '/studio/room.js?v=5';
+import {cameraMotion, cinematicFrame, framedPosition} from '/studio/direction-wave3.js';
 import {captionAt} from '/studio/core.js?v=2';
 
 const $ = s => document.querySelector(s), screen = $('#screen');
@@ -30,25 +31,37 @@ async function loadStudio() {
     lightEditorialRoom(room.scene);
     Object.assign(studio, {renderer, camera, scene: room.scene, actors: room.actors, ready: true});
     // Compile shaders and upload geometry now, so the first host frame on air is not a long frame.
-    try { renderer.compile(room.scene, camera); frameShot('wide'); renderer.render(room.scene, camera); } catch {}
+    try { renderer.compile(room.scene, camera); frameShot('wide', 0); renderer.render(room.scene, camera); } catch {}
     canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); studio.failed = true; studio.ready = false; });
   } catch (error) { studio.failed = true; console.warn('Studio unavailable:', error.message); }
 }
-function frameShot(shot) {
+// Unified build: which seated character speaks each voice line. The ECHO host (seat 'echo') carries the house voice
+// (presenter-1, Manana); presenter-3 (Tamar) sits at 'nova', presenter-2 (Luka) at 'atlas'. Unknown presenters: ECHO.
+const ACTOR_OF = {echo: 'echo', host: 'echo', interviewer: 'echo', 'presenter-1': 'echo', 'presenter-3': 'nova', 'presenter-2': 'atlas', nova: 'nova', atlas: 'atlas'};
+const presenterAt = (host, local) => (host?.turns || []).find(t => local >= t.start && local < t.end)?.presenter;
+const frameState = {shot: null, since: 0};
+function frameShot(shot, ms = 0) {
   const {renderer, camera} = studio, w = screen.clientWidth, h = screen.clientHeight;
   if (studio.size !== `${w}x${h}`) { renderer.setSize(w, h, false); camera.aspect = w / h; studio.size = `${w}x${h}`; studio.shot = null; }
-  if (studio.shot === shot) return;
-  const p = conversationFrame(shot, w / h);
-  camera.position.set(...p.slice(0, 3)); camera.fov = p[6]; camera.lookAt(...p.slice(3, 6)); camera.updateProjectionMatrix(); studio.shot = shot;
+  if (studio.shot !== shot) { studio.shot = shot; frameState.shot = shot; frameState.since = ms; }
+  // Wave 3: headroom on wide stages, and deterministic camera life from the moment of the cut (a cut stays a cut).
+  const p = cinematicFrame(shot, w / h), age = Math.max(0, (ms - frameState.since) / 1000);
+  const pos = framedPosition(p, cameraMotion(shot, age, reduced));
+  camera.position.set(...pos); camera.fov = p[6]; camera.lookAt(...p.slice(3, 6)); camera.updateProjectionMatrix();
 }
 function renderHost(host, local, ms) {
   const dt = studio.last ? Math.min((ms - studio.last) / 1000, .08) : 1 / 30; studio.last = ms; studio.visualTime += dt;
-  frameShot(local < 1.8 ? 'wide' : 'echo');
   const speaking = !!host && local < host.duration;
+  const speaker = ACTOR_OF[presenterAt(host, local)] || 'echo';
+  frameShot(local < 1.8 ? 'wide' : speaker, ms);
   const cues = host?.cues || [], cue = speaking ? cues.find(c => local >= c.start && local < c.end) : null;
-  const performance = {speaker: 'echo', speaking, mouthStrength: .56, expressive: true, directed: true, attention: [{at: 0, target: 'audience'}],
-    gestures: [{at: 1.2, duration: 1.6, strength: .5}], performance: [{at: .2, actor: 'echo', intent: 'warmth', duration: Math.max(2, (host?.duration || 4) - .4)}],
-    audioTime: local, cue, reaction: null, reactionAge: 0};
+  const turn = (host?.turns || []).find(t => local >= t.start && local < t.end), turnStart = turn?.start ?? 0;
+  const sentenceAt = (host?.captions || []).filter(c => c.start <= local).at(-1)?.start;
+  const performance = {speaker, speaking, mouthStrength: .56, expressive: true, directed: true, cinematic: !reduced, attention: [{at: 0, target: 'audience'}],
+    gestures: [{at: turnStart + 1.2, duration: 1.6, strength: .5, actor: speaker}, {at: turnStart + 4.6, duration: 1.4, strength: .4, actor: speaker, hand: 'both'}],
+    performance: [{at: turnStart + .2, actor: speaker, intent: 'warmth', duration: Math.max(2, (turn ? turn.end - turn.start : host?.duration || 4) - .4)},
+      ...studio.actors.filter(a => a.id !== speaker).map(a => ({at: turnStart + .6, actor: a.id, intent: 'consider', duration: 2.4}))],
+    audioTime: local, sentenceAt, cue, reaction: null, reactionAge: 0};
   for (const actor of studio.actors) applyPerformance(actor, studio.visualTime, dt, performance, reduced);
   studio.renderer.render(studio.scene, studio.camera);
 }

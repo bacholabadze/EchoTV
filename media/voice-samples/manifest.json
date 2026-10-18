@@ -1,0 +1,143 @@
+{
+ "batch": "ECHO Georgian voice test, founder-approved, 2026-10-18",
+ "provider": "ElevenLabs via hosted MCP (founder-approved paid test, 2026-10-18); reused here as fixed samples, no new generation",
+ "model_id": "eleven_v4",
+ "language": "ka",
+ "alignment": "none (approximate timing only)",
+ "voices": {
+  "presenter-1": {
+   "voice_id": "fmrBZxAhyZm549NS95jH",
+   "name": "Manana - Warm Kakhetian Host",
+   "character": "echo"
+  },
+  "presenter-2": {
+   "voice_id": "EYtcMclOebxa9gDivh3N",
+   "name": "Luka - Upbeat Tbilisi Friend",
+   "character": "atlas"
+  },
+  "presenter-3": {
+   "voice_id": "5XkYjWTqrbwuZgnSSw3V",
+   "name": "Tamar - Patient Support Agent",
+   "character": "nova"
+  }
+ },
+ "items": [
+  {
+   "id": "sample-moderator",
+   "presenter": "presenter-1",
+   "voice_id": "fmrBZxAhyZm549NS95jH",
+   "voice_name": "Manana - Warm Kakhetian Host",
+   "file": "ka/sample-moderator.mp3",
+   "sha256": "800eb3a7a4dbf44a104d69dfba14754b628e4953d7d052b89347590539550436",
+   "bytes": 240777,
+   "duration_s": 13.92,
+   "text": "საღამო მშვიდობისა. ეს არის ECHO, არხი, რომელსაც ადამიანები და მათი აგენტები ერთად ქმნიან. დღეს ორი შემქმნელი ერთ წუთს ინაწილებს, და არც ერთი არ აპირებს დათმობას.",
+   "generation_id": "3uTC7Me3xLyn4Aexl49L",
+   "source": "original sample bytes, unmodified"
+  },
+  {
+   "id": "sample-enthusiast",
+   "presenter": "presenter-2",
+   "voice_id": "EYtcMclOebxa9gDivh3N",
+   "voice_name": "Luka - Upbeat Tbilisi Friend",
+   "file": "ka/sample-enthusiast.mp3",
+   "sha256": "141e5c45a63f08edada649f083fa2e1a8b5f910b7dca15da6cb1d9ef333fa5f2",
+   "bytes": 197309,
+   "duration_s": 11.2,
+   "text": "აბა, ნახეთ ეს! ბაჩოს აგენტმა ახლახან ოცდახუთი წამი მოითხოვა, ქეთის აგენტმა კი… უპასუხა. თავისი სიტყვებით. არავინ არ წერდა ამას წინასწარ.",
+   "generation_id": "WQ0ALUi1ZPdswxYVR7nb",
+   "source": "original sample bytes, unmodified"
+  },
+  {
+   "id": "sample-analyst",
+   "presenter": "presenter-3",
+   "voice_id": "5XkYjWTqrbwuZgnSSw3V",
+   "voice_name": "Tamar - Patient Support Agent",
+   "file": "ka/sample-analyst.mp3",
+   "sha256": "41a4471e9050bf3e2741478858ade1220de0523259a453e097b6dc3a1f21294f",
+   "bytes": 220297,
+   "duration_s": 12.64,
+   "text": "მოდით, ნუ ავჩქარდებით. აგენტები შეთანხმდნენ, მაგრამ ეთერში არაფერი არ გავა, სანამ ორივე ადამიანი ღილაკს არ დააჭერს. სწორედ ეს ღილაკი არის ყველაზე მნიშვნელოვანი.",
+   "generation_id": "AL1cLrug3GiyMv835Dgx",
+   "source": "original sample bytes, unmodified"
+  },
+  {
+   "id": "dialogue-1",
+   "presenter": "presenter-1",
+   "voice_id": "fmrBZxAhyZm549NS95jH",
+   "voice_name": "Manana - Warm Kakhetian Host",
+   "file": "ka/dialogue-1.mp3",
+   "sha256": "2ca56851ce947a058fc4aa440b4811f281180430e02e5b1ed76ed8f90c2ae0fc",
+   "bytes": 127092,
+   "duration_s": 6.8,
+   "text": "ლუკა, შენ რა ნახე ამ მოლაპარაკებაში, რაც მე გამომრჩა? მოკლედ, თუ შეიძლება.",
+   "generation_id": "l1CjzKe99VpMqTaEAXHS",
+   "source": "original sample bytes, unmodified"
+  },
+  {
+   "id": "dialogue-2",
+   "presenter": "presenter-2",
+   "voice_id": "EYtcMclOebxa9gDivh3N",
+   "voice_name": "Luka - Upbeat Tbilisi Friend",
+   "file": "ka/dialogue-2.mp3",
+   "sha256": "df00da9b4ce99ad64e45a1de6ae0ac6ba6f257c9ae4a0984c4ff0eb8128ec25f",
+   "bytes": 152587,
+   "duration_s": 8.4,
+   "text": "მოკლედ? კარგი. ქეთის აგენტმა ხუთი წამი დათმო, მაგრამ პრემიერა არ გადაიწია. ეს არის მთავარი!",
+   "generation_id": "dEqDMVcBngjljB3rjwUO",
+   "source": "original sample bytes, unmodified"
+  },
+  {
+   "id": "interview-q1",
+   "presenter": "presenter-1",
+   "voice_id": "fmrBZxAhyZm549NS95jH",
+   "voice_name": "Manana - Warm Kakhetian Host",
+   "file": "ka/interview-q1.mp3",
+   "sha256": "e3e8c7c0c4c29fbc21af64502637898bc7caf523688851a65f2f609642255f2f",
+   "bytes": 232000,
+   "duration_s": 13.36,
+   "text": "გამარჯობა და კეთილი იყოს თქვენი მობრძანება ECHO-ს სტუდიაში. სამი მოკლე კითხვა მაქვს. პირველი: რა არის თქვენი ნამუშევრის სათაური და რამდენი წამი სჭირდება მას ეთერში?",
+   "generation_id": "XH6WaaLWBEhuQ68yqZzW",
+   "source": "original sample bytes, unmodified"
+  },
+  {
+   "id": "interview-q2",
+   "presenter": "presenter-1",
+   "voice_id": "fmrBZxAhyZm549NS95jH",
+   "voice_name": "Manana - Warm Kakhetian Host",
+   "file": "ka/interview-q2.mp3",
+   "sha256": "fc645e006553488565729042e8efb967d0727f408fc3c1264cd4bbdf622b4968",
+   "bytes": 117897,
+   "duration_s": 6.24,
+   "text": "მეორე: ვინ არის ამ ნამუშევრის ავტორი და გაქვთ თუ არა მისი გამოქვეყნების უფლება?",
+   "generation_id": "hKmOKMYfgVuaNEWY2LOS",
+   "source": "original sample bytes, unmodified"
+  },
+  {
+   "id": "interview-q3",
+   "presenter": "presenter-1",
+   "voice_id": "fmrBZxAhyZm549NS95jH",
+   "voice_name": "Manana - Warm Kakhetian Host",
+   "file": "ka/interview-q3.mp3",
+   "sha256": "c9f03ba599affd6a9dcb99fd957aaa7f8ada6e747317f3faa898057f7b88ca51",
+   "bytes": 86132,
+   "duration_s": 4.24,
+   "text": "მესამე: რა უნდა იცოდეს მაყურებელმა, სანამ ნახავს?",
+   "generation_id": "0vkDAl9pW4LgJNM7dtGC",
+   "source": "original sample bytes, unmodified"
+  },
+  {
+   "id": "sample-analyst-two-sentences",
+   "presenter": "presenter-3",
+   "voice_id": "5XkYjWTqrbwuZgnSSw3V",
+   "voice_name": "Tamar - Patient Support Agent",
+   "file": "ka/sample-analyst-two-sentences.mp3",
+   "sha256": "e2a79a36031946719637c00ccac8edee7529b789dae4425bf1482061cdbc82c6",
+   "bytes": 140060,
+   "duration_s": 8.69,
+   "text": "მოდით, ნუ ავჩქარდებით. აგენტები შეთანხმდნენ, მაგრამ ეთერში არაფერი არ გავა, სანამ ორივე ადამიანი ღილაკს არ დააჭერს.",
+   "generation_id": "AL1cLrug3GiyMv835Dgx",
+   "source": "derived from sample-analyst: first two sentences, cut at the 0.56 s pause detected at 8.69 s (ffmpeg silencedetect), 0.22 s fade, re-encoded 128 kbps; no new generation"
+  }
+ ]
+}
