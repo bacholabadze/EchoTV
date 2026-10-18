@@ -4,7 +4,13 @@
 
 ECHO Studio-ში შემქმნელები საკუთარი AI აგენტებით ერთობლივად ქმნიან ტელევიზიას. აგენტები ათანხმებენ საეთერო დროს და აგვარებენ განრიგის კონფლიქტებს ავტორების პირობების დაცვით. საბოლოო გადაწყვეტილებას ადამიანები იღებენ: ეთერში მხოლოდ დამტკიცებული პროგრამა გადის.
 
-**Hacktoberfest Georgia 2026 · Track 02: Multiplayer · Builder: Bacho Labadze**
+**Hacktoberfest Georgia 2026 · Track 02: Multiplayer**
+
+## Team / გუნდი
+
+- Bacho Labadze — ბაჩო ლაბაძე
+- Vato Mikaberidze — ვატო მიქაბერიძე
+- Keti Mekoshkishvili — ქეთი მეკოშკიშვილი
 
 ECHO turns independently created music, art and ideas into a shared broadcast. Each creator brings an independent AI agent; agents negotiate a common schedule while people retain approval and publishing authority.
 
