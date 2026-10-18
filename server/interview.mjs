@@ -37,6 +37,8 @@ const REQUIRED_FOR_BRIEF = ['displayName', 'workTitle', 'category', 'aiInvolveme
 // Mentions of AI tools or generation, used only to ask the creator to clarify (never to decide for them).
 const AI_TERMS = /(\bA\.?I\.?\b|ხელოვნურ\S* ინტელექტ\S*|\bChatGPT\b|ჩატჯიპიტ\S*|\bSuno\b|\bUdio\b|Midjourney|\bDALL|Stable Diffusion|გენერირ\S*|\bgenerat\w*|ნეირო\S*|\bneural\b)/i;
 
+const NEGATION = /(^|[\s,(])(არ|ვერ|არც|არცერთ\S*|არავითარ\S*|გარეშე|no|not|never|without)(?=[\s,.!?)]|$)/i;
+
 export function createInterview({id, ownerId, startedBy, now}) {
   return {id, ownerId, status: 'in_progress', step: 'who', answers: {}, followUpsAsked: {}, history: [{at: now, by: startedBy, action: 'started'}], brief: null, briefRevisions: [], createdAt: now, updatedAt: now};
 }
@@ -67,7 +69,9 @@ const missingIn = (iv, step) => step.required.filter(k => { const v = fieldValue
 
 export function contradictions(iv, {library = []} = {}) {
   const out = [], ai = fieldValue(iv, 'aiInvolvement'), told = ['workDescription', 'inspiration', 'creationProcess'].map(k => fieldValue(iv, k) || '').join(' ');
-  if (ai === 'none' && AI_TERMS.test(told)) out.push({fields: ['aiInvolvement', 'creationProcess'], ka: `შენ მონიშნე, რომ AI არ გამოგიყენებია, მაგრამ ახსენე „${told.match(AI_TERMS)[0]}“. დააზუსტებ?`, en: `You marked "no AI", but mentioned "${told.match(AI_TERMS)[0]}". Can you clarify?`});
+  // Only a mention that is not itself a denial counts ("AI არ გამომიყენებია" agrees with "no AI").
+  const mention = told.split(/(?<=[.!?…])\s+|\n+/).find(x => AI_TERMS.test(x) && !NEGATION.test(x));
+  if (ai === 'none' && mention) out.push({fields: ['aiInvolvement', 'creationProcess'], ka: `შენ მონიშნე, რომ AI არ გამოგიყენებია, მაგრამ ახსენე „${mention.match(AI_TERMS)[0]}“. დააზუსტებ?`, en: `You marked "no AI", but mentioned "${mention.match(AI_TERMS)[0]}". Can you clarify?`});
   const category = fieldValue(iv, 'category'), media = (fieldValue(iv, 'mediaIds') || []).map(id => library.find(m => m.id === id)).filter(Boolean);
   if (category === 'music' && media.length && !media.some(m => m.kind === 'audio')) out.push({fields: ['category', 'mediaIds'], ka: 'მუსიკა მონიშნე, მაგრამ აუდიო ფაილი არ აგირჩევია.', en: 'You chose music, but no audio file is selected.'});
   if (category === 'art' && media.length && !media.some(m => m.kind === 'image')) out.push({fields: ['category', 'mediaIds'], ka: 'ვიზუალური ხელოვნება მონიშნე, მაგრამ სურათი არ აგირჩევია.', en: 'You chose visual art, but no image is selected.'});

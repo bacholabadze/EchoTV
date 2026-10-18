@@ -1,6 +1,7 @@
 // The §24 demonstration programme: 120 seconds, one confirmed premiere at 50s.
 // Names, tokens and media are configuration; the rules are the same for any creators.
 import {randomBytes} from 'node:crypto';
+import {genitive} from './editorial.mjs';
 
 const token = () => randomBytes(18).toString('base64url');
 
@@ -50,7 +51,7 @@ export function seedState({people = {}, media = {}} = {}) {
 // Editorial wave: "AI-მ შექმნა. ვინ არის ავტორი?" — one guest creator, the producer, the guest's own agent and ECHO's
 // editorial agent. The theme is fixed; the programme is not: until the producer approves a rundown, every house
 // segment is an unapproved placeholder and the guest's segment holds no media, so nothing here can be published.
-export function editorialSeed({people = {}, factPack = null} = {}) {
+export function editorialSeed({people = {}, factPack = null, rehearsal = false} = {}) {
   const a = {id: 'creator-a', name: 'Creator A', role: 'creator', specialty: 'Music', ...people.a};
   const producer = {id: 'producer', name: 'ECHO Producer', role: 'producer', ...people.producer};
   for (const p of [a, producer]) p.token ??= token();
@@ -67,11 +68,11 @@ export function editorialSeed({people = {}, factPack = null} = {}) {
   return {
     schema: 1, seq: 0, showRevision: 1, counters: {proposal: 0, request: 0, publication: 0, rundown: 0, question: 0},
     media: {}, idempotency: {},
-    episode: {id: 'ai-authorship-001', title: 'AI-მ შექმნა. ვინ არის ავტორი?', durationSec: 180, format: 'editorial', workSegmentId: 'work', editorial: null},
+    episode: {id: 'ai-authorship-001', title: 'AI-მ შექმნა. ვინ არის ავტორი?', durationSec: 180, format: 'editorial', workSegmentId: 'work', editorial: null, ...(rehearsal ? {rehearsal: true} : {})},
     people: {[a.id]: a, [producer.id]: producer},
     agents: {
-      'agent-a': {id: 'agent-a', ownerId: a.id, label: `${a.name}'s agent`, token: token()},
-      'agent-editor': {id: 'agent-editor', ownerId: producer.id, role: 'editor', label: 'ECHO editorial agent', token: token()},
+      'agent-a': {id: 'agent-a', ownerId: a.id, label: `${genitive(a.name)} აგენტი`, token: token()},
+      'agent-editor': {id: 'agent-editor', ownerId: producer.id, role: 'editor', label: 'ECHO-ს რედაქციის აგენტი', token: token()},
     },
     order: ['opening', 'work', 'after'], segments, bookings: {},
     proposals: {}, requests: {},

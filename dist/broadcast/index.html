@@ -1,24 +1,49 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1712">
-<title>ECHO TV — Broadcast</title><meta name="description" content="ECHO TV live playout of the approved programme built by creators and their agents.">
+<html lang="ka"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1712">
+<title>ECHO TV — ეთერი</title><meta name="description" content="ECHO TV: ადამიანის მიერ დამტკიცებული გადაცემა, რომელსაც ავტორები, მათი აგენტები და ECHO-ს რედაქცია ქმნიან.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%23142b23%22/%3E%3Ccircle cx=%228%22 cy=%228%22 r=%224%22 fill=%22%23e08b78%22/%3E%3C/svg%3E">
-<link rel="stylesheet" href="broadcast.css?v=1">
+<link rel="stylesheet" href="broadcast.css?v=2">
 <script type="importmap">{"imports":{"three":"/lab/vendor/three.module.js"}}</script></head>
 <body>
 <main id="screen" data-module="standby" aria-live="polite">
-  <canvas id="studio" aria-label="ECHO moderator in the 3D studio"></canvas>
-  <section id="art" class="layer" aria-label="Art gallery"><img id="art-a" alt=""><img id="art-b" alt=""><div id="art-missing" class="art-missing" hidden><p class="eyebrow">Artwork unavailable</p><h2 id="art-missing-title"></h2><p id="art-missing-credit"></p></div></section>
-  <section id="music" class="layer" aria-label="Music"><canvas id="viz"></canvas><div class="music-title"><span id="music-badge" class="badge">Premiere</span><h2 id="music-name"></h2><p id="music-credit"></p></div></section>
-  <section id="slate" class="layer" aria-label="Status"><div><p class="eyebrow" id="slate-eyebrow">ECHO TV</p><h1 id="slate-title">Off air</h1><p id="slate-text">The next programme is being prepared on the Production Board.</p><p id="slate-meta" class="meta"></p></div></section>
+  <canvas id="studio" aria-label="ECHO-ს 3D სტუდია: წამყვანი ECHO, ნოვა და ატლასი"></canvas>
+  <section id="art" class="layer" aria-label="ნამუშევარი"><img id="art-a" alt=""><img id="art-b" alt=""><div id="art-missing" class="art-missing" hidden><p class="eyebrow">ნამუშევარი მიუწვდომელია</p><h2 id="art-missing-title"></h2><p id="art-missing-credit"></p></div></section>
+  <section id="music" class="layer" aria-label="მუსიკა"><canvas id="viz"></canvas><div class="music-title"><span id="music-badge" class="badge">პრემიერა</span><h2 id="music-name"></h2><p id="music-credit"></p><p id="music-why" class="why"></p></div></section>
+  <section id="slate" class="layer" aria-label="სტატუსი"><div><p class="eyebrow" id="slate-eyebrow">ECHO TV</p><h1 id="slate-title">ეთერი ახლა არ მიდის</h1><p id="slate-text">შემდეგ გადაცემას ავტორები და რედაქცია ამზადებენ.</p><p id="slate-meta" class="meta"></p></div></section>
+  <section id="qa-card" class="qa-card" aria-label="მაყურებლის კითხვა" hidden>
+    <p class="eyebrow">მაყურებლის კითხვა · ცოცხალი, მოდერირებული</p>
+    <p id="qa-q" class="qa-q"></p><p id="qa-from" class="qa-from"></p>
+    <div id="qa-answer" class="qa-answer" hidden><p id="qa-a" class="qa-a"></p><p id="qa-by" class="qa-by"></p></div>
+    <p id="qa-pending" class="qa-from" hidden></p>
+  </section>
 
   <div class="bug"><b>ECHO</b><span>TV</span></div>
-  <div class="onair"><span id="onair-label" class="dot-label">Standby</span><span id="manifest" class="meta"></span></div>
+  <div id="rehearsal" class="rehearsal" hidden>რეპეტიცია · სატესტო ავტორი და სატესტო მასალა — არა რეალური ნამუშევარი</div>
+  <div id="programme" class="programme" hidden><p id="programme-title"></p><p id="programme-q"></p></div>
+  <div class="onair"><span id="onair-label" class="dot-label">მზადდება</span><span id="manifest" class="meta"></span></div>
   <div class="lower" id="lower" hidden><p class="lower-kicker" id="lower-kicker"></p><p class="lower-title" id="lower-title"></p><p class="lower-credit" id="lower-credit"></p></div>
   <p class="caption" id="caption" hidden></p>
-  <div class="fault" id="fault" role="alert" hidden><span id="fault-text"></span><button id="fault-retry" hidden>Retry audio</button></div>
+  <div class="fault" id="fault" role="alert" hidden><span id="fault-text"></span><button id="fault-retry" hidden>ხმის თავიდან ცდა</button></div>
   <div class="ticker"><span id="clock">0:00 / 0:00</span><span id="next"></span></div>
-  <button id="sound" class="sound">▶ Watch with sound</button>
+  <button id="sound" class="sound">▶ ყურება ხმით</button>
 </main>
-<footer class="disclosure">Live playout of an approved programme. Media is supplied by creators or ECHO and played back on schedule; host speech is <span id="voice-disclosure">synthesised offline (Piper)</span>. No AI video is generated. <a href="/board/">Production Board</a></footer>
-<script type="module" src="broadcast.js?v=1"></script>
+<section id="ask" class="ask" aria-labelledby="ask-h" hidden>
+  <div class="ask-in">
+    <h2 id="ask-h">დასვით კითხვა სტუმარს</h2>
+    <p id="ask-state" class="ask-note"></p>
+    <form id="ask-form" autocomplete="off">
+      <label for="ask-text">თქვენი კითხვა <small>(8–280 სიმბოლო; ბმულები და საკონტაქტო მონაცემები არ მიიღება)</small></label>
+      <textarea id="ask-text" maxlength="280" rows="2" required></textarea>
+      <label for="ask-name">სახელი ეკრანზე <small>(არასავალდებულო)</small></label>
+      <input id="ask-name" maxlength="40">
+      <button id="ask-send" type="submit">კითხვის გაგზავნა</button>
+    </form>
+    <p id="ask-mine" class="ask-note" aria-live="polite"></p>
+    <p class="ask-fine">კითხვას ჯერ ავტომატური ფილტრი ამოწმებს, შემდეგ ადამიანი (მოდერატორი) ირჩევს ერთს. პასუხს გასცემს სტუმარი ან, მისი ნებართვით, მისი AI აგენტი — ეკრანზე ყოველთვის ეწერება, ვინ უპასუხა. კითხვა ვერ შეცვლის დამტკიცებულ გადაცემას, ეთერის დროს ან ფაილებს.</p>
+    <div id="after" class="after" hidden><p class="eyebrow">გადაცემის შემდეგ</p><p id="after-q"></p><p id="after-a"></p></div>
+  </div>
+</section>
+<footer class="disclosure">ეთერში გადის მხოლოდ ადამიანის მიერ დამტკიცებული გადაცემა. ავტორის ფაილები მისივე ნებართვით გადის; წამყვანების ტექსტი <span id="voice-disclosure">ნაჩვენებია სუბტიტრებით</span>. AI ვიდეო არ გენერირდება. <a href="/">ECHO მთავარი</a> · <a href="/board/">გადაცემის დაფა</a></footer>
+<script type="module" src="broadcast.js?v=2"></script>
+<script type="module" src="ask.js?v=1"></script>
 </body></html>

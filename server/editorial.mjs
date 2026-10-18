@@ -175,7 +175,7 @@ export function compileBlock(block, packet) {
   for (const l of lines) {
     const len = span * l.text.length / total, sp = SPEAKERS[l.speaker];
     const who = l.speaker === 'guest' ? `${packet.guest.displayName} (ინტერვიუდან)` : sp.name;
-    captions.push({start: +t.toFixed(2), end: +(t + len).toFixed(2), text: l.text, speaker: l.speaker, who, kind: l.kind});
+    captions.push({start: +t.toFixed(2), end: +(t + len).toFixed(2), text: l.text, speaker: l.speaker, who, kind: l.kind, ...(l.refs[0] ? {ref: l.refs[0]} : {})});
     turns.push({presenter: sp.presenter, start: +t.toFixed(2), end: +(t + len).toFixed(2)});
     t += len;
   }
@@ -188,6 +188,7 @@ export function compileBlock(block, packet) {
 // involvement, category, media and booking, and quotes the guest's own words. Its lines are templates.
 const VOWEL = /[აეიოუaeiou]$/i, GEO = /[ა-ჿ]/;
 const base = n => norm(n).replace(/\s*\(.*\)\s*$/, '');
+export const genitive = n => gen(n);
 const gen = n => { const b = base(n); return GEO.test(b) ? (VOWEL.test(b) ? `${b}ს` : `${b}ის`) : `${b}-ს`; };   // genitive: ქეთის, დავითის
 const erg = n => { const b = base(n); return GEO.test(b) ? (VOWEL.test(b) ? `${b}მ` : `${b}მა`) : `${b}-მ`; };   // ergative: ქეთიმ, დავითმა
 const dat = n => { const b = base(n); return GEO.test(b) ? `${b}ს` : `${b}-ს`; };
@@ -208,6 +209,12 @@ function claimSpan(s) {
   if (i < 0) return firstSentence(s);
   const all = parts.slice(0, i + 1).join('').trim(), one = parts[i].trim();
   return all.length <= 220 ? all : one.length <= 220 ? one : firstSentence(s);
+}
+function shortClaim(s) {
+  if (!s) return null;
+  const parts = (s.match(/[^.!?…]+[.!?…]+(?=\s|$)|[^.!?…]+$/gu) || [s]).map(x => x.trim());
+  const pick = parts.find(x => AI_WORD.test(x)) || parts[0];
+  return pick && pick.length >= 12 && pick.length <= 220 ? pick : firstSentence(s);
 }
 const need = lines => Math.ceil(lines.reduce((s, l) => s + l.text.length, 0) / READ_CPS) + 2;
 const L = (speaker, kind, text, refs = []) => ({speaker, kind, text, refs});
@@ -277,6 +284,9 @@ export function baselineRundown(packet) {
     const lastQ = last.lines.findLastIndex(l => l.speaker === 'moderator' && l.kind === 'question');
     if (lastQ >= 0) { last.lines[lastQ] = {...last.lines[lastQ], refs: [procRef]}; last.lines.splice(lastQ + 1); keep = keep.slice(1); }
     while (last.lines.length > 2 && need([...last.lines, ...keep]) > room) last.lines.splice(last.lines.length - 2, 1);
+    // Still too long: quote only the sentence that carries the claim (still the guest's exact words).
+    const short = shortClaim(w[procRef]);
+    if (need([...last.lines, ...keep]) > room && short && short !== procQuote) keep = keep.map(l => l.kind === 'quote' ? {...l, text: short} : l);
     if (need([...last.lines, ...keep]) > room) throw new Error(`the confirmed slot starts at ${S}s; that is too early for an opening and the interview question`);
     last.lines.push(...keep);
   }

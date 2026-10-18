@@ -40,7 +40,7 @@ try {
     if (t === 25 || t === 36) {
       assert.equal(await page.isVisible('#art-missing'), true, `credits card instead of a blank frame at ${t}s`);
       assert.match(await page.textContent('#art-missing-title'), t === 25 ? /Wheat Field with Cypresses/ : /Circus Sideshow/);
-      assert.match(await page.textContent('#fault-text'), /could not be displayed — the programme continues/);
+      assert.match(await page.textContent('#fault-text'), /ვერ გამოჩნდა — გადაცემა გრძელდება/);
       if (t === 25) await page.screenshot({path: join(process.env.ECHO_SHOTS || tmpdir(), 'art-fault-unavailable.png')});
     }
   }

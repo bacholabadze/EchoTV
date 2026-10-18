@@ -771,7 +771,7 @@ export class BroadcastDesk {
     // publicationId is never reused (it survives rehearsal resets); publishRevision names the programme revision.
     this.state.counters.publication = (this.state.counters.publication || 0) + 1;
     const body = {episodeId: this.episode.id, title: this.episode.title, durationSec: this.episode.durationSec, publicationId: this.state.counters.publication, publishRevision: this.state.showRevision, segments,
-      ...(this.episode.editorial ? {editorial: clone(this.episode.editorial)} : {})};
+      ...(this.episode.editorial ? {editorial: clone(this.episode.editorial)} : {}), ...(this.episode.rehearsal ? {rehearsal: true} : {})};
     const manifest = {...body, hash: sha256(canonical(body)), publishedAt: this.now(), publishedBy: actor.id};
     for (const seg of segments) for (const a of seg.assets) if (this.state.media?.[a.sha256]?.private) this.state.media[a.sha256].private = false; // published: public by hash
     this.state.broadcast = {state: 'ready', publicationId: manifest.publicationId, publishRevision: this.state.showRevision, manifest, onAirAt: null};

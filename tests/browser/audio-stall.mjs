@@ -52,7 +52,7 @@ try {
   assert.equal(final.onAirLabel, 'Live · audio unavailable');
   assert.equal(final.audioHealth.retries, 3, 'bounded: exactly 3 recovery attempts');
   assert.equal(await hanging.isVisible('#fault-retry'), true, 'manual retry offered');
-  assert.match(await hanging.textContent('#fault-text'), /Audio unavailable for “Music intro” — the programme continues without sound/);
+  assert.match(await hanging.textContent('#fault-text'), /„Music intro“: ხმა მიუწვდომელია — გადაცემა ხმის გარეშე გრძელდება/);
   await hanging.screenshot({path: join(process.env.ECHO_SHOTS || tmpdir(), 'audio-stall-unavailable.png')});
 
   const f = await state(flaky);

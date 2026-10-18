@@ -108,7 +108,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
   // Editorial wave: the "AI-მ შექმნა. ვინ არის ავტორი?" programme (one guest, no seeded media, a draft fact pack).
   const factPackPath = join(ROOT, 'episodes', 'facts', 'ai-authorship.ka.json');
   const fresh = () => seedOptions.format === 'editorial'
-    ? editorialSeed({people: seedOptions.people, factPack: existsSync(factPackPath) ? JSON.parse(readFileSync(factPackPath, 'utf8')) : null})
+    ? editorialSeed({people: seedOptions.people, rehearsal: seedOptions.rehearsal === true, factPack: existsSync(factPackPath) ? JSON.parse(readFileSync(factPackPath, 'utf8')) : null})
     : seedState({...seedOptions, media: demoMedia(mediaDir)});
   const askLimit = rateLimiter({now});
   let desk = new BroadcastDesk(existsSync(statePath) ? JSON.parse(readFileSync(statePath, 'utf8')) : fresh(), {now});
@@ -551,7 +551,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const port = +process.env.PORT || 8787, host = process.env.HOST || '127.0.0.1';
   const people = process.env.ECHO_PEOPLE ? JSON.parse(process.env.ECHO_PEOPLE) : {};
   const dataDir = process.env.ECHO_DATA_DIR || join(ROOT, 'data');
-  const echo = createEchoServer({dataDir, seedOptions: {people, format: process.env.ECHO_FORMAT || undefined}});
+  const echo = createEchoServer({dataDir, seedOptions: {people, format: process.env.ECHO_FORMAT || undefined, rehearsal: process.env.ECHO_REHEARSAL === '1'}});
   echo.server.listen(port, host, () => {
     const base = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`;
     writeFileSync(join(dataDir, 'credentials.txt'), credentialsText(echo.desk.state, base), {mode: 0o600});

@@ -37,7 +37,7 @@ export function cleanName(raw) {
 }
 
 // In-memory sliding-window limiter, per viewer address and overall.
-export function rateLimiter({perKey = [[3, 60e3], [10, 600e3]], global = [[40, 60e3]], now = () => Date.now()} = {}) {
+export function rateLimiter({perKey = [[4, 60e3], [12, 600e3]], global = [[40, 60e3]], now = () => Date.now()} = {}) {
   const hits = new Map(), all = [];
   const over = (list, rules, t) => rules.find(([n, ms]) => list.filter(x => t - x < ms).length >= n);
   return key => {

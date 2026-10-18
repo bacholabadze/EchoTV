@@ -32,8 +32,9 @@ after(async () => { await agents.a?.close(); await agents.b?.close(); echo.serve
 test('gateway exposes collaboration tools and no privileged ones', async () => {
   const names = (await agents.a.listTools()).tools.map(t => t.name).sort();
   // 3.2 adds the creator-interview tools (answer/skip/review/read); still nothing that approves, publishes or overrides.
-  assert.deepEqual(names, ['answer_interview', 'get_change_history', 'get_interview', 'get_show_state', 'list_my_library', 'prepare_segment_from_brief', 'propose_change', 'request_slot', 'respond_to_request', 'review_creator_brief', 'revise_proposal', 'skip_interview_question', 'start_interview', 'wait_for_requests', 'withdraw_proposal']);
-  for (const forbidden of ['approve', 'force', 'override', 'publish']) assert.ok(names.every(n => !n.includes(forbidden)));
+  // Editorial wave adds drafting and Q&A tools: drafts, a shortlist and a labelled answer; still nothing that approves, publishes, selects or overrides.
+  assert.deepEqual(names, ['answer_audience_question', 'answer_interview', 'get_audience_question', 'get_change_history', 'get_editorial_packet', 'get_interview', 'get_show_state', 'list_audience_questions', 'list_my_library', 'prepare_segment_from_brief', 'propose_change', 'request_slot', 'respond_to_request', 'review_creator_brief', 'revise_proposal', 'shortlist_audience_question', 'skip_interview_question', 'start_interview', 'submit_rundown', 'wait_for_requests', 'withdraw_proposal']);
+  for (const forbidden of ['approve', 'force', 'override', 'publish', 'select', 'release']) assert.ok(names.every(n => !n.includes(forbidden)));
 });
 
 test('two independent identities see the same shared state', async () => {

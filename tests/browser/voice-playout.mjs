@@ -39,7 +39,7 @@ try {
     assert.equal(x.segment, 'interstitial'); assert.equal(x.onAirLabel, 'Live', `${t}s: ${x.onAirLabel}`);
     assert.equal(x.audioSrc, `/media/${asset.sha256}`, 'plays exactly the approved bytes');
     assert.match(x.credit, /synthetic voice \(ElevenLabs\)/);
-    assert.match(await page.textContent('#voice-disclosure'), /^synthetic \(ElevenLabs/, 'footer names the voice actually used');
+    assert.match(await page.textContent('#voice-disclosure'), /^სინთეზურია \(ElevenLabs/, 'footer names the voice actually used');
     captions.push(x.caption);
     if (t === 41.2) await page.screenshot({path: join(out, 'voice-playout-georgian-captions.png')});
   }

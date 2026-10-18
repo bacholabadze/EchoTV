@@ -16,6 +16,11 @@ let state = null, offset = 0, soundOn = false, analyser = null, levels = null, l
 const now = () => Date.now() + offset;
 const fmt = t => `${Math.floor(Math.max(0, t) / 60)}:${String(Math.floor(Math.max(0, t) % 60)).padStart(2, '0')}`;
 const setText = (sel, text) => { const el = $(sel); if (el.textContent !== text) el.textContent = text; };
+// On-air status: a stable key (English, for tests and tools) and the Georgian label viewers see.
+const LABEL = {'Off air': 'ეთერი არ მიდის', 'Standby': 'მზადდება', 'Starting': 'იწყება', 'Live': 'პირდაპირი ეთერი', 'Ended': 'დასრულდა', 'Technical break': 'ტექნიკური შესვენება', 'Waiting': 'მოლოდინი',
+  'Unable to verify': 'ვერ დადასტურდა', 'Live · audio interrupted': 'ეთერი · ხმა შეწყდა', 'Live · audio unavailable': 'ეთერი · ხმა მიუწვდომელია', 'Live · artwork loading': 'ეთერი · ნამუშევარი იტვირთება', 'Live · artwork unavailable': 'ეთერი · ნამუშევარი მიუწვდომელია'};
+const onAir = key => { view.label = key; setText('#onair-label', LABEL[key] || key); };
+const SPEAKER = {moderator: ['ECHO', 'წამყვანი'], enthusiast: ['ატლასი', 'ტექნოლოგიების ენთუზიასტი'], analyst: ['ნოვა', 'სკეპტიკოსი ანალიტიკოსი']};
 
 // ---------- 3D studio (house host segments) ----------
 const studio = {ready: false, failed: false, visualTime: 0, last: 0};
@@ -52,12 +57,12 @@ function frameShot(shot, ms = 0) {
 function renderHost(host, local, ms) {
   const dt = studio.last ? Math.min((ms - studio.last) / 1000, .08) : 1 / 30; studio.last = ms; studio.visualTime += dt;
   const speaking = !!host && local < host.duration;
-  const speaker = ACTOR_OF[presenterAt(host, local)] || 'echo';
-  frameShot(local < 1.8 ? 'wide' : speaker, ms);
+  const who = presenterAt(host, local), speaker = ACTOR_OF[who] || 'echo';
+  frameShot(local < 1.8 || who === 'guest' ? 'wide' : speaker, ms);
   const cues = host?.cues || [], cue = speaking ? cues.find(c => local >= c.start && local < c.end) : null;
   const turn = (host?.turns || []).find(t => local >= t.start && local < t.end), turnStart = turn?.start ?? 0;
   const sentenceAt = (host?.captions || []).filter(c => c.start <= local).at(-1)?.start;
-  const performance = {speaker, speaking, mouthStrength: .56, expressive: true, directed: true, cinematic: !reduced, attention: [{at: 0, target: 'audience'}],
+  const performance = {speaker, speaking, mouthStrength: host?.audio ? .56 : 0, expressive: true, directed: true, cinematic: !reduced, attention: [{at: 0, target: 'audience'}],
     gestures: [{at: turnStart + 1.2, duration: 1.6, strength: .5, actor: speaker}, {at: turnStart + 4.6, duration: 1.4, strength: .4, actor: speaker, hand: 'both'}],
     performance: [{at: turnStart + .2, actor: speaker, intent: 'warmth', duration: Math.max(2, (turn ? turn.end - turn.start : host?.duration || 4) - .4)},
       ...studio.actors.filter(a => a.id !== speaker).map(a => ({at: turnStart + .6, actor: a.id, intent: 'consider', duration: 2.4}))],
@@ -117,7 +122,15 @@ function lower(kicker, title, credit, owner) {
   const el = $('#lower'); el.hidden = !title; el.dataset.owner = owner || '';
   setText('#lower-kicker', kicker); setText('#lower-title', title || ''); setText('#lower-credit', credit || '');
 }
+// What programme is on and what question it asks (from the approved manifest).
+function programme(m) {
+  const e = m?.editorial, el = $('#programme');
+  $('#rehearsal').hidden = !m?.rehearsal;
+  el.hidden = !e || screen.dataset.module === 'slate';
+  if (e) { setText('#programme-title', m.title); setText('#programme-q', `დღის კითხვა: ${e.centralQuestion}`); }
+}
 function slate(eyebrow, title, text, meta = '') {
+  $('#programme').hidden = true; $('#qa-card').hidden = true;
   screen.dataset.module = 'slate'; stopAudio(); $('#lower').hidden = true; $('#caption').hidden = true;
   setText('#slate-eyebrow', eyebrow); setText('#slate-title', title); setText('#slate-text', text); setText('#slate-meta', meta);
 }
@@ -154,6 +167,8 @@ function displayedStatus(img) {
   if (rec.state === 'failed' && rec.attempt < IMAGE_RETRIES && t - rec.at > IMAGE_RETRY_MS) showImage(img, rec.url, rec.attempt + 1);
   return rec.state === 'retrying' ? 'failed' : rec.state;
 }
+// Why the viewer is seeing or hearing a guest's file: the purpose the approved rundown gave it.
+const purposeOf = (assetId) => state?.broadcast?.manifest?.editorial?.work?.media?.find(x => x.assetId === assetId)?.purpose || '';
 function playArt(seg, local) {
   const slides = seg.content.slides || [];
   let at = 0, index = 0;
@@ -170,30 +185,64 @@ function playArt(seg, local) {
   const slow = status === 'loading' && performance.now() - view.slideAt > IMAGE_SLOW_MS;
   view.artFault = status === 'failed' ? {state: 'failed', asset} : slow ? {state: 'stalled', asset} : null;
   $('#art-missing').hidden = status !== 'failed';
-  if (status === 'failed') { setText('#art-missing-title', asset.title || 'Untitled'); setText('#art-missing-credit', [asset.credit, asset.license].filter(Boolean).join(' · ')); }
+  if (status === 'failed') { setText('#art-missing-title', asset.title || 'უსათაურო'); setText('#art-missing-credit', [asset.credit, asset.license].filter(Boolean).join(' · ')); }
   const img = document.querySelector('#art img.on');
   if (img && !reduced) img.style.transform = `scale(${1.02 + .06 * progress}) translate(${(index % 2 ? -1 : 1) * progress * 1.2}%, ${-progress * .8}%)`;
-  lower(`Art gallery · curated by ${seg.owner} · ${index + 1}/${slides.length}`, asset.title, [asset.credit, asset.license].filter(Boolean).join(' · '), seg.ownerId);
+  const why = purposeOf(asset.id);
+  lower(why ? `რატომ ვუყურებთ · ${index + 1}/${slides.length}` : `გალერეა · ${seg.owner} · ${index + 1}/${slides.length}`, asset.title, why || [asset.credit, asset.license].filter(Boolean).join(' · '), seg.ownerId);
   stopAudio();
 }
 function playMusic(seg, local) {
   const asset = assetOf(seg, seg.content.assetId), expected = (seg.content.offset || 0) + local;
-  setText('#music-badge', seg.confirmed ? `Premiere · confirmed slot ${fmt(seg.start)}` : seg.title);
+  setText('#music-badge', seg.confirmed ? `პრემიერა · დადასტურებული დრო ${fmt(seg.start)}` : seg.title);
   // A segment prepared from a creator brief credits the creator's approved display name and discloses AI use.
   const brief = seg.content.brief, AI = {none: 'შექმნილია AI-ს გარეშე', assisted: 'შექმნილია AI-ს დახმარებით', substantial: 'ნამუშევრის დიდი ნაწილი AI-მ შექმნა', unsure: 'AI-ის როლი ზუსტდება'};
-  setText('#music-name', (brief?.title || asset.title || seg.title)); setText('#music-credit', brief ? `${brief.displayName} · ${AI[brief.aiInvolvement] || ''}` : `${seg.title} · ${seg.owner} · ${asset.license || ''}`);
+  setText('#music-name', (brief?.title || asset.title || seg.title)); setText('#music-credit', brief ? `${brief.displayName} · ${AI[brief.aiInvolvement] || ''} (ავტორის განცხადება)` : `${seg.title} · ${seg.owner} · ${asset.license || ''}`);
+  const why = purposeOf(asset.id); setText('#music-why', why ? `რატომ ვუსმენთ: ${why}` : '');
   $('#lower').hidden = true;
   syncAudio(asset.url, expected, Math.min(local / .4, (seg.duration - local) / .8));
   drawViz(local);
 }
 function playHost(seg, local, ms) {
-  const host = seg.content.host;
-  lower('ECHO · host', seg.title, host?.credit || (host?.audio ? 'Scripted from the approved programme · offline synthetic voice' : 'Scripted from the approved programme · captions only (voice unavailable)'), seg.ownerId);
-  const caption = host ? captionAt({text: host.text, captions: host.captions}, local) : '';
+  const host = seg.content.host, ed = seg.content.editorial;
+  const cap = ed ? (host.captions || []).filter(c => c.start <= local).at(-1) || host.captions?.[0] : null;
+  if (cap) {
+    const [name, role] = cap.speaker === 'guest' ? [cap.who, 'ავტორი · მისი დამტკიცებული სიტყვები'] : SPEAKER[cap.speaker] || ['ECHO', 'წამყვანი'];
+    lower(`${name} · ${role}`, seg.title, cap.kind === 'fact' ? factSource(cap) : host.credit, cap.speaker === 'guest' ? state.broadcast.manifest.editorial?.guest?.personId : seg.ownerId);
+    $('#caption').dataset.kind = cap.kind; $('#caption').dataset.speaker = cap.speaker;
+  } else lower('ECHO · წამყვანი', seg.title, host?.credit || (host?.audio ? 'დამტკიცებული ტექსტი · სინთეზური ხმა' : 'დამტკიცებული ტექსტი · მხოლოდ სუბტიტრები (ხმა მიუწვდომელია)'), seg.ownerId);
+  const caption = cap ? (cap.speaker === 'guest' ? `„${cap.text}“` : cap.text) : host ? captionAt({text: host.text, captions: host.captions}, local) : '';
+  if (!cap) { delete $('#caption').dataset.kind; delete $('#caption').dataset.speaker; }
   $('#caption').hidden = !caption || local > (host?.duration ?? 0) + .8; setText('#caption', caption);
   syncAudio(host?.audio, local, 1, host?.duration ?? 0);
   if (studio.ready) renderHost(host, local, ms);
-  else slate('ECHO · host', host?.text || seg.title, studio.failed ? '3D studio unavailable on this device; the programme continues.' : 'Loading the studio…');
+  else slate('ECHO · წამყვანი', host?.text || seg.title, studio.failed ? '3D სტუდია ამ მოწყობილობაზე მიუწვდომელია; გადაცემა გრძელდება.' : 'სტუდია იტვირთება…');
+}
+function factSource(cap) {
+  const ref = (state.broadcast.manifest.editorial?.facts || []).find(f => f.id === cap.ref);
+  return ref ? `წყარო: ${ref.source?.title || ''} · გადაამოწმა პროდიუსერმა` : 'დადასტურებული ფაქტი';
+}
+// Audience Q&A slot: the studio stays on the moderator; the card shows only what a person selected and released.
+function playQa(seg, local, ms) {
+  const qa = state.qa, host = seg.content.host, ed = state.broadcast.manifest.editorial;
+  lower('ECHO · წამყვანი · ცოცხალი, მოდერირებული კითხვა', seg.title, 'მაყურებლის კითხვა · კითხვას ადამიანი არჩევს, პასუხი წყაროს მიხედვით მოიწერება', seg.ownerId);
+  const intro = local < Math.min(8, seg.duration / 3) && host?.captions?.[0];
+  $('#caption').hidden = !intro; if (intro) setText('#caption', intro.text);
+  const q = qa?.publicationId === state.broadcast.manifest.publicationId ? qa.selected : null, a = q ? qa.answer : null;
+  $('#qa-card').hidden = false;
+  setText('#qa-q', q ? q.text : (seg.content.qa?.prompt || ed?.audienceSlot?.prompt || ''));
+  setText('#qa-from', q ? `კითხვა: ${q.from || 'ანონიმური მაყურებელი'} · შეარჩია მოდერატორმა` : 'ამ ეთერში კითხვა ჯერ არ შერჩეულა. დასვით კითხვა ეკრანის ქვემოთ.');
+  $('#qa-answer').hidden = !a;
+  if (a) {
+    setText('#qa-a', a.text);
+    setText('#qa-by', a.source === 'human' ? `პასუხობს: ${a.label} — ავტორი, პირადად (ტექსტით)` : `პასუხობს: ${a.onBehalfOf || 'ავტორის'} AI აგენტი${a.client ? ` (${a.client})` : ''} — ავტორის ნებართვით. ეს ავტორის პირადი სიტყვები არ არის.`);
+    $('#qa-answer').dataset.source = a.source;
+  }
+  $('#qa-pending').hidden = !(q && !a && qa.answerPending === false && local > 6);
+  setText('#qa-pending', 'პასუხს ველოდებით…');
+  view.qa = {selected: q?.id || null, answer: a?.source || null};
+  stopAudio();
+  if (studio.ready) renderHost(null, local, ms);
 }
 
 function drawViz(local) {
@@ -246,47 +295,50 @@ function tick(ms) {
   const b = state?.broadcast, m = b?.manifest;
   screen.dataset.live = 'no';
   if (!state) return;
-  if (!m || b.state === 'queued') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Off air'); setText('#manifest', ''); setText('#clock', ''); setText('#next', ''); return slate('ECHO TV', 'Off air', 'The next programme is being prepared on the Production Board by its creators and their agents.'); }
-  setText('#manifest', `publication #${m.publicationId ?? '–'} · r${m.publishRevision} · ${m.hash.slice(0, 10)}`);
+  if (!m || b.state === 'queued') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; onAir('Off air'); setText('#manifest', ''); setText('#clock', ''); setText('#next', ''); return slate('ECHO TV', 'ეთერი ახლა არ მიდის', 'შემდეგ გადაცემას ამზადებენ ავტორები, მათი აგენტები და ECHO-ს რედაქცია. ეთერში მხოლოდ ადამიანის მიერ დამტკიცებული გადაცემა გავა.'); }
+  setText('#manifest', `გამოცემა #${m.publicationId ?? '–'} · ვერსია ${m.publishRevision} · ${m.hash.slice(0, 10)}`);
+  programme(m);
   // Say which synthetic voices this publication really uses (from the approved manifest), never a fixed claim.
   const hosts = m.segments.map(s => s.content?.host).filter(h => h?.audio), cloud = hosts.some(h => /ElevenLabs/.test(h.credit || ''));
-  setText('#voice-disclosure', !hosts.length ? 'shown as captions (no voice)' : cloud ? `synthetic (${hosts.some(h => !/ElevenLabs/.test(h.credit || '')) ? 'ElevenLabs and Piper, offline' : 'ElevenLabs'})` : 'synthesised offline (Piper)');
-  if (b.state === 'failed') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Technical break'); return slate('ECHO TV', 'We’ll be right back.', 'Playout was stopped by the producer. Approved programme r' + m.publishRevision + ' is safe.'); }
-  if (b.state === 'ready') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Standby'); setText('#clock', `0:00 / ${fmt(m.durationSec)}`); setText('#next', ''); return slate('Next on ECHO', m.title, `${m.segments.map(s => s.title).join(' · ')}`, `Approved revision r${m.publishRevision} · waiting for the producer to go live`); }
+  setText('#voice-disclosure', !hosts.length ? 'ნაჩვენებია სუბტიტრებით (ხმის გარეშე)' : cloud ? `სინთეზურია (${hosts.some(h => !/ElevenLabs/.test(h.credit || '')) ? 'ElevenLabs და Piper' : 'ElevenLabs, წინასწარ დამტკიცებული ნიმუში'})` : 'სინთეზურია (Piper, ოფლაინ)');
+  if (b.state === 'failed') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; onAir('Technical break'); return slate('ECHO TV', 'მალე დავბრუნდებით.', `ეთერი პროდიუსერმა შეაჩერა. დამტკიცებული გადაცემა (ვერსია ${m.publishRevision}) დაცულია.`); }
+  if (b.state === 'ready') { $('#fault').hidden = true; screen.dataset.audio = 'ok'; onAir('Standby'); setText('#clock', `0:00 / ${fmt(m.durationSec)}`); setText('#next', ''); return slate('შემდეგ ECHO-ზე', m.title, m.editorial ? m.editorial.centralQuestion : `${m.segments.map(s => s.title).join(' · ')}`, `დამტკიცებული ვერსია ${m.publishRevision} · ველოდებით პროდიუსერს${m.editorial ? ' · კითხვის დასმა უკვე შეგიძლიათ' : ''}`); }
   const t = (now() - b.onAirAt) / 1000, startKey = `${m.publicationId}:${m.hash}:${b.onAirAt}`;
-  if (t < 0) { if (t > -2) startCheck(b, m); view.start = starts.get(startKey)?.state; $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Starting'); return slate('ECHO TV', `On air in ${Math.ceil(-t)}`, m.title, `Approved revision r${m.publishRevision} · ${m.hash.slice(0, 10)}`); }
+  if (t < 0) { if (t > -2) startCheck(b, m); view.start = starts.get(startKey)?.state; $('#fault').hidden = true; screen.dataset.audio = 'ok'; onAir('Starting'); return slate('ECHO TV', `ეთერამდე ${Math.ceil(-t)}`, m.title, `დამტკიცებული ვერსია ${m.publishRevision} · ${m.hash.slice(0, 10)}`); }
   // The server refused this start: it was withdrawn before air, whatever the (possibly stale) event stream still says.
-  if (starts.get(startKey)?.state === 'denied') { view.start = 'denied'; $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#next', ''); setText('#clock', ''); setText('#onair-label', 'Off air'); return slate('ECHO TV', 'Off air', 'This programme was withdrawn before air and will not be shown.', starts.get(startKey).reason); }
-  if (t >= m.durationSec) { $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#onair-label', 'Ended'); setText('#next', ''); setText('#clock', `${fmt(m.durationSec)} / ${fmt(m.durationSec)}`); return slate('That was', m.title, `Made by ${[...new Set(m.segments.filter(s => s.ownerId !== 'producer').map(s => s.owner))].sort().join(' and ')} with their agents, coordinated by the ECHO Showrunner.`, `Aired revision r${m.publishRevision} · ${m.hash.slice(0, 10)} · ${fmt(m.durationSec)}`); }
+  if (starts.get(startKey)?.state === 'denied') { view.start = 'denied'; $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#next', ''); setText('#clock', ''); onAir('Off air'); return slate('ECHO TV', 'ეთერი ახლა არ მიდის', 'ეს გადაცემა ეთერამდე გაიწვია ადამიანმა და არ გავა.', starts.get(startKey).reason); }
+  if (t >= m.durationSec) { $('#fault').hidden = true; screen.dataset.audio = 'ok'; onAir('Ended'); setText('#next', ''); setText('#clock', `${fmt(m.durationSec)} / ${fmt(m.durationSec)}`); return slate('ეს იყო', m.title, m.editorial ? `სტუმარი: ${m.editorial.guest.displayName}. რედაქციული გეგმა: ${m.editorial.author.kind === 'agent' ? `${m.editorial.author.label}${m.editorial.author.client ? ` (${m.editorial.author.client})` : ''}` : m.editorial.author.kind === 'rule-based' ? 'ECHO-ს წესებზე დაფუძნებული დამგეგმავი' : 'პროდიუსერი'}; დაამტკიცა პროდიუსერმა.${m.editorial.takeaway?.unresolved ? ' ღია კითხვა: ' + m.editorial.tension : ''}` : `Made by ${[...new Set(m.segments.filter(s => s.ownerId !== 'producer').map(s => s.owner))].sort().join(' and ')} with their agents, coordinated by the ECHO Showrunner.`, `Aired revision r${m.publishRevision} · ${m.hash.slice(0, 10)} · ${fmt(m.durationSec)}`); }
   const start = startCheck(b, m); view.start = start.state;
   if (start.state !== 'permitted') {
     $('#fault').hidden = true; screen.dataset.audio = 'ok'; setText('#next', ''); setText('#clock', '');
     const unable = start.state === 'error' || start.state === 'retrying';
-    setText('#onair-label', unable ? 'Unable to verify' : 'Waiting');
-    return slate('ECHO TV', unable ? 'Waiting for the studio' : 'Starting…', unable ? `Unable to verify this programme with the studio (${start.reason || 'retrying'}). Nothing plays until the start is confirmed; retrying.` : 'Confirming the start with the studio.', `Approved revision r${m.publishRevision} · ${m.hash.slice(0, 10)}`);
+    onAir(unable ? 'Unable to verify' : 'Waiting');
+    return slate('ECHO TV', unable ? 'ველოდებით სტუდიას' : 'იწყება…', unable ? `სტუდიასთან დადასტურება ვერ მოხერხდა (${start.reason || 'ვცდილობთ თავიდან'}). სანამ დაწყება არ დადასტურდება, არაფერი გაიშვება.` : 'დაწყებას სტუდიასთან ვადასტურებთ.', `დამტკიცებული ვერსია ${m.publishRevision} · ${m.hash.slice(0, 10)}`);
   }
   screen.dataset.live = 'yes';
   const seg = m.segments.find(s => t >= s.start && t < s.start + s.duration), next = m.segments[m.segments.indexOf(seg) + 1], local = t - seg.start;
   setText('#clock', `${fmt(t)} / ${fmt(m.durationSec)}`);
-  setText('#next', next ? `Next · ${next.title} at ${fmt(next.start)}${next.confirmed ? ' · confirmed' : ''}` : 'Final segment');
+  setText('#next', next ? `შემდეგ · ${next.title} · ${fmt(next.start)}${next.confirmed ? ' · დადასტურებული' : ''}` : 'ბოლო ნაწილი');
   view.segment = seg.id; view.local = local; view.t = t;
   view.onsets ??= {}; if (!(seg.id in view.onsets)) view.onsets[seg.id] = +t.toFixed(4);
-  if (seg.module !== 'host') $('#caption').hidden = true;
-  screen.dataset.module = seg.module;
+  if (seg.module !== 'host' && seg.module !== 'qa') $('#caption').hidden = true;
+  if (seg.module !== 'qa') $('#qa-card').hidden = true;
+  screen.dataset.module = seg.module; programme(m);
   view.audioNeeded = false; // set again by syncAudio when this segment requires sound
   if (seg.module === 'art') playArt(seg, local);
   else if (seg.module === 'music') playMusic(seg, local);
   else if (seg.module === 'host') playHost(seg, local, ms);
+  else if (seg.module === 'qa') playQa(seg, local, ms);
   // Never a plain "Live" while required audio or a required image is not actually playing.
   const audioFault = view.audioNeeded && health.src === audio.dataset.src && health.state !== 'ok' ? health.state : null;
   const imageFault = seg.module === 'art' ? view.artFault : null;
   const fault = audioFault ? {kind: 'audio', state: audioFault} : imageFault ? {kind: 'image', ...imageFault} : null;
   screen.dataset.audio = fault?.state || 'ok';
-  setText('#onair-label', !fault ? 'Live' : fault.kind === 'audio' ? (fault.state === 'stalled' ? 'Live · audio interrupted' : 'Live · audio unavailable') : (fault.state === 'stalled' ? 'Live · artwork loading' : 'Live · artwork unavailable'));
+  onAir(!fault ? 'Live' : fault.kind === 'audio' ? (fault.state === 'stalled' ? 'Live · audio interrupted' : 'Live · audio unavailable') : (fault.state === 'stalled' ? 'Live · artwork loading' : 'Live · artwork unavailable'));
   $('#fault').hidden = !fault; $('#fault-retry').hidden = !(fault?.kind === 'audio' && fault.state === 'failed');
   if (fault) setText('#fault-text', fault.kind === 'audio'
-    ? (fault.state === 'stalled' ? `Audio interrupted — reconnecting (attempt ${health.retries} of ${MAX_RETRIES})` : `Audio unavailable for “${seg.title}” — the programme continues without sound`)
-    : (fault.state === 'stalled' ? `Artwork “${fault.asset.title || 'untitled'}” is still loading` : `Artwork “${fault.asset.title || 'untitled'}” could not be displayed — the programme continues`));
+    ? (fault.state === 'stalled' ? `ხმა შეწყდა — ვუკავშირდებით თავიდან (ცდა ${health.retries} / ${MAX_RETRIES})` : `„${seg.title}“: ხმა მიუწვდომელია — გადაცემა ხმის გარეშე გრძელდება`)
+    : (fault.state === 'stalled' ? `ნამუშევარი „${fault.asset.title || 'უსათაურო'}“ ჯერ იტვირთება` : `ნამუშევარი „${fault.asset.title || 'უსათაურო'}“ ვერ გამოჩნდა — გადაცემა გრძელდება`));
   // Get the next segment ready so it starts on time: pre-seek its audio and pre-render the studio.
   if (next && next.start - t <= 1.5) prepare(next, ms);
 }
@@ -330,6 +382,6 @@ setInterval(syncClock, 10000);
 events.addEventListener('state', e => { state = JSON.parse(e.data); if (!clockSynced) offset = state.serverTime - Date.now(); preload(state.broadcast?.manifest); });
 $('#fault-retry').onclick = () => { if (health.src) { resetHealth(health.src); audio.dataset.src = ''; } };
 const audioLevel = () => { if (!analyser) return null; const d = new Uint8Array(analyser.fftSize); analyser.getByteTimeDomainData(d); let m = 0; for (const v of d) m = Math.max(m, Math.abs(v - 128)); return m / 128; };
-window.EchoBroadcast = {getState: () => ({start: view.start, onsets: view.onsets || {}, playing: view.playing || [], artFault: view.artFault ? {state: view.artFault.state, assetId: view.artFault.asset.id} : null, audioHealth: {state: health.state, retries: health.retries, recoveries: health.recoveries, needed: !!view.audioNeeded}, onAirLabel: $('#onair-label').textContent, faultVisible: !$('#fault').hidden, clockSynced, clockOffsetMs: Math.round(offset), publicationId: state?.broadcast?.manifest?.publicationId, viz: view.viz, audioLevel: audioLevel(), module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
+window.EchoBroadcast = {getState: () => ({start: view.start, onsets: view.onsets || {}, playing: view.playing || [], artFault: view.artFault ? {state: view.artFault.state, assetId: view.artFault.asset.id} : null, audioHealth: {state: health.state, retries: health.retries, recoveries: health.recoveries, needed: !!view.audioNeeded}, onAirLabel: view.label || '', faultVisible: !$('#fault').hidden, clockSynced, clockOffsetMs: Math.round(offset), publicationId: state?.broadcast?.manifest?.publicationId, viz: view.viz, audioLevel: audioLevel(), module: screen.dataset.module, live: screen.dataset.live === 'yes', segment: view.segment, programmeTime: view.t, publishRevision: state?.broadcast?.publishRevision, hash: state?.broadcast?.manifest?.hash, broadcastState: state?.broadcast?.state, studioReady: studio.ready, soundOn, audioTime: audio.currentTime, audioSrc: audio.dataset.src})};
 loadStudio();
 requestAnimationFrame(tick);

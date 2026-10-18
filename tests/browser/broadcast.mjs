@@ -83,7 +83,7 @@ try {
     assert.equal(outroState.audioHealth.needed, false, 'no audio is required in a captions-only outro');
     assert.equal(outroState.onAirLabel, 'Live');
     assert.match(await one.textContent('#caption'), /Made by/);
-    assert.match(await one.textContent('#lower-credit'), /captions only/);
+    assert.match(await one.textContent('#lower-credit'), /მხოლოდ სუბტიტრები/);
     console.log('outro: captions only (no Piper), caption visible');
   }
   assert.equal(outroState.faultVisible, false, 'no audio fault during a healthy run');

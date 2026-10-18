@@ -219,7 +219,9 @@ async function approvedView() {
       ${stale ? `<p class="warn">ბრიფი შესწორდა (ვერსია ${b.version}); სეგმენტი „${esc(segTitle)}" ძველ ვერსიაზეა (ვერსია ${life.preparedVersion}). აირჩიე საბოლოო ფაილები და განაახლე — რედაქცია მას ხელახლა დაამტკიცებს და თანხმობები განახლდება.</p>`
         : `<p class="hint">აირჩიე შენი სეგმენტი და ყოველი ადგილისთვის ფაილი, რომლის საჯარო ეთერის უფლებაც მოგვეცი. არაფერი არ რჩება „უცვლელად": ეთერში მხოლოდ შენ მიერ არჩეული ფაილი გავა, შენი სახელით.</p>`}
       <label for="seg">სეგმენტი</label><select id="seg" ${stale ? 'disabled' : ''}>${mine.map(s => `<option value="${s.id}" ${s.id === life?.segmentId ? 'selected' : ''}>${esc(s.title)}</option>`).join('')}</select>
-      <div id="slots"></div><div id="final" class="final"></div><div class="row"><button class="primary" id="prepare" disabled>${stale ? 'განახლება' : 'მომზადება'}</button></div>`}
+      <div id="slots"></div><div id="final" class="final"></div>
+      ${state.episode?.format === 'editorial' ? `<label class="check share"><input type="checkbox" id="share"> ვეთანხმები, რომ ჩემი დამტკიცებული ბრიფი (ჩემი სიტყვები ნამუშევარზე, შთაგონებაზე და შექმნის პროცესზე) გადაეცეს ECHO-ს რედაქციას გადაცემის დასაგეგმად. ეთერში ჩემი სიტყვები მხოლოდ ზუსტი ციტატით გავა; შენიშვნები წამყვანისთვის ეთერში არ გავა.</label>` : ''}
+      <div class="row"><button class="primary" id="prepare" disabled>${stale ? 'განახლება' : 'მომზადება'}</button></div>`}
     <div class="row"><button id="edit">შესწორება</button><button id="erase">ინტერვიუს წაშლა</button></div>`;
   wireErase();
   $('#edit').onclick = () => { ui.editing = 'who'; render(); };
@@ -233,23 +235,24 @@ async function approvedView() {
     const preview = () => {
       const seg = state.segments[$('#seg').value], selects = [...document.querySelectorAll('[data-slot]')];
       const rows = selects.map(sel => { const slot = seg.assets.find(a => a.id === sel.dataset.slot), {files, keep} = choices(slot); const v = sel.value; const m = v.startsWith('keep:') ? {title: keep?.title, technical: null} : files.find(f => f.id === v); return {slot, v, m}; });
-      const complete = rows.length > 0 && rows.every(r => r.v);
-      $('#prepare').disabled = ui.busy || !complete;
+      const complete = rows.length > 0 && rows.every(r => r.v), shared = !$('#share') || $('#share').checked;
+      $('#prepare').disabled = ui.busy || !complete || !shared;
       $('#final').innerHTML = complete ? `<h3>ეთერში გავა</h3><ul>${rows.map(r => `<li><b>${esc(b.work.title || r.m?.title || '')}</b> · ${esc(b.creator.displayName)} · ${esc(r.slot.id)}: ${esc(r.m?.title || '')}${r.m?.technical?.durationSec ? ` (${Math.round(r.m.technical.durationSec)} წმ)` : ''}${r.v.startsWith('keep:') ? ' · იგივე ფაილი, ზუსტი ჰეში' : ''}</li>`).join('')}</ul><p class="hint">რედაქცია ამ ზუსტ ფაილებს დაამტკიცებს; ჰეში ჩანს დაფაზე.</p>`
         : `<p class="hint">${rows.length ? 'აირჩიე ფაილი ყველა ადგილისთვის.' : 'ამ სეგმენტს ფაილი არ სჭირდება.'}</p>`;
     };
     const slots = () => {
       const seg = state.segments[$('#seg').value];
-      $('#slots').innerHTML = seg.assets.map(a => { const {files, keep} = choices(a); return `<label for="slot-${a.id}">${a.kind === 'audio' ? 'აუდიო' : 'სურათი'} <small>(${esc(a.id)})</small></label><select id="slot-${a.id}" data-slot="${a.id}"><option value="">— აირჩიე —</option>${keep ? `<option value="keep:${keep.sha256}" selected>დატოვე: ${esc(keep.title)} (იგივე ფაილი)</option>` : ''}${files.map(m => `<option value="${m.id}">${esc(m.title)}</option>`).join('')}</select>`; }).join('')
+      $('#slots').innerHTML = seg.assets.map(a => { const {files, keep} = choices(a); return `<label for="slot-${a.id}">${a.kind === 'audio' ? 'აუდიო' : 'სურათი'} <small>(${esc(a.id)})</small></label><select id="slot-${a.id}" data-slot="${a.id}"><option value="">— აირჩიე —</option>${a.optional ? '<option value="__none__">— ეს ადგილი არ გამოვიყენო —</option>' : ''}${keep ? `<option value="keep:${keep.sha256}" selected>დატოვე: ${esc(keep.title)} (იგივე ფაილი)</option>` : ''}${files.map(m => `<option value="${m.id}">${esc(m.title)}</option>`).join('')}</select>`; }).join('')
         || '<p class="hint">ამ სეგმენტს ფაილის ადგილი არ აქვს.</p>';
       if (!b.media.some(m => m.rights?.publicBroadcast)) $('#slots').insertAdjacentHTML('beforeend', '<p class="warn">ბრიფში საჯარო ეთერის უფლებით ფაილი არ არის. შესწორებაში „რომელი ფაილების უფლებას გვაძლევ?" კითხვაზე აირჩიე ფაილი და განაცხადე უფლებები.</p>');
       for (const sel of document.querySelectorAll('[data-slot]')) sel.onchange = preview;
+      if ($('#share')) $('#share').onchange = preview;
       preview();
     };
     $('#seg').onchange = slots; slots();
     $('#prepare').onclick = () => run(async () => {
-      const assets = Object.fromEntries([...document.querySelectorAll('[data-slot]')].map(s => [s.dataset.slot, s.value.startsWith('keep:') ? {keep: s.value.slice(5)} : s.value]));
-      await api('POST', `/api/briefs/${iv.id}/prepare`, {segmentId: $('#seg').value, assets}); await refresh();
+      const assets = Object.fromEntries([...document.querySelectorAll('[data-slot]')].map(s => [s.dataset.slot, s.value.startsWith('keep:') ? {keep: s.value.slice(5)} : s.value === '__none__' ? null : s.value]));
+      await api('POST', `/api/briefs/${iv.id}/prepare`, {segmentId: $('#seg').value, assets, shareWithEditorial: !!$('#share')?.checked}); await refresh();
     }, stale ? 'სეგმენტი ვერ განახლდა.' : 'სეგმენტი ვერ მომზადდა.');
   }
 }
