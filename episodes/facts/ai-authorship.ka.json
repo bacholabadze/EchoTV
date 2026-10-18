@@ -1,0 +1,23 @@
+{
+  "schema": "echo.factpack/1",
+  "id": "ai-authorship",
+  "theme": "AI-მ შექმნა. ვინ არის ავტორი?",
+  "status": "draft: every fact airs only after a person (the producer) verifies it against its source on the board",
+  "note": "Prepared 2026-10-18 from public reporting; the implementer checked secondary sources only. Both facts are about the United States; they are not Georgian law and must not be presented as such.",
+  "facts": [
+    {
+      "id": "us-copyright-office-2025",
+      "ka": "აშშ-ის საავტორო უფლებების ოფისის 2025 წლის იანვრის ანგარიშის თანახმად, მხოლოდ მითითება (პრომპტი) ჯერჯერობით არ აქცევს ადამიანს AI-ს მიერ შექმნილი შედეგის ავტორად; დაცვა შეიძლება ეხებოდეს ადამიანის მიერ შერჩეულ, დალაგებულ ან შეცვლილ ნაწილს.",
+      "en": "The US Copyright Office's January 2025 report (Copyright and Artificial Intelligence, Part 2: Copyrightability) concludes that, with current technology, prompts alone do not make a user the author of the output; human selection, arrangement or modification can be protected.",
+      "source": {"title": "U.S. Copyright Office, Copyright and Artificial Intelligence, Part 2: Copyrightability (29 January 2025)", "url": "https://www.copyright.gov/ai/Copyright-and-Artificial-Intelligence-Part-2-Copyrightability-Report.pdf"},
+      "scope": "United States"
+    },
+    {
+      "id": "thaler-v-perlmutter-2025",
+      "ka": "2025 წლის მარტში აშშ-ის სააპელაციო სასამართლომ (საქმე Thaler v. Perlmutter) დაადასტურა, რომ საავტორო უფლების კანონის მიხედვით ავტორი ადამიანი უნდა იყოს.",
+      "en": "In March 2025 the US Court of Appeals for the D.C. Circuit (Thaler v. Perlmutter) affirmed that under the Copyright Act an author must be a human being.",
+      "source": {"title": "Thaler v. Perlmutter, No. 23-5233 (D.C. Cir., 18 March 2025)", "url": "https://media.cadc.uscourts.gov/opinions/docs/2025/03/23-5233.pdf"},
+      "scope": "United States"
+    }
+  ]
+}

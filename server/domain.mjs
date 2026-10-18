@@ -3,6 +3,7 @@
 // nothing an agent sends changes the committed programme without human approval.
 import {createHash} from 'node:crypto';
 import * as Interview from './interview.mjs';
+import {installEditorial} from './editorial-desk.mjs';
 
 export class DomainError extends Error {
   constructor(code, message, details = {}) { super(message); this.code = code; this.details = details; }
@@ -27,6 +28,11 @@ export const MEDIA_CHECKS = ['ffmpeg-full-decode/2', 'recorded-fingerprint/1'];
 export const playable = a => a.decodable === true && !!a.verification && a.verification.sha256 === a.sha256 && MEDIA_CHECKS.includes(a.verification.method);
 // A file airs only in part when its segment starts inside it or ends before it does (needs the 'editing' use).
 const trims = (seg, durationSec) => durationSec > 0 && ((seg.content?.offset || 0) > 0 || durationSec - ((seg.content?.offset || 0) + seg.duration) > .5);
+// Art slides share the segment's time evenly (first slide takes the remainder); placeholders never air.
+function fitSlides(seg) {
+  const ids = seg.assets.map(a => a.id), each = Math.floor(seg.duration / Math.max(1, ids.length));
+  seg.content = {...seg.content, slides: ids.map((assetId, i) => ({assetId, seconds: i === 0 ? seg.duration - each * (ids.length - 1) : each}))};
+}
 const whyUnplayable = a => `${a.id} ${a.decodable === false ? `could not be decoded${a.unplayableReason ? ` (${a.unplayableReason})` : ''}` : 'has not been verified as playable'}`;
 
 export class BroadcastDesk {
@@ -72,14 +78,15 @@ export class BroadcastDesk {
   }
 
   // ---------- permissions ----------
-  requireAgent(actor) { if (actor?.type !== 'agent') fail('forbidden', 'Only an agent identity can do this'); return this.agent(actor.id); }
+  // The editorial agent (editorial wave) is not a creator's agent: it cannot propose, negotiate, book or interview.
+  requireAgent(actor) { if (actor?.type !== 'agent') fail('forbidden', 'Only an agent identity can do this'); const a = this.agent(actor.id); if (a.role === 'editor') fail('forbidden', 'The editorial agent drafts rundowns only'); return a; }
   requireHuman(actor) { if (actor?.type !== 'person') fail('forbidden', 'Only a signed-in person can do this'); return this.person(actor.id); }
   requireProducer(actor) { const p = this.requireHuman(actor); if (p.role !== 'producer') fail('forbidden', 'Producer role required'); return p; }
 
   // ---------- bookings ----------
   holdSlot(actor, {segmentId, start, duration}) {
     const seg = this.segment(segmentId);
-    const owner = actor.type === 'agent' ? this.agent(actor.id).ownerId : this.requireHuman(actor).id;
+    const owner = this.ownerOf(actor);
     if (seg.ownerId !== owner) fail('forbidden', 'You can only hold slots for your own segment');
     const booking = this.state.bookings[segmentId];
     if (booking?.state === 'confirmed') fail('booking_confirmed', 'This segment already has a confirmed slot');
@@ -102,6 +109,12 @@ export class BroadcastDesk {
     if (clash) fail('slot_taken', `Interval already confirmed for ${this.state.segments[clash.segmentId].title}`, {clash: clone(clash)});
     booking.state = 'confirmed'; booking.confirmedBy = actor.id; booking.confirmedAt = this.now();
     this.log(actor, 'slot_confirmed', `${this.state.segments[segmentId].title}: confirmed ${booking.start}s–${booking.start + booking.duration}s`);
+    // Editorial format: the guest's segment takes the length its owner booked (a new revision that needs review).
+    const seg = this.state.segments[segmentId];
+    if (this.isEditorial() && segmentId === this.state.episode.workSegmentId && seg.duration !== booking.duration) {
+      seg.duration = booking.duration; fitSlides(seg); seg.revision++; seg.state = 'submitted'; seg.approval = null;
+      this.contentChanged(actor, `${seg.title} set to its confirmed length`, [segmentId]);
+    }
     return clone(booking);
   }
   // A confirmed slot can only be released by its owner (consent), never by an agent or the Showrunner.
@@ -130,7 +143,7 @@ export class BroadcastDesk {
   // ---------- creator interviews and library (3.2) ----------
   // Private by default and owner-scoped: a person sees their own; their agent acts for them; nobody else (not the
   // producer, not other creators or agents) can read them. Unknown and foreign ids both read as "not found".
-  ownerOf(actor) { return actor?.type === 'agent' ? this.agent(actor.id).ownerId : this.requireHuman(actor).id; }
+  ownerOf(actor) { return actor?.type === 'agent' ? this.requireAgent(actor).ownerId : this.requireHuman(actor).id; }
   library(ownerId) { this.state.library ??= {}; return this.state.library[ownerId] ??= {media: {}}; }
   libraryMedia(ownerId) { return Object.values(this.library(ownerId).media).filter(m => m.status !== 'withdrawn'); }
   interviewFor(actor, id) {
@@ -232,7 +245,7 @@ export class BroadcastDesk {
   // A new revision that needs content review; only air-facing brief fields enter the (public) programme.
   // The creator, or the creator's own agent, may prepare: every input (brief, files, uses) was approved or declared
   // by the creator, and the result is a new revision the producer must review. Other people and agents: refused.
-  prepareSegment(actor, {interviewId, segmentId, assets = {}}) {
+  prepareSegment(actor, {interviewId, segmentId, assets = {}, shareWithEditorial = false}) {
     const person = this.person(this.ownerOf(actor)), iv = this.interviewFor(actor, interviewId), seg = this.segment(segmentId);
     if (seg.ownerId !== person.id) fail('forbidden', `Only ${this.state.people[seg.ownerId].name} can prepare ${seg.title}`);
     if (iv.status !== 'approved') fail('brief_not_approved', 'Approve your brief first');
@@ -244,6 +257,7 @@ export class BroadcastDesk {
     if (unmapped.length) fail('media_selection_required', `Choose the file for ${unmapped.join(', ')} from your approved brief; ${seg.title} keeps nothing you did not select`, {slots: unmapped, briefMedia: [...briefMedia]});
     for (const [assetId, choice] of Object.entries(mapping)) {
       const slot = seg.assets.find(a => a.id === assetId) || fail('bad_request', `${seg.title} has no asset ${assetId}`);
+      if (choice === null && slot.optional) { replaced.push([assetId, null]); continue; }
       if (choice && typeof choice === 'object') {
         const kept = slot.libraryMediaId && this.library(person.id).media[slot.libraryMediaId];
         if (!choice.keep || !kept || kept.status === 'withdrawn' || slot.sha256 !== choice.keep || kept.sha256 !== choice.keep) fail('media_selection_required', `${assetId}: only a file you prepared yourself can be kept, by its exact hash`);
@@ -261,7 +275,11 @@ export class BroadcastDesk {
       if (trims(seg, m.technical?.durationSec) && !m.rights.editing) fail('rights_required', `${m.title}: only part of it would air (${seg.duration} s of ${Math.round(m.technical.durationSec)} s); that needs your "editing" permission`);
       replaced.push([assetId, m]);
     }
+    // Editorial format: the creator explicitly shares their approved brief with the editorial desk (consent).
+    if (this.isEditorial() && segmentId === this.state.episode.workSegmentId && shareWithEditorial !== true)
+      fail('consent_required', 'To appear in this programme, share your approved brief with the ECHO editorial desk (shareWithEditorial: true); it plans the conversation from your own words');
     for (const [assetId, m] of replaced) {
+      if (!m) { seg.assets = seg.assets.filter(a => a.id !== assetId); continue; }
       const asset = {id: assetId, kind: m.kind, sha256: m.sha256, file: m.file, upload: true, libraryMediaId: m.id, title: iv.brief.work.title || m.title, credit: iv.brief.creator.displayName,
         license: `Creator-declared uses: ${['publicBroadcast', 'editing', 'replays', 'promoExcerpts'].filter(k => m.rights[k]).join(', ')}`, rightsDeclared: true,
         decodable: true, verification: {method: m.technical.method, sha256: m.sha256}, ...(m.technical.durationSec ? {durationSec: m.technical.durationSec} : {}), ...(m.technical.width ? {width: m.technical.width, height: m.technical.height} : {})};
@@ -270,6 +288,12 @@ export class BroadcastDesk {
     }
     const b = iv.brief;
     seg.content = {...seg.content, brief: {interviewId: iv.id, version: b.version, hash: b.hash, displayName: b.creator.displayName, title: b.work.title, category: b.work.category, aiInvolvement: b.process.aiInvolvement, quotes: b.story.quotes}};
+    if (seg.module === 'art' && this.isEditorial()) fitSlides(seg);
+    if (this.isEditorial() && segmentId === this.state.episode.workSegmentId) {
+      (this.state.editorialShares ??= {})[segmentId] = {interviewId: iv.id, version: b.version, hash: b.hash, by: actor.id, at: this.now(), fields: {
+        displayName: b.creator.displayName, workTitle: b.work.title, category: b.work.category, aiInvolvement: b.process.aiInvolvement, preferredFormat: b.presentation.preferredFormat,
+        workDescription: b.work.description, inspiration: b.story.inspiration, creationProcess: b.process.text, presentationFocus: b.presentation.focus, presenterNotes: b.presenterNotes, mediaNote: b.mediaNote}};
+    }
     seg.revision++; seg.state = 'submitted'; seg.approval = null;
     this.log(actor, 'segment_prepared', `${actor.type === 'agent' ? `${this.agent(actor.id).label} (for ${person.name})` : person.name} prepared ${seg.title} from ${person.name}'s approved brief (v${b.version})${replaced.length ? ` with ${replaced.length} authorised file(s)` : ''}; revision ${seg.revision} needs content review`, {segmentId, revision: seg.revision});
     this.contentChanged(actor, `${seg.title} prepared from a creator brief`, [segmentId]);
@@ -736,6 +760,7 @@ export class BroadcastDesk {
       if (audio?.durationSec !== undefined && audio.durationSec + .05 < (seg.content.offset || 0) + e.duration)
         unplayable.push(`${seg.title}: audio is ${audio.durationSec.toFixed(1)}s but the slot needs ${(seg.content.offset || 0) + e.duration}s`);
     }
+    unplayable.push(...this.editorialProblems());
     if (problems.length || unapproved.length || unplayable.length) fail('not_publishable', `Cannot publish: ${[...problems.map(p => p.rule), ...unapproved.map(t => `${t} not approved for its current revision`), ...unplayable].join('; ')}`, {problems, unapproved, unplayable});
     const segments = this.layout().filter(e => e.duration > 0).map(e => {
       const seg = this.state.segments[e.segmentId];
@@ -745,7 +770,8 @@ export class BroadcastDesk {
     });
     // publicationId is never reused (it survives rehearsal resets); publishRevision names the programme revision.
     this.state.counters.publication = (this.state.counters.publication || 0) + 1;
-    const body = {episodeId: this.episode.id, title: this.episode.title, durationSec: this.episode.durationSec, publicationId: this.state.counters.publication, publishRevision: this.state.showRevision, segments};
+    const body = {episodeId: this.episode.id, title: this.episode.title, durationSec: this.episode.durationSec, publicationId: this.state.counters.publication, publishRevision: this.state.showRevision, segments,
+      ...(this.episode.editorial ? {editorial: clone(this.episode.editorial)} : {})};
     const manifest = {...body, hash: sha256(canonical(body)), publishedAt: this.now(), publishedBy: actor.id};
     for (const seg of segments) for (const a of seg.assets) if (this.state.media?.[a.sha256]?.private) this.state.media[a.sha256].private = false; // published: public by hash
     this.state.broadcast = {state: 'ready', publicationId: manifest.publicationId, publishRevision: this.state.showRevision, manifest, onAirAt: null};
@@ -764,7 +790,7 @@ export class BroadcastDesk {
     // Nothing unplayable starts: the server re-checks the actual bytes just before this call.
     const bad = b.manifest.segments.flatMap(x => this.state.segments[x.id].assets.filter(a => !playable(a)).map(a => `${x.title}: ${whyUnplayable(a)}`));
     if (bad.length) fail('undecodable_media', `Publication #${b.manifest.publicationId} cannot go live: ${bad.join('; ')}`, {unplayable: bad});
-    const denied = b.manifest.segments.flatMap(x => this.permissionProblems(this.state.segments[x.id]));
+    const denied = [...b.manifest.segments.flatMap(x => this.permissionProblems(this.state.segments[x.id])), ...this.editorialProblems()];
     if (denied.length) fail('rights_required', `Publication #${b.manifest.publicationId} cannot go live: ${denied.join('; ')}`, {denied});
     if (!Number.isInteger(delayMs) || delayMs < 0 || delayMs > 600000) fail('bad_request', 'delayMs must be 0–600000');
     b.state = 'on_air'; b.onAirAt = this.now() + delayMs;
@@ -783,3 +809,4 @@ export class BroadcastDesk {
     return clone(this.state.broadcast);
   }
 }
+installEditorial(BroadcastDesk, {fail, clone});

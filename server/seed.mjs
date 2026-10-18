@@ -46,3 +46,40 @@ export function seedState({people = {}, media = {}} = {}) {
     audit: [],
   };
 }
+
+// Editorial wave: "AI-მ შექმნა. ვინ არის ავტორი?" — one guest creator, the producer, the guest's own agent and ECHO's
+// editorial agent. The theme is fixed; the programme is not: until the producer approves a rundown, every house
+// segment is an unapproved placeholder and the guest's segment holds no media, so nothing here can be published.
+export function editorialSeed({people = {}, factPack = null} = {}) {
+  const a = {id: 'creator-a', name: 'Creator A', role: 'creator', specialty: 'Music', ...people.a};
+  const producer = {id: 'producer', name: 'ECHO Producer', role: 'producer', ...people.producer};
+  for (const p of [a, producer]) p.token ??= token();
+  const art = /art/i.test(a.specialty || '');
+  const slot = (id, kind, extra = {}) => ({id, kind, sha256: `pending-${id}`, placeholder: true, title: '', ...extra});
+  const work = art
+    ? {id: 'work', module: 'art', title: 'სტუმრის ნამუშევარი', ownerId: a.id, duration: 30, minDuration: 15, maxDuration: 90,
+      assets: [slot('work-image', 'image'), slot('process-image', 'image', {optional: true})], content: {slides: [{assetId: 'work-image', seconds: 15}, {assetId: 'process-image', seconds: 15}], role: 'work'}}
+    : {id: 'work', module: 'music', title: 'სტუმრის ნამუშევარი', ownerId: a.id, duration: 45, minDuration: 15, maxDuration: 90,
+      assets: [slot('track', 'audio')], content: {assetId: 'track', offset: 0, role: 'work'}};
+  const house = (id, title, duration) => ({id, module: 'host', title, ownerId: producer.id, house: true, duration, minDuration: 0, maxDuration: 180, assets: [], content: {line: 'editorial-pending', placeholder: true}});
+  const segments = {opening: house('opening', 'შესავალი (გეგმა ჯერ არ არის)', 50), work, after: house('after', 'საუბარი და კითხვა (გეგმა ჯერ არ არის)', 180 - 50 - work.duration)};
+  for (const seg of Object.values(segments)) { seg.revision = 1; seg.state = 'draft'; seg.approval = null; }
+  return {
+    schema: 1, seq: 0, showRevision: 1, counters: {proposal: 0, request: 0, publication: 0, rundown: 0, question: 0},
+    media: {}, idempotency: {},
+    episode: {id: 'ai-authorship-001', title: 'AI-მ შექმნა. ვინ არის ავტორი?', durationSec: 180, format: 'editorial', workSegmentId: 'work', editorial: null},
+    people: {[a.id]: a, [producer.id]: producer},
+    agents: {
+      'agent-a': {id: 'agent-a', ownerId: a.id, label: `${a.name}'s agent`, token: token()},
+      'agent-editor': {id: 'agent-editor', ownerId: producer.id, role: 'editor', label: 'ECHO editorial agent', token: token()},
+    },
+    order: ['opening', 'work', 'after'], segments, bookings: {},
+    proposals: {}, requests: {},
+    revisions: [{revision: 1, baseRevision: null, proposalId: null, at: 0, schedule: null, diff: []}],
+    broadcast: {state: 'queued', publishRevision: null, manifest: null, onAirAt: null},
+    audit: [],
+    editorialShares: {}, rundowns: {},
+    facts: Object.fromEntries((factPack?.facts || []).map(f => [f.id, {...f, verified: null}])), factPackStatus: factPack?.status || null,
+    qa: {questions: {}, selected: {}, consent: {}},
+  };
+}

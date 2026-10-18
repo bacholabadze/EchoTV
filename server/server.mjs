@@ -8,14 +8,15 @@ import {fileURLToPath} from 'node:url';
 import {timingSafeEqual} from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
 import {BroadcastDesk, DomainError, sha256, MEDIA_CHECKS} from './domain.mjs';
-import {seedState} from './seed.mjs';
+import {seedState, editorialSeed} from './seed.mjs';
+import {rateLimiter} from './qa.mjs';
 import {kaMessage} from './i18n-ka.mjs';
 import {voiceServiceFromEnv, sttFromEnv, ProviderError, BudgetError} from './voice/index.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary',
   '.hdr': 'application/octet-stream', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.m4a': 'audio/mp4', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8'};
-const STATUS = {in_use: 409, consent_required: 403, transcription_failed: 503, voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, media_selection_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413};
+const STATUS = {in_use: 409, consent_required: 403, transcription_failed: 503, voice_unavailable: 422, unauthorized: 401, forbidden: 403, not_found: 404, bad_request: 422, out_of_bounds: 422, bad_content: 422, rights_required: 422, media_selection_required: 422, undecodable_media: 422, idempotency_conflict: 422, too_large: 413, rate_limited: 429};
 const MAX_UPLOAD = 25 * 1024 * 1024, SENT = Symbol('sent');
 
 const MAGIC = {
@@ -104,7 +105,12 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
   hostVoiceEnabled = process.env.ECHO_HOST_VOICE !== 'off', sseDelayMs = 0, voice = null, stt = null} = {}) {
   mkdirSync(join(dataDir, 'uploads'), {recursive: true});
   const statePath = join(dataDir, 'state.json');
-  const fresh = () => seedState({...seedOptions, media: demoMedia(mediaDir)});
+  // Editorial wave: the "AI-მ შექმნა. ვინ არის ავტორი?" programme (one guest, no seeded media, a draft fact pack).
+  const factPackPath = join(ROOT, 'episodes', 'facts', 'ai-authorship.ka.json');
+  const fresh = () => seedOptions.format === 'editorial'
+    ? editorialSeed({people: seedOptions.people, factPack: existsSync(factPackPath) ? JSON.parse(readFileSync(factPackPath, 'utf8')) : null})
+    : seedState({...seedOptions, media: demoMedia(mediaDir)});
+  const askLimit = rateLimiter({now});
   let desk = new BroadcastDesk(existsSync(statePath) ? JSON.parse(readFileSync(statePath, 'utf8')) : fresh(), {now});
   // Older state files: index every asset still referenced by segments or the published manifest.
   for (const a of [...Object.values(desk.state.segments).flatMap(seg => seg.assets), ...(desk.state.broadcast.manifest?.segments || []).flatMap(seg => seg.assets)])
@@ -144,6 +150,8 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     for (const a of Object.values(s.agents)) delete a.token;
     delete s.idempotency; delete s.media; // internal: retry records and the storage index
     delete s.interviews; delete s.library;   // private, owner-scoped (served only by /api/interviews and /api/library)
+    delete s.editorialShares; delete s.rundowns; delete s.facts; delete s.factPackStatus; // editorial desk: producer and editorial agent only
+    s.qa = desk.publicQa(); // only the selected question and a released answer are public
     s.audit = s.audit.filter(e => !e.private);
     s.agentCalls = agentCalls.slice(-120);
     s.serverTime = now();
@@ -323,12 +331,33 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       const voiceMeta = {provider: r.provider, model: r.model, voiceIds: r.voiceIds, lang: r.lang, duration: r.duration, captions: r.captions, cues: r.cues, turns: r.turns, approximateTiming: r.approximateTiming, requestIds: r.requestIds, cacheHit: r.cacheHit, fallbacks: r.attempts};
       return mutate(d => d.setVoice(actor, {segmentId: m[1], lines: r.lines, lang: r.lang, asset: {sha256: hash, file, ...check, voice: voiceMeta}}));
     }],
+    // ---- editorial desk (editorial wave): producer and the ECHO editorial agent; drafts never in /api/state ----
+    ['GET', /^\/api\/editorial$/, ({actor}) => desk.editorialView(actor)],
+    ['GET', /^\/api\/editorial\/packet$/, ({actor}) => desk.editorialPacketFor(actor)],
+    ['POST', /^\/api\/editorial\/rundowns$/, ({actor, json}) => { const body = json(); return mutate(d => d.submitRundown(actor, {draft: body.draft ?? body})); }],
+    ['POST', /^\/api\/editorial\/baseline$/, ({actor}) => mutate(d => d.planBaseline(actor))],
+    ['POST', /^\/api\/editorial\/rundowns\/(\w+)\/decision$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.decideRundown(actor, {...body, rundownId: m[1]})); }],
+    ['POST', /^\/api\/editorial\/facts\/([\w-]+)\/verify$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.verifyFact(actor, {factId: m[1], verified: body.verified === true})); }],
+    // ---- audience Q&A: viewers ask without an account (rate-limited, screened); people select and release ----
+    ['POST', /^\/api\/qa\/questions$/, ({req, json}) => {
+      const body = json(), key = req.socket.remoteAddress || 'unknown', limit = askLimit(key);
+      if (!limit.ok) throw new DomainError('rate_limited', `Too many questions; try again in ${limit.retryInSec} s`);
+      return mutate(d => d.submitQuestion({text: body.text, name: body.name}));
+    }],
+    ['GET', /^\/api\/qa\/questions\/(\w+)$/, ({url, m}) => desk.questionStatus(m[1], url.searchParams.get('secret'))],
+    ['GET', /^\/api\/qa$/, ({actor}) => desk.questionQueue(actor)],
+    ['GET', /^\/api\/qa\/guest$/, ({actor}) => desk.guestQuestion(actor)],
+    ['POST', /^\/api\/qa\/consent$/, ({actor, json}) => { const body = json(); return mutate(d => d.setQaConsent(actor, body)); }],
+    ['POST', /^\/api\/qa\/questions\/(\w+)\/(select|reject|shortlist|answer|release)$/, ({actor, json, m}) => {
+      const body = json(), fn = {select: 'selectQuestion', reject: 'rejectQuestion', shortlist: 'shortlistQuestion', answer: 'answerQuestion', release: 'releaseAnswer'}[m[2]];
+      return mutate(d => d[fn](actor, {...body, questionId: m[1]}));
+    }],
     // ---- creator interviews and private library (3.2): owner-scoped; never in /api/state ----
     ['GET', /^\/api\/interviews$/, ({actor}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); const owner = desk.ownerOf(actor); return Object.values(desk.state.interviews || {}).filter(iv => iv.ownerId === owner && iv.status !== 'deleted').map(iv => ({id: iv.id, status: iv.status, title: iv.brief?.work.title || null, updatedAt: iv.updatedAt})); }],
     ['GET', /^\/api\/interviews\/(\w+)$/, ({actor, m}) => { if (!actor) throw new DomainError('unauthorized', 'Sign in'); return desk.interviewView(actor, m[1]); }],
     ['POST', /^\/api\/interviews$/, ({actor}) => mutate(d => d.startInterview(actor))],
     ['POST', /^\/api\/interviews\/(\w+)\/(answer|skip|goto|review|quotes|approve|withdraw)$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.interviewAct(actor, m[1], m[2], body)); }],
-    ['POST', /^\/api\/briefs\/(\w+)\/prepare$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.prepareSegment(actor, {interviewId: m[1], segmentId: body.segmentId, assets: body.assets || {}})); }],
+    ['POST', /^\/api\/briefs\/(\w+)\/prepare$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.prepareSegment(actor, {interviewId: m[1], segmentId: body.segmentId, assets: body.assets || {}, shareWithEditorial: body.shareWithEditorial === true})); }],
     // ---- spoken interview (3.2): consent, transcription (never stored by ECHO), spoken questions ----
     ['POST', /^\/api\/interviews\/(\w+)\/consent$/, ({actor, json, m}) => { const body = json(); return mutate(d => d.interviewConsent(actor, m[1], body)); }],
     ['POST', /^\/api\/interviews\/(\w+)\/transcribe$/, async ({actor, req, raw, m}) => {
@@ -461,11 +490,11 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     }
     let replayKey = null;
     try {
-      if (route[0] === 'POST' && !actor) throw new DomainError('unauthorized', 'Missing or unknown token');
+      if (route[0] === 'POST' && !actor && url.pathname !== '/api/qa/questions') throw new DomainError('unauthorized', 'Missing or unknown token');
       const raw = route[0] === 'POST' ? await readBody(req, /\/media(\/|$)|\/transcribe$/.test(url.pathname) ? MAX_UPLOAD : 1e6) : Buffer.alloc(0);
       // Retries: the same Idempotency-Key from the same identity returns the first outcome instead of acting twice.
       const key = req.headers['idempotency-key'];
-      if (key && route[0] === 'POST') {
+      if (key && route[0] === 'POST' && actor) {
         if (!/^[\w.:-]{8,120}$/.test(key)) throw new DomainError('bad_request', 'Idempotency-Key must be 8–120 characters [A-Za-z0-9_.:-]');
         replayKey = `${actor.type}:${actor.id}:${key}`;
         // Identity = method, path, the metadata headers that change meaning (upload title/credit/licence/rights), body.
@@ -522,7 +551,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const port = +process.env.PORT || 8787, host = process.env.HOST || '127.0.0.1';
   const people = process.env.ECHO_PEOPLE ? JSON.parse(process.env.ECHO_PEOPLE) : {};
   const dataDir = process.env.ECHO_DATA_DIR || join(ROOT, 'data');
-  const echo = createEchoServer({dataDir, seedOptions: {people}});
+  const echo = createEchoServer({dataDir, seedOptions: {people, format: process.env.ECHO_FORMAT || undefined}});
   echo.server.listen(port, host, () => {
     const base = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`;
     writeFileSync(join(dataDir, 'credentials.txt'), credentialsText(echo.desk.state, base), {mode: 0o600});
