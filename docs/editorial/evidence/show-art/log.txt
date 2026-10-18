@@ -1,0 +1,35 @@
+[0.3s] scenario art; server http://127.0.0.1:60959
+[0.3s] SCRIPTED creator: uploads rehearsal file "სატესტო გამოსახულება (ნამუშევრის ადგილას)" and declares its uses
+[0.5s] SCRIPTED creator: uploads rehearsal file "სატესტო გამოსახულება (ჩანახატის ადგილას)" and declares its uses
+[0.6s] SCRIPTED creator: answers the Creator Interview (typed)
+[0.6s] SCRIPTED creator: reviews and approves the exact brief version
+[0.6s] SCRIPTED creator: prepares the segment and shares the approved brief with the editorial desk
+[0.6s] SCRIPTED creator: requests airtime 34s + 30s
+[0.6s] SCRIPTED producer: confirms the airtime
+[1.7s] PASS board: the editorial desk is ready (approved, shared brief; media; confirmed slot)
+[1.7s] SCRIPTED producer: verifies a fact against its source on the board
+[1.7s] SCRIPTED producer: asks the rule-based planner for a draft
+[1.8s] PASS board: the draft is shown in full before approval (question, quotes, purposes, author)
+[1.8s] SCRIPTED producer: approves the exact rundown version
+[1.9s] SCRIPTED producer: approves the guest's segment revision and publishes
+[1.9s] PASS publication carries the approved rundown and its author — RD1 by ECHO rule-based planner
+[2.5s] SCRIPTED viewer: submits a question in the viewer form
+[2.6s] SCRIPTED second viewer: tries to inject instructions
+[2.9s] PASS 390 px viewer: no horizontal scroll, question form usable
+[2.9s] SCRIPTED producer: goes live (4 s)
+[25.6s] PASS r1_1_opening: on air, rehearsal label and the day's question visible
+[25.6s] PASS r1_1_opening: who is speaking is named, captions only (no claimed speech) — ნიკა (ინტერვიუდან) · ავტორი · მისი დამტკიცებული სიტყვები | „ჯერ ქუჩაში ფანქრით ჩანახატები გავაკეთე, მერე სახელოსნოში ზე
+[57.4s] PASS work: on air, rehearsal label and the day's question visible
+[57.4s] PASS work: the guest's work is shown with its editorial purpose — რატომ ვუყურებთ · 2/2
+[88.0s] PASS r1_3_debate: on air, rehearsal label and the day's question visible
+[88.0s] PASS r1_3_debate: who is speaking is named, captions only (no claimed speech) — ნიკა (ინტერვიუდან) · ავტორი · მისი დამტკიცებული სიტყვები | „ჩანახატიდან ტილომდე გზა.“
+[102.9s] SCRIPTED producer: selects the viewer question on the board (Q&A slot)
+[103.9s] SCRIPTED guest: types an answer on their board
+[104.8s] SCRIPTED producer: releases the answer to air
+[104.8s] PASS Q&A: the viewer's own question airs, attributed to the viewer and the moderator
+[104.8s] PASS Q&A: the answer is attributed to its real source (the guest in person) — პასუხობს: ნიკა — ავტორი, პირადად (ტექსტით)
+[104.8s] PASS Q&A: the injected viewer text was not selected and changed nothing
+[175.7s] PASS r1_5_takeaway: on air, rehearsal label and the day's question visible
+[175.7s] PASS r1_5_takeaway: who is speaking is named, captions only (no claimed speech) — ECHO · წამყვანი | დღევანდელი პასუხი: „ქალაქი წვიმაში“ ადამიანის ხელით შეიქმნა 
+[187.0s] PASS captions show the guest's words only as quotes from their brief
+[187.0s] PASS no page errors

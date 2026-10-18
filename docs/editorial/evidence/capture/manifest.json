@@ -1,0 +1,619 @@
+{
+ "episodeId": "ai-authorship-001",
+ "title": "ზღვის სიმღერა: ხმა ქეთისია, ინსტრუმენტები Suno-ს",
+ "durationSec": 180,
+ "publicationId": 1,
+ "publishRevision": 3,
+ "segments": [
+  {
+   "id": "r1_1_opening",
+   "module": "host",
+   "title": "ვინ არის ავტორი",
+   "owner": "ECHO პროდიუსერი",
+   "ownerId": "producer",
+   "start": 0,
+   "duration": 20,
+   "revision": 1,
+   "confirmed": false,
+   "content": {
+    "editorial": {
+     "rundownId": "RD1",
+     "block": "b1-opening",
+     "kind": "opening",
+     "purpose": "თემის და სტუმრის წარდგენა, ცენტრალური კითხვის დასმა",
+     "lines": [
+      {
+       "speaker": "moderator",
+       "kind": "question",
+       "text": "AI-მ შექმნა. ვინ არის ავტორი? დღეს ჩვენთანაა ქეთი და მისი სინგლი ზღვის სიმღერა.",
+       "refs": []
+      },
+      {
+       "speaker": "moderator",
+       "kind": "transition",
+       "text": "მელოდია და ხმა მისია, არანჟირება კი Suno-ს. სად გადის ავტორობის ზღვარი?",
+       "refs": [
+        "creationProcess"
+       ]
+      },
+      {
+       "speaker": "guest",
+       "kind": "quote",
+       "text": "მინდა მაყურებელმა გაიგოს, რომ ხმა და ტექსტი ჩემია.",
+       "refs": [
+        "presentationFocus"
+       ]
+      }
+     ]
+    },
+    "host": {
+     "text": "AI-მ შექმნა. ვინ არის ავტორი? დღეს ჩვენთანაა ქეთი და მისი სინგლი ზღვის სიმღერა. მელოდია და ხმა მისია, არანჟირება კი Suno-ს. სად გადის ავტორობის ზღვარი? მინდა მაყურებელმა გაიგოს, რომ ხმა და ტექსტი ჩემია.",
+     "captions": [
+      {
+       "start": 0.6,
+       "end": 8.11,
+       "text": "AI-მ შექმნა. ვინ არის ავტორი? დღეს ჩვენთანაა ქეთი და მისი სინგლი ზღვის სიმღერა.",
+       "speaker": "moderator",
+       "who": "ECHO",
+       "kind": "question"
+      },
+      {
+       "start": 8.11,
+       "end": 14.85,
+       "text": "მელოდია და ხმა მისია, არანჟირება კი Suno-ს. სად გადის ავტორობის ზღვარი?",
+       "speaker": "moderator",
+       "who": "ECHO",
+       "kind": "transition",
+       "ref": "creationProcess"
+      },
+      {
+       "start": 14.85,
+       "end": 19.6,
+       "text": "მინდა მაყურებელმა გაიგოს, რომ ხმა და ტექსტი ჩემია.",
+       "speaker": "guest",
+       "who": "ქეთი (ინტერვიუდან)",
+       "kind": "quote",
+       "ref": "presentationFocus"
+      }
+     ],
+     "turns": [
+      {
+       "presenter": "presenter-1",
+       "start": 0.6,
+       "end": 8.11
+      },
+      {
+       "presenter": "presenter-1",
+       "start": 8.11,
+       "end": 14.85
+      },
+      {
+       "presenter": "guest",
+       "start": 14.85,
+       "end": 19.6
+      }
+     ],
+     "cues": [],
+     "duration": 20,
+     "audio": null,
+     "captionsOnly": true,
+     "credit": "რედაქციული გეგმა დამტკიცებულია პროდიუსერის მიერ · მხოლოდ სუბტიტრები (ხმის გარეშე)"
+    }
+   },
+   "assets": []
+  },
+  {
+   "id": "r1_2_process",
+   "module": "host",
+   "title": "ზღვა, ბებია და Suno",
+   "owner": "ECHO პროდიუსერი",
+   "ownerId": "producer",
+   "start": 20,
+   "duration": 30,
+   "revision": 1,
+   "confirmed": false,
+   "content": {
+    "editorial": {
+     "rundownId": "RD1",
+     "block": "b2-process",
+     "kind": "process",
+     "purpose": "ინტერვიუ: შთაგონება და როგორ გაიყო სამუშაო ქეთისა და Suno-ს შორის",
+     "lines": [
+      {
+       "speaker": "moderator",
+       "kind": "question",
+       "text": "ქეთი, რით დაიწყო ეს სიმღერა: ბათუმის ზღვით თუ ბებიის სიმღერებით?",
+       "refs": [
+        "inspiration"
+       ]
+      },
+      {
+       "speaker": "guest",
+       "kind": "quote",
+       "text": "ბათუმში ზღვის ხმამ და ბებიის ძველმა სიმღერებმა შთამაგონა. ის ყოველ საღამოს მღეროდა.",
+       "refs": [
+        "inspiration"
+       ]
+      },
+      {
+       "speaker": "moderator",
+       "kind": "question",
+       "text": "და როდის შემოვიდა Suno? რა გააკეთა მან და რა გააკეთეთ თქვენ?",
+       "refs": [
+        "creationProcess"
+       ]
+      },
+      {
+       "speaker": "guest",
+       "kind": "quote",
+       "text": "მელოდია ფორტეპიანოზე დავწერე და ჩემი ხმით ჩავწერე. არანჟირება და ინსტრუმენტები Suno-მ შექმნა ჩემი მითითებით, შემდეგ ათობით ვარიანტიდან ავირჩიე და მიქსი თავად გავაკეთე.",
+       "refs": [
+        "creationProcess"
+       ]
+      }
+     ]
+    },
+    "host": {
+     "text": "ქეთი, რით დაიწყო ეს სიმღერა: ბათუმის ზღვით თუ ბებიის სიმღერებით? ბათუმში ზღვის ხმამ და ბებიის ძველმა სიმღერებმა შთამაგონა. ის ყოველ საღამოს მღეროდა. და როდის შემოვიდა Suno? რა გააკეთა მან და რა გააკეთეთ თქვენ? მელოდია ფორტეპიანოზე დავწერე და ჩემი ხმით ჩავწერე. არანჟირება და ინსტრუმენტები Suno-მ შექმნა ჩემი მითითებით, შემდეგ ათობით ვარიანტიდან ავირჩიე და მიქსი თავად გავაკეთე.",
+     "captions": [
+      {
+       "start": 0.6,
+       "end": 5.56,
+       "text": "ქეთი, რით დაიწყო ეს სიმღერა: ბათუმის ზღვით თუ ბებიის სიმღერებით?",
+       "speaker": "moderator",
+       "who": "ECHO",
+       "kind": "question",
+       "ref": "inspiration"
+      },
+      {
+       "start": 5.56,
+       "end": 12,
+       "text": "ბათუმში ზღვის ხმამ და ბებიის ძველმა სიმღერებმა შთამაგონა. ის ყოველ საღამოს მღეროდა.",
+       "speaker": "guest",
+       "who": "ქეთი (ინტერვიუდან)",
+       "kind": "quote",
+       "ref": "inspiration"
+      },
+      {
+       "start": 12,
+       "end": 16.65,
+       "text": "და როდის შემოვიდა Suno? რა გააკეთა მან და რა გააკეთეთ თქვენ?",
+       "speaker": "moderator",
+       "who": "ECHO",
+       "kind": "question",
+       "ref": "creationProcess"
+      },
+      {
+       "start": 16.65,
+       "end": 29.6,
+       "text": "მელოდია ფორტეპიანოზე დავწერე და ჩემი ხმით ჩავწერე. არანჟირება და ინსტრუმენტები Suno-მ შექმნა ჩემი მითითებით, შემდეგ ათობით ვარიანტიდან ავირჩიე და მიქსი თავად გავაკეთე.",
+       "speaker": "guest",
+       "who": "ქეთი (ინტერვიუდან)",
+       "kind": "quote",
+       "ref": "creationProcess"
+      }
+     ],
+     "turns": [
+      {
+       "presenter": "presenter-1",
+       "start": 0.6,
+       "end": 5.56
+      },
+      {
+       "presenter": "guest",
+       "start": 5.56,
+       "end": 12
+      },
+      {
+       "presenter": "presenter-1",
+       "start": 12,
+       "end": 16.65
+      },
+      {
+       "presenter": "guest",
+       "start": 16.65,
+       "end": 29.6
+      }
+     ],
+     "cues": [],
+     "duration": 30,
+     "audio": null,
+     "captionsOnly": true,
+     "credit": "რედაქციული გეგმა დამტკიცებულია პროდიუსერის მიერ · მხოლოდ სუბტიტრები (ხმის გარეშე)"
+    }
+   },
+   "assets": []
+  },
+  {
+   "id": "work",
+   "module": "music",
+   "title": "სტუმრის ნამუშევარი",
+   "owner": "ქეთი",
+   "ownerId": "creator-a",
+   "start": 50,
+   "duration": 45,
+   "revision": 2,
+   "confirmed": true,
+   "content": {
+    "assetId": "track",
+    "offset": 0,
+    "role": "work",
+    "brief": {
+     "interviewId": "IV1",
+     "version": 1,
+     "hash": "8f8901a5fd3b5c3598553b3593cf163b3991062388fcefcd864ebb174ff2af90",
+     "displayName": "ქეთი",
+     "title": "ზღვის სიმღერა",
+     "category": "music",
+     "aiInvolvement": "substantial",
+     "quotes": []
+    }
+   },
+   "assets": [
+    {
+     "id": "track",
+     "sha256": "405ea6e0d62b177693cd6e396bf7b7e5625c9e8a5d6f29a28b444f015216e8cc",
+     "url": "/media/405ea6e0d62b177693cd6e396bf7b7e5625c9e8a5d6f29a28b444f015216e8cc",
+     "title": "ზღვის სიმღერა",
+     "credit": "ქეთი",
+     "license": "Creator-declared uses: publicBroadcast, editing, replays",
+     "kind": "audio"
+    }
+   ]
+  },
+  {
+   "id": "r1_4_debate",
+   "module": "host",
+   "title": "რა გააკეთა Suno-მ და რა ვერა",
+   "owner": "ECHO პროდიუსერი",
+   "ownerId": "producer",
+   "start": 95,
+   "duration": 30,
+   "revision": 1,
+   "confirmed": false,
+   "content": {
+    "editorial": {
+     "rundownId": "RD1",
+     "block": "b4-debate",
+     "kind": "debate",
+     "purpose": "ატლასი ხსნის ინსტრუმენტის შესაძლებლობებს, ნოვა განცხადებებს ფაქტებისგან აცალკევებს",
+     "lines": [
+      {
+       "speaker": "enthusiast",
+       "kind": "viewpoint",
+       "text": "Suno მითითებიდან ქმნის მზა არანჟირებას: ინსტრუმენტებს, ჰარმონიას. რასაც ვერ აკეთებს: ქეთის ხმას და ფორტეპიანოზე დაწერილ მელოდიას ვერ იმეორებს, ამიტომ არჩევანი და მიქსი ადამიანზე რჩება.",
+       "refs": [
+        "creationProcess"
+       ]
+      },
+      {
+       "speaker": "analyst",
+       "kind": "claim",
+       "text": "არანჟირება და ინსტრუმენტები Suno-მ შექმნა, ეს ქეთის სიტყვებია. ჩვენ გვაქვს მისი განცხადება, არა ჩანაწერის ისტორია. ხმა და ტექსტი მისია თუ არა, დღეს ვერ შევამოწმებთ.",
+       "refs": [
+        "creationProcess",
+        "presentationFocus"
+       ]
+      },
+      {
+       "speaker": "moderator",
+       "kind": "humor",
+       "text": "Suno-ს ჯერ არავის უთქვამს, რომ ზღვას ინსტრუმენტად ვერ დაუკრავ. ის მაინც ცდილობს.",
+       "refs": []
+      }
+     ]
+    },
+    "host": {
+     "text": "Suno მითითებიდან ქმნის მზა არანჟირებას: ინსტრუმენტებს, ჰარმონიას. რასაც ვერ აკეთებს: ქეთის ხმას და ფორტეპიანოზე დაწერილ მელოდიას ვერ იმეორებს, ამიტომ არჩევანი და მიქსი ადამიანზე რჩება. არანჟირება და ინსტრუმენტები Suno-მ შექმნა, ეს ქეთის სიტყვებია. ჩვენ გვაქვს მისი განცხადება, არა ჩანაწერის ისტორია. ხმა და ტექსტი მისია თუ არა, დღეს ვერ შევამოწმებთ. Suno-ს ჯერ არავის უთქვამს, რომ ზღვას ინსტრუმენტად ვერ დაუკრავ. ის მაინც ცდილობს.",
+     "captions": [
+      {
+       "start": 0.6,
+       "end": 13.07,
+       "text": "Suno მითითებიდან ქმნის მზა არანჟირებას: ინსტრუმენტებს, ჰარმონიას. რასაც ვერ აკეთებს: ქეთის ხმას და ფორტეპიანოზე დაწერილ მელოდიას ვერ იმეორებს, ამიტომ არჩევანი და მიქსი ადამიანზე რჩება.",
+       "speaker": "enthusiast",
+       "who": "ატლასი",
+       "kind": "viewpoint",
+       "ref": "creationProcess"
+      },
+      {
+       "start": 13.07,
+       "end": 24.18,
+       "text": "არანჟირება და ინსტრუმენტები Suno-მ შექმნა, ეს ქეთის სიტყვებია. ჩვენ გვაქვს მისი განცხადება, არა ჩანაწერის ისტორია. ხმა და ტექსტი მისია თუ არა, დღეს ვერ შევამოწმებთ.",
+       "speaker": "analyst",
+       "who": "ნოვა",
+       "kind": "claim",
+       "ref": "creationProcess"
+      },
+      {
+       "start": 24.18,
+       "end": 29.6,
+       "text": "Suno-ს ჯერ არავის უთქვამს, რომ ზღვას ინსტრუმენტად ვერ დაუკრავ. ის მაინც ცდილობს.",
+       "speaker": "moderator",
+       "who": "ECHO",
+       "kind": "humor"
+      }
+     ],
+     "turns": [
+      {
+       "presenter": "presenter-2",
+       "start": 0.6,
+       "end": 13.07
+      },
+      {
+       "presenter": "presenter-3",
+       "start": 13.07,
+       "end": 24.18
+      },
+      {
+       "presenter": "presenter-1",
+       "start": 24.18,
+       "end": 29.6
+      }
+     ],
+     "cues": [],
+     "duration": 30,
+     "audio": null,
+     "captionsOnly": true,
+     "credit": "რედაქციული გეგმა დამტკიცებულია პროდიუსერის მიერ · მხოლოდ სუბტიტრები (ხმის გარეშე)"
+    }
+   },
+   "assets": []
+  },
+  {
+   "id": "r1_5_evidence",
+   "module": "host",
+   "title": "რას ამბობს დოკუმენტი",
+   "owner": "ECHO პროდიუსერი",
+   "ownerId": "producer",
+   "start": 125,
+   "duration": 27,
+   "revision": 1,
+   "confirmed": false,
+   "content": {
+    "editorial": {
+     "rundownId": "RD1",
+     "block": "b5-evidence",
+     "kind": "evidence",
+     "purpose": "შემოწმებული ფაქტი და მისი შედარება ქეთის პროცესთან",
+     "lines": [
+      {
+       "speaker": "analyst",
+       "kind": "fact",
+       "text": "აშშ-ის საავტორო უფლებების ოფისის 2025 წლის იანვრის ანგარიშის თანახმად, მხოლოდ მითითება (პრომპტი) ჯერჯერობით არ აქცევს ადამიანს AI-ს მიერ შექმნილი შედეგის ავტორად; დაცვა შეიძლება ეხებოდეს ადამიანის მიერ შერჩეულ, დალაგებულ ან შეცვლილ ნაწილს.",
+       "refs": [
+        "us-copyright-office-2025"
+       ]
+      },
+      {
+       "speaker": "analyst",
+       "kind": "viewpoint",
+       "text": "ქეთიმ ვარიანტები შეარჩია და მიქსი თავად გააკეთა. ეს სწორედ შერჩევა და შეცვლაა. მაგრამ ეს აშშ-ის ოფისის პოზიციაა, სხვა ქვეყნებზე ის არაფერს ამბობს.",
+       "refs": [
+        "creationProcess",
+        "us-copyright-office-2025"
+       ]
+      }
+     ]
+    },
+    "host": {
+     "text": "აშშ-ის საავტორო უფლებების ოფისის 2025 წლის იანვრის ანგარიშის თანახმად, მხოლოდ მითითება (პრომპტი) ჯერჯერობით არ აქცევს ადამიანს AI-ს მიერ შექმნილი შედეგის ავტორად; დაცვა შეიძლება ეხებოდეს ადამიანის მიერ შერჩეულ, დალაგებულ ან შეცვლილ ნაწილს. ქეთიმ ვარიანტები შეარჩია და მიქსი თავად გააკეთა. ეს სწორედ შერჩევა და შეცვლაა. მაგრამ ეს აშშ-ის ოფისის პოზიციაა, სხვა ქვეყნებზე ის არაფერს ამბობს.",
+     "captions": [
+      {
+       "start": 0.6,
+       "end": 16.74,
+       "text": "აშშ-ის საავტორო უფლებების ოფისის 2025 წლის იანვრის ანგარიშის თანახმად, მხოლოდ მითითება (პრომპტი) ჯერჯერობით არ აქცევს ადამიანს AI-ს მიერ შექმნილი შედეგის ავტორად; დაცვა შეიძლება ეხებოდეს ადამიანის მიერ შერჩეულ, დალაგებულ ან შეცვლილ ნაწილს.",
+       "speaker": "analyst",
+       "who": "ნოვა",
+       "kind": "fact",
+       "ref": "us-copyright-office-2025"
+      },
+      {
+       "start": 16.74,
+       "end": 26.6,
+       "text": "ქეთიმ ვარიანტები შეარჩია და მიქსი თავად გააკეთა. ეს სწორედ შერჩევა და შეცვლაა. მაგრამ ეს აშშ-ის ოფისის პოზიციაა, სხვა ქვეყნებზე ის არაფერს ამბობს.",
+       "speaker": "analyst",
+       "who": "ნოვა",
+       "kind": "viewpoint",
+       "ref": "creationProcess"
+      }
+     ],
+     "turns": [
+      {
+       "presenter": "presenter-3",
+       "start": 0.6,
+       "end": 16.74
+      },
+      {
+       "presenter": "presenter-3",
+       "start": 16.74,
+       "end": 26.6
+      }
+     ],
+     "cues": [],
+     "duration": 27,
+     "audio": null,
+     "captionsOnly": true,
+     "credit": "რედაქციული გეგმა დამტკიცებულია პროდიუსერის მიერ · მხოლოდ სუბტიტრები (ხმის გარეშე)"
+    }
+   },
+   "assets": []
+  },
+  {
+   "id": "r1_6_qa",
+   "module": "qa",
+   "title": "მაყურებლის კითხვა",
+   "owner": "ECHO პროდიუსერი",
+   "ownerId": "producer",
+   "start": 152,
+   "duration": 20,
+   "revision": 1,
+   "confirmed": false,
+   "content": {
+    "editorial": {
+     "rundownId": "RD1",
+     "block": "b6-qa",
+     "kind": "qa",
+     "purpose": "ცოცხალი შეკითხვის შემოყვანა",
+     "lines": [
+      {
+       "speaker": "moderator",
+       "kind": "transition",
+       "text": "ახლა მაყურებლის დროა. რედაქციამ შეარჩია ცოცხალი შეკითხვა, რომელსაც ქეთი პირდაპირ ეთერში უპასუხებს.",
+       "refs": []
+      }
+     ]
+    },
+    "host": {
+     "text": "ახლა მაყურებლის დროა. რედაქციამ შეარჩია ცოცხალი შეკითხვა, რომელსაც ქეთი პირდაპირ ეთერში უპასუხებს.",
+     "captions": [
+      {
+       "start": 0.6,
+       "end": 19.6,
+       "text": "ახლა მაყურებლის დროა. რედაქციამ შეარჩია ცოცხალი შეკითხვა, რომელსაც ქეთი პირდაპირ ეთერში უპასუხებს.",
+       "speaker": "moderator",
+       "who": "ECHO",
+       "kind": "transition"
+      }
+     ],
+     "turns": [
+      {
+       "presenter": "presenter-1",
+       "start": 0.6,
+       "end": 19.6
+      }
+     ],
+     "cues": [],
+     "duration": 20,
+     "audio": null,
+     "captionsOnly": true,
+     "credit": "რედაქციული გეგმა დამტკიცებულია პროდიუსერის მიერ · მხოლოდ სუბტიტრები (ხმის გარეშე)"
+    },
+    "qa": {
+     "prompt": "ჰკითხეთ ქეთის მის სიმღერაზე, Suno-ზე ან იმაზე, ვინ არის ავტორი, როცა ინსტრუმენტები AI-მ შექმნა."
+    }
+   },
+   "assets": []
+  },
+  {
+   "id": "r1_7_takeaway",
+   "module": "host",
+   "title": "რა გავიგეთ",
+   "owner": "ECHO პროდიუსერი",
+   "ownerId": "producer",
+   "start": 172,
+   "duration": 8,
+   "revision": 1,
+   "confirmed": false,
+   "content": {
+    "editorial": {
+     "rundownId": "RD1",
+     "block": "b7-takeaway",
+     "kind": "takeaway",
+     "purpose": "დასკვნა ღია კითხვით",
+     "lines": [
+      {
+       "speaker": "moderator",
+       "kind": "viewpoint",
+       "text": "ხმა, ტექსტი, მელოდია და არჩევანი ქეთისია, არანჟირება Suno-სი. ავტორობა აქ ხაზი კი არა, ზონაა.",
+       "refs": [
+        "creationProcess",
+        "presentationFocus"
+       ]
+      }
+     ]
+    },
+    "host": {
+     "text": "ხმა, ტექსტი, მელოდია და არჩევანი ქეთისია, არანჟირება Suno-სი. ავტორობა აქ ხაზი კი არა, ზონაა.",
+     "captions": [
+      {
+       "start": 0.6,
+       "end": 7.6,
+       "text": "ხმა, ტექსტი, მელოდია და არჩევანი ქეთისია, არანჟირება Suno-სი. ავტორობა აქ ხაზი კი არა, ზონაა.",
+       "speaker": "moderator",
+       "who": "ECHO",
+       "kind": "viewpoint",
+       "ref": "creationProcess"
+      }
+     ],
+     "turns": [
+      {
+       "presenter": "presenter-1",
+       "start": 0.6,
+       "end": 7.6
+      }
+     ],
+     "cues": [],
+     "duration": 8,
+     "audio": null,
+     "captionsOnly": true,
+     "credit": "რედაქციული გეგმა დამტკიცებულია პროდიუსერის მიერ · მხოლოდ სუბტიტრები (ხმის გარეშე)"
+    }
+   },
+   "assets": []
+  }
+ ],
+ "editorial": {
+  "rundownId": "RD1",
+  "hash": "435e74a9a1041dbbfb35a36ed6c7a88f599db60592c4ae62cc2a8d530dfbc8e4",
+  "packetHash": "d2570f0adbd0ec48355453f392c55b44e1d49518d2907b774aa3817f9657aa4e",
+  "author": {
+   "kind": "agent",
+   "id": "agent-editor",
+   "label": "ECHO-ს რედაქციის აგენტი",
+   "client": "Claude Code"
+  },
+  "approvedBy": "producer",
+  "theme": "AI-მ შექმნა. ვინ არის ავტორი?",
+  "centralQuestion": "თუ მელოდია და ხმა ადამიანისაა, არანჟირება კი AI-ს, ვინ არის სიმღერის ავტორი?",
+  "whyItMatters": "ქეთის სინგლი ზუსტად იმ ზღვარზე დგას, სადაც ადამიანის ხმა და ტექსტი AI-ს არანჟირებას ხვდება. მისი შემთხვევა აჩვენებს, რამდენად ადვილია თქმა: ეს ჩემია, და რამდენად რთული მისი დამტკიცება.",
+  "tension": "ქეთი ამბობს, რომ ხმა, ტექსტი და მელოდია მისია, არანჟირება და ინსტრუმენტები კი Suno-მ შექმნა. ავტორობაც, AI-ს როლიც და უფლებებიც ჯერ მხოლოდ მისი განცხადებაა, არა შემოწმებული ფაქტი.",
+  "takeaway": {
+   "text": "ქეთის განცხადებით ხმა, ტექსტი და მელოდია მისია, არანჟირება Suno-ს. ვინ არის ავტორი, დამოკიდებულია იმაზე, რამდენს ითვლის ადამიანის არჩევანი და მიქსი. პასუხი ღიაა.",
+   "unresolved": true
+  },
+  "audienceSlot": {
+   "prompt": "ჰკითხეთ ქეთის მის სიმღერაზე, Suno-ზე ან იმაზე, ვინ არის ავტორი, როცა ინსტრუმენტები AI-მ შექმნა."
+  },
+  "guest": {
+   "personId": "creator-a",
+   "displayName": "ქეთი"
+  },
+  "work": {
+   "segmentId": "work",
+   "title": "ზღვის სიმღერა",
+   "media": [
+    {
+     "assetId": "track",
+     "purpose": "სინგლის პრემიერა: მაყურებელმა თავად უნდა მოისმინოს, სად არის ქეთის ხმა და მელოდია და სად Suno-ს არანჟირება"
+    }
+   ]
+  },
+  "speakers": {
+   "moderator": {
+    "name": "ECHO",
+    "role": "წამყვანი"
+   },
+   "enthusiast": {
+    "name": "ატლასი",
+    "role": "ტექნოლოგიების ენთუზიასტი"
+   },
+   "analyst": {
+    "name": "ნოვა",
+    "role": "სკეპტიკოსი ანალიტიკოსი"
+   }
+  },
+  "facts": [
+   {
+    "id": "us-copyright-office-2025",
+    "source": {
+     "title": "U.S. Copyright Office, Copyright and Artificial Intelligence, Part 2: Copyrightability (29 January 2025)",
+     "url": "https://www.copyright.gov/ai/Copyright-and-Artificial-Intelligence-Part-2-Copyrightability-Report.pdf"
+    }
+   }
+  ]
+ },
+ "rehearsal": true,
+ "hash": "9ee81f0c5531c0c84dba652ae47d4d1daabb76dbae08c8fa7c1efce54694fc99",
+ "publishedAt": 1792293247166,
+ "publishedBy": "producer"
+}

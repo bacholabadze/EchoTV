@@ -1,0 +1,36 @@
+[0.2s] scenario music; server http://127.0.0.1:60344
+[0.2s] SCRIPTED creator: uploads rehearsal file "სარეპეტიციო ტონი (არა ავტორის ნამუშევარი)" and declares its uses
+[0.4s] SCRIPTED creator: answers the Creator Interview (typed)
+[0.4s] SCRIPTED creator: reviews and approves the exact brief version
+[0.4s] SCRIPTED creator: prepares the segment and shares the approved brief with the editorial desk
+[0.4s] SCRIPTED creator: requests airtime 50s + 45s
+[0.4s] SCRIPTED producer: confirms the airtime
+[1.0s] PASS board: the editorial desk is ready (approved, shared brief; media; confirmed slot)
+[1.0s] SCRIPTED producer: verifies a fact against its source on the board
+[1.0s] SCRIPTED producer: asks the rule-based planner for a draft
+[1.1s] PASS board: the draft is shown in full before approval (question, quotes, purposes, author)
+[1.2s] SCRIPTED producer: approves the exact rundown version
+[1.3s] SCRIPTED producer: approves the guest's segment revision and publishes
+[1.3s] PASS publication carries the approved rundown and its author — RD1 by ECHO rule-based planner
+[1.9s] SCRIPTED viewer: submits a question in the viewer form
+[2.0s] SCRIPTED second viewer: tries to inject instructions
+[2.2s] PASS 390 px viewer: no horizontal scroll, question form usable
+[2.2s] SCRIPTED producer: goes live (4 s)
+[18.4s] PASS r1_1_opening: on air, rehearsal label and the day's question visible
+[18.4s] PASS r1_1_opening: who is speaking is named, captions only (no claimed speech) — ECHO · წამყვანი | თუ „ზღვის სიმღერა“ დიდწილად AI-მ შექმნა, რაში მდგომარეობს ქე
+[43.7s] PASS r1_2_process: on air, rehearsal label and the day's question visible
+[43.7s] PASS r1_2_process: who is speaking is named, captions only (no claimed speech) — ნოვა · სკეპტიკოსი ანალიტიკოსი | ეს ქეთის საკუთარი აღწერაა. ECHO-ს დამოუკიდებლად არ გადაუმოწმ
+[81.0s] PASS work: on air, rehearsal label and the day's question visible
+[81.0s] PASS work: the guest's work is shown with its editorial purpose — რატომ ვუსმენთ: ვისმენთ სიმღერას „ზღვის სიმღერა“ ავტორის ნებართვით: ეს თავად ის ნამუშევარია, რომელზეც ვმსჯელობთ.
+[123.8s] PASS r1_4_debate: on air, rehearsal label and the day's question visible
+[123.8s] PASS r1_4_debate: who is speaking is named, captions only (no claimed speech) — ნოვა · სკეპტიკოსი ანალიტიკოსი | აშშ-ის საავტორო უფლებების ოფისის 2025 წლის იანვრის ანგარიშის
+[143.3s] SCRIPTED producer: selects the viewer question on the board (Q&A slot)
+[144.3s] SCRIPTED guest: types an answer on their board
+[145.1s] SCRIPTED producer: releases the answer to air
+[145.2s] PASS Q&A: the viewer's own question airs, attributed to the viewer and the moderator
+[145.2s] PASS Q&A: the answer is attributed to its real source (the guest in person) — პასუხობს: ქეთი — ავტორი, პირადად (ტექსტით)
+[145.2s] PASS Q&A: the injected viewer text was not selected and changed nothing
+[180.0s] PASS r1_6_takeaway: on air, rehearsal label and the day's question visible
+[180.0s] PASS r1_6_takeaway: who is speaking is named, captions only (no claimed speech) — ECHO · წამყვანი | დღეს ბოლომდე ვერ გადავწყვიტეთ, სად გადის ავტორობის ზღვარი. ვ
+[186.5s] PASS captions show the guest's words only as quotes from their brief
+[186.5s] PASS no page errors
