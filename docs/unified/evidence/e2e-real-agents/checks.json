@@ -1,0 +1,90 @@
+{
+ "entry": "agent",
+ "checks": [
+  {
+   "name": "upload passed the technical check; rights declared",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Keti's agent completed the interview over MCP",
+   "ok": true,
+   "detail": "review; answered: who:agent inspiration:agent process:agent focus:agent media:agent notes:skipped"
+  },
+  {
+   "name": "brief fields are the owner's words, prepared by the agent",
+   "ok": true,
+   "detail": "ქეთი (სატესტო) / ზღვის სიმღერა; missing: none"
+  },
+  {
+   "name": "creator approval of the exact version",
+   "ok": true,
+   "detail": "v1"
+  },
+  {
+   "name": "premiere prepared from the approved brief (new revision, awaiting content review)",
+   "ok": true,
+   "detail": "r2 submitted"
+  },
+  {
+   "name": "content review",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "A -> B -> A: Bacho's agent proposed, Keti's agent answered the Showrunner, Bacho's agent adapted",
+   "ok": true,
+   "detail": "awaiting_approval v2; Keti's agent: accept 5 — \"Keti permits exactly the 5 seconds needed: shorten Music intro from 10s to 5s. Music premiere must retain its confirmed 50s start and full 60s duration.\""
+  },
+  {
+   "name": "the Showrunner kept the confirmed premiere at 50 s",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "an agent cannot approve",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "final revision committed",
+   "ok": true,
+   "detail": "r3"
+  },
+  {
+   "name": "publication",
+   "ok": true,
+   "detail": "#1 r3"
+  },
+  {
+   "name": "the programme carries only air-facing brief fields",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "broadcast: the premiere starts at 0:50 with the brief's title, credit and AI disclosure",
+   "ok": true,
+   "detail": "onset 50.0015s; \"ზღვის სიმღერა\" / \"ქეთი (სატესტო) · შექმნილია AI-ს გარეშე\" / \"Premiere · confirmed slot 0:50\""
+  },
+  {
+   "name": "broadcast: authorised audio playing, labels match",
+   "ok": true,
+   "detail": "level 0.125; /media/405ea6e0d62b177693cd6e396bf7b7e5625c9e8a5d6f29a28b444f015216e8cc"
+  },
+  {
+   "name": "Keti's interview and preparation were real MCP tool calls",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "scriptedHumanSteps": [
+  "[0.0s] SCRIPTED STAND-IN (not a person): Keti uploads her track and declares public broadcast, short edits and replays",
+  "[37.5s] SCRIPTED STAND-IN (not a person): Keti reviews and approves her brief on ECHO",
+  "[56.8s] SCRIPTED STAND-IN (not a person): the producer reviews the prepared premiere",
+  "[98.8s] SCRIPTED STAND-IN (not a person): Bacho approves programme version 2",
+  "[98.8s] SCRIPTED STAND-IN (not a person): Keti approves programme version 2",
+  "[98.8s] SCRIPTED STAND-IN (not a person): ECHO Producer approves programme version 2",
+  "[98.8s] SCRIPTED STAND-IN (not a person): the producer publishes",
+  "[103.0s] SCRIPTED STAND-IN (not a person): the producer goes live"
+ ]
+}

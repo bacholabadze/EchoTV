@@ -1,0 +1,21 @@
+#1 (private) Keti added a audio file to their private library
+#2 (private) Keti declared uses for a library file: publicBroadcast, editing, replays
+#3 (private) Keti: interview IV1 started by Keti's agent
+#4 (private) Keti: creator brief IV1 draft v1
+#5 (private) Keti: creator brief IV1 draft v1
+#6 Keti: creator brief IV1 v1 approved by the creator
+#7 Keti's agent (for Keti) prepared Music premiere from Keti's approved brief (v1) with 1 authorised file(s); revision 2 needs content review
+#8 Music premiere r2: approved
+#9 Bacho's agent proposed: Art gallery 30s→45s — “Bacho would like the Art gallery extended from 30 to 45 seconds so each of the three works gets 15 seconds. The confirmed Music premiere slot stays untouched.”
+#10 Showrunner offers ECHO house time: ECHO interstitial 10s→0s (needs producer approval)
+#11 Showrunner → Keti's agent: Bacho's agent asks for Art gallery 30s→45s. 5s must be found before the confirmed Music premiere at 50s. Can Music intro (10s, your minimum 5s, maximum 10s) give up time? Up to 5s would help.
+#12 Keti's agent: accepts Music intro 10s→5s — “Keti permits exactly the 5 seconds needed: shorten Music intro from 10s to 5s. Music premiere must retain its confirmed 50s start and full 60s duration.”
+#13 Showrunner → Bacho's agent: Space found: Music intro 10s→5s, ECHO interstitial 10s→0s. Confirm your proposal with revise_proposal (adjust your content to the final duration if needed), or withdraw.
+#14 Bacho's agent adapted: Art gallery 30s→45s — “Confirmed at 45 seconds: 15 seconds for each of the three works. Thanks to Keti for the 5 seconds from the intro; the confirmed premiere slot is untouched.”
+#15 Fits: every confirmed slot keeps its time; episode length unchanged. Waiting for: Bacho, Keti, ECHO Producer.
+#16 Bacho approved P1 v2
+#17 Keti approved P1 v2
+#18 ECHO Producer approved P1 v2
+#19 Revision 3 committed from P1: Music intro 0+10s → 0+5s; Art gallery 10+30s → 5+45s; ECHO interstitial 40+10s → 50+0s
+#20 Publication #1 of revision 3 published (d41f31e79ac0)
+#21 Revision 3 on air

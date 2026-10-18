@@ -1,0 +1,1297 @@
+{
+ "episodeId": "one-premiere-three-roles",
+ "title": "One premiere, three roles",
+ "durationSec": 120,
+ "publicationId": 1,
+ "publishRevision": 4,
+ "segments": [
+  {
+   "id": "intro",
+   "module": "music",
+   "title": "Music intro",
+   "owner": "Keti",
+   "ownerId": "creator-b",
+   "start": 0,
+   "duration": 10,
+   "revision": 1,
+   "confirmed": false,
+   "content": {
+    "assetId": "track",
+    "offset": 40,
+    "role": "teaser"
+   },
+   "assets": [
+    {
+     "id": "track",
+     "sha256": "1cc8d7aa42f524ad66d6b44dc8210cb2ac11f1bf29a2bf7630cb96a6f6eea0d8",
+     "url": "/media/1cc8d7aa42f524ad66d6b44dc8210cb2ac11f1bf29a2bf7630cb96a6f6eea0d8",
+     "title": "First Light (rehearsal track)",
+     "credit": "ECHO demo track, synthesised in code (tools/make-demo-track.py)",
+     "license": "CC0 — authored for ECHO",
+     "kind": "audio"
+    }
+   ]
+  },
+  {
+   "id": "gallery",
+   "module": "art",
+   "title": "Art gallery",
+   "owner": "Bacho",
+   "ownerId": "creator-a",
+   "start": 10,
+   "duration": 30,
+   "revision": 1,
+   "confirmed": false,
+   "content": {
+    "slides": [
+     {
+      "assetId": "art-1",
+      "seconds": 10
+     },
+     {
+      "assetId": "art-2",
+      "seconds": 10
+     },
+     {
+      "assetId": "art-3",
+      "seconds": 10
+     }
+    ]
+   },
+   "assets": [
+    {
+     "id": "art-1",
+     "sha256": "f507259116869aa57a050c08788474700f29a10b386bbaaf89af30b7a0f039c6",
+     "url": "/media/f507259116869aa57a050c08788474700f29a10b386bbaaf89af30b7a0f039c6",
+     "title": "Under the Wave off Kanagawa (The Great Wave)",
+     "credit": "Katsushika Hokusai, ca. 1830–32",
+     "license": "Public domain (CC0) — The Met Open Access",
+     "source": "https://www.metmuseum.org/art/collection/search/45434",
+     "kind": "image"
+    },
+    {
+     "id": "art-2",
+     "sha256": "cfaf224f548733bced2e033d9e9ff120108a2e39160e4cc0a7ffc3933ca7c5f0",
+     "url": "/media/cfaf224f548733bced2e033d9e9ff120108a2e39160e4cc0a7ffc3933ca7c5f0",
+     "title": "Wheat Field with Cypresses",
+     "credit": "Vincent van Gogh, 1889",
+     "license": "Public domain (CC0) — The Met Open Access",
+     "source": "https://www.metmuseum.org/art/collection/search/436535",
+     "kind": "image"
+    },
+    {
+     "id": "art-3",
+     "sha256": "1b516c7dd3a37ffd5e54a603402e8bc1fbd2ea9c13f5d55100025073d3153c49",
+     "url": "/media/1b516c7dd3a37ffd5e54a603402e8bc1fbd2ea9c13f5d55100025073d3153c49",
+     "title": "Circus Sideshow (Parade de cirque)",
+     "credit": "Georges Seurat, 1887–88",
+     "license": "Public domain (CC0) — The Met Open Access",
+     "source": "https://www.metmuseum.org/art/collection/search/437654",
+     "kind": "image"
+    }
+   ]
+  },
+  {
+   "id": "interstitial",
+   "module": "host",
+   "title": "ECHO interstitial",
+   "owner": "ECHO Producer",
+   "ownerId": "producer",
+   "start": 40,
+   "duration": 10,
+   "revision": 2,
+   "confirmed": false,
+   "content": {
+    "line": "interstitial",
+    "voice": {
+     "assetId": "voice",
+     "lang": "ka",
+     "lines": [
+      {
+       "presenter": "presenter-3",
+       "text": "მოდით, ნუ ავჩქარდებით. აგენტები შეთანხმდნენ, მაგრამ ეთერში არაფერი არ გავა, სანამ ორივე ადამიანი ღილაკს არ დააჭერს."
+      }
+     ]
+    },
+    "host": {
+     "text": "მოდით, ნუ ავჩქარდებით. აგენტები შეთანხმდნენ, მაგრამ ეთერში არაფერი არ გავა, სანამ ორივე ადამიანი ღილაკს არ დააჭერს.",
+     "audio": "/media/e2a79a36031946719637c00ccac8edee7529b789dae4425bf1482061cdbc82c6",
+     "duration": 8.69,
+     "cues": [
+      {
+       "start": 0,
+       "end": 0.0756,
+       "key": "PP",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.0756,
+       "end": 0.1511,
+       "key": "O",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.1511,
+       "end": 0.2267,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.2267,
+       "end": 0.3023,
+       "key": "I",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.3023,
+       "end": 0.3778,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.529,
+       "end": 0.6045,
+       "key": "nn",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.6045,
+       "end": 0.6801,
+       "key": "U",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.7557,
+       "end": 0.8312,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.8312,
+       "end": 0.9068,
+       "key": "FF",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.9068,
+       "end": 0.9823,
+       "key": "CH",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 0.9823,
+       "end": 1.0579,
+       "key": "kk",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.0579,
+       "end": 1.1335,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.1335,
+       "end": 1.209,
+       "key": "RR",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.209,
+       "end": 1.2846,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.2846,
+       "end": 1.3602,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.3602,
+       "end": 1.4357,
+       "key": "PP",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.4357,
+       "end": 1.5113,
+       "key": "I",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.5113,
+       "end": 1.5869,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.738,
+       "end": 1.8136,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.8136,
+       "end": 1.8891,
+       "key": "kk",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.8891,
+       "end": 1.9647,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.9647,
+       "end": 2.0403,
+       "key": "nn",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.0403,
+       "end": 2.1158,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.1158,
+       "end": 2.1914,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.1914,
+       "end": 2.267,
+       "key": "PP",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.267,
+       "end": 2.3425,
+       "key": "I",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.4181,
+       "end": 2.4937,
+       "key": "CH",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.4937,
+       "end": 2.5692,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.5692,
+       "end": 2.6448,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.6448,
+       "end": 2.7203,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.7203,
+       "end": 2.7959,
+       "key": "nn",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.7959,
+       "end": 2.8715,
+       "key": "kk",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.8715,
+       "end": 2.947,
+       "key": "PP",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 2.947,
+       "end": 3.0226,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.0226,
+       "end": 3.0982,
+       "key": "nn",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.0982,
+       "end": 3.1737,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.1737,
+       "end": 3.2493,
+       "key": "nn",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.4004,
+       "end": 3.476,
+       "key": "PP",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.476,
+       "end": 3.5516,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.5516,
+       "end": 3.6271,
+       "key": "kk",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.6271,
+       "end": 3.7027,
+       "key": "RR",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.7027,
+       "end": 3.7783,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.7783,
+       "end": 3.8538,
+       "key": "PP",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.9294,
+       "end": 4.005,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.005,
+       "end": 4.0805,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.0805,
+       "end": 4.1561,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.1561,
+       "end": 4.2317,
+       "key": "RR",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.2317,
+       "end": 4.3072,
+       "key": "CH",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.3072,
+       "end": 4.3828,
+       "key": "I",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.4583,
+       "end": 4.5339,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.5339,
+       "end": 4.6095,
+       "key": "RR",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.6095,
+       "end": 4.685,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.685,
+       "end": 4.7606,
+       "key": "PP",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.7606,
+       "end": 4.8362,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.8362,
+       "end": 4.9117,
+       "key": "RR",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 4.9117,
+       "end": 4.9873,
+       "key": "I",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.0629,
+       "end": 5.1384,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.1384,
+       "end": 5.214,
+       "key": "RR",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.2896,
+       "end": 5.3651,
+       "key": "kk",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.3651,
+       "end": 5.4407,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.4407,
+       "end": 5.5163,
+       "key": "FF",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.5163,
+       "end": 5.5918,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.743,
+       "end": 5.8185,
+       "key": "SS",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.8185,
+       "end": 5.8941,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.8941,
+       "end": 5.9697,
+       "key": "nn",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.9697,
+       "end": 6.0452,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.0452,
+       "end": 6.1208,
+       "key": "PP",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.1963,
+       "end": 6.2719,
+       "key": "O",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.2719,
+       "end": 6.3475,
+       "key": "RR",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.3475,
+       "end": 6.423,
+       "key": "I",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.423,
+       "end": 6.4986,
+       "key": "FF",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.4986,
+       "end": 6.5742,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.6497,
+       "end": 6.7253,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.7253,
+       "end": 6.8009,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.8009,
+       "end": 6.8764,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.8764,
+       "end": 6.952,
+       "key": "PP",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 6.952,
+       "end": 7.0276,
+       "key": "I",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.0276,
+       "end": 7.1031,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.1031,
+       "end": 7.1787,
+       "key": "nn",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.1787,
+       "end": 7.2543,
+       "key": "I",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.3298,
+       "end": 7.4054,
+       "key": "kk",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.4054,
+       "end": 7.481,
+       "key": "I",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.481,
+       "end": 7.5565,
+       "key": "nn",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.5565,
+       "end": 7.6321,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.6321,
+       "end": 7.7077,
+       "key": "kk",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.7077,
+       "end": 7.7832,
+       "key": "SS",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.8588,
+       "end": 7.9343,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 7.9343,
+       "end": 8.0099,
+       "key": "RR",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 8.0855,
+       "end": 8.161,
+       "key": "DD",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 8.161,
+       "end": 8.3122,
+       "key": "aa",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 8.3122,
+       "end": 8.3877,
+       "key": "CH",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 8.3877,
+       "end": 8.4633,
+       "key": "E",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 8.4633,
+       "end": 8.5389,
+       "key": "RR",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 8.5389,
+       "end": 8.6144,
+       "key": "SS",
+       "presenter": "presenter-3"
+      }
+     ],
+     "captions": [
+      {
+       "start": 0,
+       "end": 1.6624,
+       "text": "მოდით, ნუ ავჩქარდებით.",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 1.738,
+       "end": 3.3249,
+       "text": "აგენტები შეთანხმდნენ,",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 3.4004,
+       "end": 5.6674,
+       "text": "მაგრამ ეთერში არაფერი არ გავა,",
+       "presenter": "presenter-3"
+      },
+      {
+       "start": 5.743,
+       "end": 8.69,
+       "text": "სანამ ორივე ადამიანი ღილაკს არ დააჭერს.",
+       "presenter": "presenter-3"
+      }
+     ],
+     "turns": [
+      {
+       "presenter": "presenter-3",
+       "line": 0,
+       "start": 0,
+       "end": 8.69
+      }
+     ],
+     "credit": "Approved script · synthetic voice (elevenlabs-sample) · approximate timing"
+    }
+   },
+   "assets": [
+    {
+     "id": "voice",
+     "sha256": "e2a79a36031946719637c00ccac8edee7529b789dae4425bf1482061cdbc82c6",
+     "url": "/media/e2a79a36031946719637c00ccac8edee7529b789dae4425bf1482061cdbc82c6",
+     "title": "ECHO interstitial: voice",
+     "credit": "Synthetic voice (elevenlabs-sample)",
+     "license": "Rendered for ECHO",
+     "kind": "audio"
+    }
+   ]
+  },
+  {
+   "id": "premiere",
+   "module": "music",
+   "title": "Music premiere",
+   "owner": "Keti",
+   "ownerId": "creator-b",
+   "start": 50,
+   "duration": 60,
+   "revision": 2,
+   "confirmed": true,
+   "content": {
+    "assetId": "track",
+    "offset": 0,
+    "role": "premiere",
+    "brief": {
+     "interviewId": "IV1",
+     "version": 1,
+     "hash": "8955edb521a0bd77fc8de2fec1e29a3ca4cf63ca7781e941972d8ac791ea8bda",
+     "displayName": "ქეთი",
+     "title": "ზღვის სიმღერა",
+     "category": "music",
+     "aiInvolvement": "none",
+     "quotes": []
+    }
+   },
+   "assets": [
+    {
+     "id": "track",
+     "sha256": "405ea6e0d62b177693cd6e396bf7b7e5625c9e8a5d6f29a28b444f015216e8cc",
+     "url": "/media/405ea6e0d62b177693cd6e396bf7b7e5625c9e8a5d6f29a28b444f015216e8cc",
+     "title": "ზღვის სიმღერა",
+     "credit": "ქეთი",
+     "license": "Creator-declared uses: publicBroadcast, editing, replays",
+     "kind": "audio"
+    }
+   ]
+  },
+  {
+   "id": "outro",
+   "module": "host",
+   "title": "Outro",
+   "owner": "ECHO Producer",
+   "ownerId": "producer",
+   "start": 110,
+   "duration": 10,
+   "revision": 2,
+   "confirmed": false,
+   "content": {
+    "line": "outro",
+    "voice": {
+     "assetId": "voice",
+     "lang": "ka",
+     "lines": [
+      {
+       "presenter": "presenter-2",
+       "text": "მოკლედ? კარგი. ქეთის აგენტმა ხუთი წამი დათმო, მაგრამ პრემიერა არ გადაიწია. ეს არის მთავარი!"
+      }
+     ]
+    },
+    "host": {
+     "text": "მოკლედ? კარგი. ქეთის აგენტმა ხუთი წამი დათმო, მაგრამ პრემიერა არ გადაიწია. ეს არის მთავარი!",
+     "audio": "/media/df00da9b4ce99ad64e45a1de6ae0ac6ba6f257c9ae4a0984c4ff0eb8128ec25f",
+     "duration": 8.4,
+     "cues": [
+      {
+       "start": 0,
+       "end": 0.0923,
+       "key": "PP",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 0.0923,
+       "end": 0.1846,
+       "key": "O",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 0.1846,
+       "end": 0.2769,
+       "key": "kk",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 0.2769,
+       "end": 0.3692,
+       "key": "nn",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 0.3692,
+       "end": 0.4615,
+       "key": "E",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 0.4615,
+       "end": 0.5538,
+       "key": "DD",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 0.7385,
+       "end": 0.8308,
+       "key": "kk",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 0.8308,
+       "end": 0.9231,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 0.9231,
+       "end": 1.0154,
+       "key": "RR",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 1.0154,
+       "end": 1.1077,
+       "key": "kk",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 1.1077,
+       "end": 1.2,
+       "key": "I",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 1.3846,
+       "end": 1.4769,
+       "key": "kk",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 1.4769,
+       "end": 1.5692,
+       "key": "E",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 1.5692,
+       "end": 1.6615,
+       "key": "DD",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 1.6615,
+       "end": 1.7538,
+       "key": "I",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 1.7538,
+       "end": 1.8462,
+       "key": "SS",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 1.9385,
+       "end": 2.0308,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.0308,
+       "end": 2.1231,
+       "key": "kk",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.1231,
+       "end": 2.2154,
+       "key": "E",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.2154,
+       "end": 2.3077,
+       "key": "nn",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.3077,
+       "end": 2.4,
+       "key": "DD",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.4,
+       "end": 2.4923,
+       "key": "PP",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.4923,
+       "end": 2.5846,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.6769,
+       "end": 2.7692,
+       "key": "kk",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.7692,
+       "end": 2.8615,
+       "key": "U",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.8615,
+       "end": 2.9538,
+       "key": "DD",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 2.9538,
+       "end": 3.0462,
+       "key": "I",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 3.1385,
+       "end": 3.2308,
+       "key": "SS",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 3.2308,
+       "end": 3.3231,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 3.3231,
+       "end": 3.4154,
+       "key": "PP",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 3.4154,
+       "end": 3.5077,
+       "key": "I",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 3.6,
+       "end": 3.6923,
+       "key": "DD",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 3.6923,
+       "end": 3.7846,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 3.7846,
+       "end": 3.8769,
+       "key": "DD",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 3.8769,
+       "end": 3.9692,
+       "key": "PP",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 3.9692,
+       "end": 4.0615,
+       "key": "O",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 4.2462,
+       "end": 4.3385,
+       "key": "PP",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 4.3385,
+       "end": 4.4308,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 4.4308,
+       "end": 4.5231,
+       "key": "kk",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 4.5231,
+       "end": 4.6154,
+       "key": "RR",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 4.6154,
+       "end": 4.7077,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 4.7077,
+       "end": 4.8,
+       "key": "PP",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 4.8923,
+       "end": 4.9846,
+       "key": "PP",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 4.9846,
+       "end": 5.0769,
+       "key": "RR",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 5.0769,
+       "end": 5.1692,
+       "key": "E",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 5.1692,
+       "end": 5.2615,
+       "key": "PP",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 5.2615,
+       "end": 5.3538,
+       "key": "I",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 5.3538,
+       "end": 5.4462,
+       "key": "E",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 5.4462,
+       "end": 5.5385,
+       "key": "RR",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 5.5385,
+       "end": 5.6308,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 5.7231,
+       "end": 5.8154,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 5.8154,
+       "end": 5.9077,
+       "key": "RR",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6,
+       "end": 6.0923,
+       "key": "kk",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6.0923,
+       "end": 6.1846,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6.1846,
+       "end": 6.2769,
+       "key": "DD",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6.2769,
+       "end": 6.3692,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6.3692,
+       "end": 6.4615,
+       "key": "I",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6.4615,
+       "end": 6.5538,
+       "key": "SS",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6.5538,
+       "end": 6.6462,
+       "key": "I",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6.6462,
+       "end": 6.7385,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6.9231,
+       "end": 7.0154,
+       "key": "E",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 7.0154,
+       "end": 7.1077,
+       "key": "SS",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 7.2,
+       "end": 7.2923,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 7.2923,
+       "end": 7.3846,
+       "key": "RR",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 7.3846,
+       "end": 7.4769,
+       "key": "I",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 7.4769,
+       "end": 7.5692,
+       "key": "SS",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 7.6615,
+       "end": 7.7538,
+       "key": "PP",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 7.7538,
+       "end": 7.8462,
+       "key": "DD",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 7.8462,
+       "end": 7.9385,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 7.9385,
+       "end": 8.0308,
+       "key": "FF",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 8.0308,
+       "end": 8.1231,
+       "key": "aa",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 8.1231,
+       "end": 8.2154,
+       "key": "RR",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 8.2154,
+       "end": 8.3077,
+       "key": "I",
+       "presenter": "presenter-2"
+      }
+     ],
+     "captions": [
+      {
+       "start": 0,
+       "end": 0.6462,
+       "text": "მოკლედ?",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 0.7385,
+       "end": 1.2923,
+       "text": "კარგი.",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 1.3846,
+       "end": 4.1538,
+       "text": "ქეთის აგენტმა ხუთი წამი დათმო,",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 4.2462,
+       "end": 6.8308,
+       "text": "მაგრამ პრემიერა არ გადაიწია.",
+       "presenter": "presenter-2"
+      },
+      {
+       "start": 6.9231,
+       "end": 8.4,
+       "text": "ეს არის მთავარი!",
+       "presenter": "presenter-2"
+      }
+     ],
+     "turns": [
+      {
+       "presenter": "presenter-2",
+       "line": 0,
+       "start": 0,
+       "end": 8.4
+      }
+     ],
+     "credit": "Approved script · synthetic voice (elevenlabs-sample) · approximate timing"
+    }
+   },
+   "assets": [
+    {
+     "id": "voice",
+     "sha256": "df00da9b4ce99ad64e45a1de6ae0ac6ba6f257c9ae4a0984c4ff0eb8128ec25f",
+     "url": "/media/df00da9b4ce99ad64e45a1de6ae0ac6ba6f257c9ae4a0984c4ff0eb8128ec25f",
+     "title": "Outro: voice",
+     "credit": "Synthetic voice (elevenlabs-sample)",
+     "license": "Rendered for ECHO",
+     "kind": "audio"
+    }
+   ]
+  }
+ ],
+ "hash": "87c163de0d048717f7db757dc2268e3d6f963263071dfc2a592e8002398b20fb",
+ "publishedAt": 1792288173519,
+ "publishedBy": "producer"
+}

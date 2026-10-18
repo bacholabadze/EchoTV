@@ -216,6 +216,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
   // Voices go through the provider-neutral voice service (3.2). The 3.1 house lines keep their behaviour: Piper,
   // or the same captions-only fallback when no voice is available.
   const voiceOwners = new Map(); // draft voice cache key -> owner id (this process only; fail closed after restart)
+  const publicVoiceKeys = new Set(); // ECHO's own spoken interview questions: fixed question text, no creator data, playable by <audio>
   const voices = voice || voiceServiceFromEnv({root: ROOT, dataDir, probe: path => { const {reason, ...p} = probeMedia(path); return {...p, reason}; }, log: (event, data) => quiet || console.log(`voice: ${event} ${JSON.stringify(data)}`)});
   const speech = stt || sttFromEnv({dataDir});
   async function hostVoice(lines) {
@@ -235,7 +236,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
     for (const seg of Object.values(state.segments)) {
       const a = seg.content?.voice && seg.assets.find(x => x.id === seg.content.voice.assetId);
       if (a) out[seg.id] = {text: seg.content.voice.lines.map(l => l.text).join(' '), audio: `/media/${a.sha256}`, duration: a.voice.duration, cues: a.voice.cues, captions: a.voice.captions, turns: a.voice.turns,
-        credit: `Approved script · synthetic voice (${a.voice.provider === 'elevenlabs' ? 'ElevenLabs' : a.voice.provider === 'piper' ? 'Piper, offline' : a.voice.provider})${a.voice.approximateTiming ? ' · approximate timing' : ''}`};
+        credit: `Approved script · synthetic voice (${a.voice.provider === 'elevenlabs' ? 'ElevenLabs' : a.voice.provider === 'elevenlabs-sample' ? 'ElevenLabs, fixed sample' : a.voice.provider === 'piper' ? 'Piper, offline' : a.voice.provider})${a.voice.approximateTiming ? ' · approximate timing' : ''}`};
     }
     return out;
   }
@@ -358,7 +359,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       // Spoken questions are part of the voice interview: only for the creator, after their voice consent.
       if (actor.type !== 'person' || !view.consent?.voice) return {stepId: prompt.stepId, text: prompt.question.ka, audio: null, captions: [{start: 0, end: 4, text: prompt.question.ka}], cues: [], provider: 'captions', reason: 'spoken questions start after the creator allows voice answers'};
       const r = await voices.synthesize({lines: [{presenter: 'interviewer', text: prompt.question.ka}], lang: 'ka', order: ['elevenlabs-sample', 'elevenlabs', 'captions']});
-      if (r.key) voiceOwners.set(r.key, desk.ownerOf(actor));
+      if (r.key) publicVoiceKeys.add(r.key);
       return {stepId: prompt.stepId, text: prompt.question.ka, audio: r.audioFile ? `/voice/${r.key}.mp3` : null, duration: r.duration, captions: r.captions, cues: r.cues, provider: r.provider,
         ...(r.audioFile ? {} : {reason: r.attempts.map(a => a.skipped || a.error).join('; ') || 'captions only'})};
     }],
@@ -440,7 +441,7 @@ export function createEchoServer({dataDir = join(ROOT, 'data'), mediaDir = join(
       const who = published ? null : actorFor((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
       const person = who?.type === 'person' && desk.state.people[who.id];
       // Owner of the draft (set when it was rendered in this process) or the producer; after a restart, producer only.
-      if (!published && !(person && (person.role === 'producer' || voiceOwners.get(key) === person.id))) return send(res, 404, {error: 'not_found'});
+      if (!published && !publicVoiceKeys.has(key) && !(person && (person.role === 'producer' || voiceOwners.get(key) === person.id))) return send(res, 404, {error: 'not_found'});
       return serveFile(req, res, join(dataDir, 'voice-cache', url.pathname.slice(7)));
     }
     if (/^\/host\/[\w-]+\.mp3$/.test(url.pathname) && existsSync(join(dataDir, 'host', url.pathname.slice(6)))) return serveFile(req, res, join(dataDir, 'host', url.pathname.slice(6)));
