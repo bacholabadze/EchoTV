@@ -1,0 +1,139 @@
+{
+ "name": "after",
+ "url": "/studio/?opening=1",
+ "viewport": "1320x760",
+ "stage": {
+  "x": 81,
+  "y": 0,
+  "width": 1158,
+  "height": 570
+ },
+ "clickAt": 1792283536.238,
+ "frames": 1376,
+ "span": 44.63044214248657,
+ "events": [
+  {
+   "kind": "shot",
+   "shot": "wide",
+   "wall": 1792283536.377,
+   "turn": 0,
+   "audioTime": 0
+  },
+  {
+   "kind": "opening",
+   "wall": 1792283536.377
+  },
+  {
+   "kind": "turn",
+   "turn": 0,
+   "wall": 1792283543.013,
+   "audioTime": 0.04644
+  },
+  {
+   "kind": "shot",
+   "shot": "echo",
+   "wall": 1792283547.547,
+   "turn": 0,
+   "audioTime": 4.544488
+  },
+  {
+   "kind": "shot",
+   "shot": "nova",
+   "wall": 1792283550.314,
+   "turn": 1,
+   "audioTime": 0
+  },
+  {
+   "kind": "turn",
+   "turn": 1,
+   "wall": 1792283550.43,
+   "audioTime": 0.063406
+  },
+  {
+   "kind": "shot",
+   "shot": "atlas",
+   "wall": 1792283557.39,
+   "turn": 1,
+   "audioTime": 6.757007
+  },
+  {
+   "kind": "turn",
+   "turn": 2,
+   "wall": 1792283558.105,
+   "audioTime": 0.04644
+  },
+  {
+   "kind": "shot",
+   "shot": "nova",
+   "wall": 1792283564.258,
+   "turn": 2,
+   "audioTime": 6.118549
+  },
+  {
+   "kind": "turn",
+   "turn": 3,
+   "wall": 1792283566.564,
+   "audioTime": 0
+  },
+  {
+   "kind": "shot",
+   "shot": "echo",
+   "wall": 1792283566.564,
+   "turn": 3,
+   "audioTime": 0
+  },
+  {
+   "kind": "shot",
+   "shot": "two",
+   "wall": 1792283569.667,
+   "turn": 3,
+   "audioTime": 3.098195
+  },
+  {
+   "kind": "turn",
+   "turn": 4,
+   "wall": 1792283573.28,
+   "audioTime": 0
+  },
+  {
+   "kind": "shot",
+   "shot": "nova",
+   "wall": 1792283573.28,
+   "turn": 4,
+   "audioTime": 0
+  },
+  {
+   "kind": "shot",
+   "shot": "two",
+   "wall": 1792283576.229,
+   "turn": 4,
+   "audioTime": 2.936859
+  },
+  {
+   "kind": "turn",
+   "turn": 5,
+   "wall": 1792283579.691,
+   "audioTime": 0.042708
+  },
+  {
+   "kind": "shot",
+   "shot": "atlas",
+   "wall": 1792283579.691,
+   "turn": 5,
+   "audioTime": 0.042708
+  }
+ ],
+ "errors": [],
+ "visual": "wave3",
+ "drawCalls": 65,
+ "triangles": 145078,
+ "pixelRatio": 1,
+ "renderedFrames": 1506,
+ "rafIntervalMs": {
+  "samples": 2649,
+  "p50": 16.69999999999709,
+  "p95": 16.799999999995634,
+  "max": 33.30000000000291
+ },
+ "jsHeapMB": null
+}

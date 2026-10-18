@@ -1,0 +1,16 @@
+# npm run test:studio (2026-10-18T00:40:29Z)
+PASS: 397 expressive samples; bounded speech-safe morphs; distinct blink schedules; reduced motion; deterministic pause/replay sampling.
+PASS: independent skeletons, 2817 skinned vertex samples, wrist and toe contacts, face projection in 25 shot/aspect combinations. Not a visual collision check.
+PASS: raw GLBs have no image/occlusion/normal/vertex-color layers; one skin and one fitted hair per actor; absolute palette colors; opaque front faces; old bob and rear bun absent.
+PASS: one actor; 66 base facial shapes; 1976 finite posed/morphed vertex samples; seated wrist contacts; four portrait/desktop frames; 15.008s recording; no baked AO; 6.73MB GLB.
+
+# studio-rig --directed
+PASS: independent skeletons, 1050 skinned vertex samples, wrist and toe contacts, face projection in 25 shot/aspect combinations. Not a visual collision check.
+PASS: editorial faces/materials/poses isolated; all three retain 66 facial targets and finite speech deformation.
+PASS: directed attention and restrained gesture contacts over all dialogue turns.
+
+# visual-upgrade/scenery
+}
+
+# visual-wave3/direction
+PASS wave3: 16 cuts over 10 turns (two-shots 3 ECHO/Nova, 2 ECHO/Atlas), min spacing ok, end guard, fixed mode; 180 shot/aspect/motion framing combos; opening lands on wide frame; cinematic body 989 frames, wrist y 0.860–0.881 m, feet fixed.

@@ -1,0 +1,95 @@
+{
+  "result": "PASS",
+  "frames": 1973,
+  "vertices": 6060180,
+  "maxLiftMeters": 0.029722308020770805,
+  "maxWristStepMeters": 0.002034738197704149,
+  "minSampledHandY": 0.8264360511982234,
+  "tableIntersections": {
+    "before": 816581,
+    "after": 0
+  },
+  "cuts": [
+    {
+      "time": 4.433333333333327,
+      "shot": "echo",
+      "event": "sentence"
+    },
+    {
+      "time": 7.2686,
+      "shot": "nova",
+      "event": "turn-start"
+    },
+    {
+      "time": 14.0256,
+      "shot": "atlas",
+      "event": "turn-end"
+    },
+    {
+      "time": 20.55893333333332,
+      "shot": "nova",
+      "event": "performance"
+    },
+    {
+      "time": 22.8739,
+      "shot": "echo",
+      "event": "turn-start"
+    },
+    {
+      "time": 28.9924,
+      "shot": "nova",
+      "event": "turn-end"
+    },
+    {
+      "time": 35.2742,
+      "shot": "echo",
+      "event": "turn-end"
+    },
+    {
+      "time": 39.74086666666666,
+      "shot": "atlas",
+      "event": "sentence"
+    },
+    {
+      "time": 42.8803,
+      "shot": "two",
+      "event": "turn-start"
+    },
+    {
+      "time": 48.513633333333324,
+      "shot": "atlas",
+      "event": "sentence"
+    },
+    {
+      "time": 52.0065,
+      "shot": "echo",
+      "event": "turn-start"
+    },
+    {
+      "time": 56.54600000000001,
+      "shot": "atlas",
+      "event": "turn-end"
+    },
+    {
+      "time": 61.279333333333334,
+      "shot": "nova",
+      "event": "performance"
+    },
+    {
+      "time": 63.75730000000001,
+      "shot": "echo",
+      "event": "turn-start"
+    }
+  ],
+  "checks": [
+    "planted legs and feet",
+    "finite animated geometry",
+    "bounded wrists",
+    "no new sampled table intersections",
+    "paused pose",
+    "reduced motion",
+    "deterministic sampling",
+    "semantic camera holds",
+    "caption contract unchanged"
+  ]
+}

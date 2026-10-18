@@ -1,0 +1,123 @@
+{
+ "name": "before",
+ "url": "/studio/",
+ "viewport": "1320x760",
+ "stage": {
+  "x": 81,
+  "y": 0,
+  "width": 1158,
+  "height": 570
+ },
+ "clickAt": 1792283488.478,
+ "frames": 1296,
+ "span": 44.63896203041077,
+ "events": [
+  {
+   "kind": "shot",
+   "shot": "wide",
+   "wall": 1792283488.596,
+   "turn": 0
+  },
+  {
+   "kind": "turn",
+   "turn": 0,
+   "wall": 1792283488.924
+  },
+  {
+   "kind": "shot",
+   "shot": "echo",
+   "wall": 1792283493.354,
+   "turn": 0
+  },
+  {
+   "kind": "shot",
+   "shot": "nova",
+   "wall": 1792283496.222,
+   "turn": 1
+  },
+  {
+   "kind": "turn",
+   "turn": 1,
+   "wall": 1792283496.329
+  },
+  {
+   "kind": "shot",
+   "shot": "atlas",
+   "wall": 1792283503.115,
+   "turn": 1
+  },
+  {
+   "kind": "turn",
+   "turn": 2,
+   "wall": 1792283503.638
+  },
+  {
+   "kind": "shot",
+   "shot": "nova",
+   "wall": 1792283509.694,
+   "turn": 2
+  },
+  {
+   "kind": "turn",
+   "turn": 3,
+   "wall": 1792283512.074
+  },
+  {
+   "kind": "shot",
+   "shot": "echo",
+   "wall": 1792283512.074,
+   "turn": 3
+  },
+  {
+   "kind": "shot",
+   "shot": "nova",
+   "wall": 1792283518.274,
+   "turn": 3
+  },
+  {
+   "kind": "turn",
+   "turn": 4,
+   "wall": 1792283518.761
+  },
+  {
+   "kind": "shot",
+   "shot": "echo",
+   "wall": 1792283524.603,
+   "turn": 4
+  },
+  {
+   "kind": "turn",
+   "turn": 5,
+   "wall": 1792283525.153
+  },
+  {
+   "kind": "shot",
+   "shot": "atlas",
+   "wall": 1792283529.19,
+   "turn": 5
+  },
+  {
+   "kind": "shot",
+   "shot": "two",
+   "wall": 1792283532.289,
+   "turn": 6
+  },
+  {
+   "kind": "turn",
+   "turn": 6,
+   "wall": 1792283532.394
+  }
+ ],
+ "errors": [],
+ "drawCalls": 111,
+ "triangles": 159476,
+ "pixelRatio": 1,
+ "renderedFrames": 1317,
+ "rafIntervalMs": {
+  "samples": 2648,
+  "p50": 16.69999999999709,
+  "p95": 16.700000000004366,
+  "max": 33.30000000000109
+ },
+ "jsHeapMB": null
+}
