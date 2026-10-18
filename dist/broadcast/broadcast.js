@@ -226,8 +226,8 @@ function factSource(cap) {
 function playQa(seg, local, ms) {
   const qa = state.qa, host = seg.content.host, ed = state.broadcast.manifest.editorial;
   lower('ECHO · წამყვანი · ცოცხალი, მოდერირებული კითხვა', seg.title, 'მაყურებლის კითხვა · კითხვას ადამიანი არჩევს, პასუხი წყაროს მიხედვით მოიწერება', seg.ownerId);
-  const intro = local < Math.min(8, seg.duration / 3) && host?.captions?.[0];
-  $('#caption').hidden = !intro; if (intro) setText('#caption', intro.text);
+  const intro = (host?.captions || []).filter(c => c.start <= local).at(-1) || null, quiet = !!(qa?.selected && local > (intro?.end ?? 0) + .5);
+  $('#caption').hidden = !intro || quiet; if (intro) setText('#caption', intro.speaker === 'guest' ? `„${intro.text}“ — ${intro.who}` : intro.text);
   const q = qa?.publicationId === state.broadcast.manifest.publicationId ? qa.selected : null, a = q ? qa.answer : null;
   $('#qa-card').hidden = false;
   setText('#qa-q', q ? q.text : (seg.content.qa?.prompt || ed?.audienceSlot?.prompt || ''));
