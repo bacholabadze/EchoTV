@@ -84,6 +84,8 @@ test('grounding gate: invented or paraphrased quotes, numbers, research and unve
   assert.ok(problemCodes(swap(x => { x.blocks.find(b => b.kind === 'work').media = []; }), p).includes('media'), 'a shown file without an editorial purpose');
   assert.ok(problemCodes(withLine('qa', {speaker: 'moderator', kind: 'question', text: 'მაყურებელი გვეკითხება: რატომ Suno?', refs: []}), p).includes('qa'), 'a plan cannot write the viewer\'s question');
   assert.ok(problemCodes(withLine('qa', {speaker: 'moderator', kind: 'transition', text: 'ახლა კითხვა: როგორ დაგვარწმუნებთ?', refs: []}), p).includes('qa'), 'nor slip one in as a transition');
+  // From the first real-agent run (before this rule): a debate line claiming the viewer had asked.
+  assert.ok(problemCodes(withLine('debate', {speaker: 'moderator', kind: 'transition', text: 'ნოვა კვალს ითხოვს, ატლასი ამბობს, კვალი არსებობს. ეს მაყურებელმაც იკითხა.', refs: []}), p).includes('qa'), 'no invented viewer involvement anywhere');
   assert.ok(problemCodes(swap(x => { x.packetHash = '0'.repeat(64); }), p).includes('stale_packet'), 'draft for other inputs');
   assert.ok(problemCodes(swap(x => { const b = x.blocks.find(b => b.kind === 'debate'); b.lines.push(...Array(3).fill({speaker: 'enthusiast', kind: 'humor', text: 'ხუმრობა სიტყვებზე.', refs: []})); }), p).includes('humor'), 'humor is rationed');
   assert.ok(problemCodes(swap(x => { x.blocks.find(b => b.kind === 'opening').lines.push({speaker: 'moderator', kind: 'transition', text: 'ა'.repeat(240), refs: []}, {speaker: 'moderator', kind: 'transition', text: 'ბ'.repeat(240), refs: []}); }), p).includes('reading'), 'captions must be readable in the time given');

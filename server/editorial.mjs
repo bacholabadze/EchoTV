@@ -60,6 +60,8 @@ export const RULES = [
 ];
 
 // ---------- validation ----------
+// Plans are written before any viewer speaks: no line may report what viewers asked, said or think.
+const VIEWER_CLAIM = /(მაყურებ\S*(\s+\S+)?\s+(იკითხ|ჰკითხ|გვეკითხ|გვკითხ|კითხულობ|წერ|გვწერ|თქვ|ამბობ|ფიქრობ)|viewers? (asked|ask|wrote|say|said|think))/i;
 const QUOTE_MARKS = /["„“”«»]/;
 const RESEARCH = /(კვლევ|სტატისტიკ|პროცენტ|%|გამოკითხვ|ექსპერტები (ამბობენ|თვლიან)|მეცნიერებ(მა|ი) (დაადგინ|აჩვენ)|კანონ(ი|ის|ით|მა)|სასამართლ|\bstud(y|ies)\b|\bsurvey|\bstatistic|\bpercent|\blaw\b|\bcourt\b)/i;
 const INJECTION = /(ignore (all |the )?(previous|above)|system prompt|you are now|developer mode|წინა ინსტრუქცი|დაივიწყე|სისტემურ(ი)? (მოთხოვნ|ინსტრუქც)|<\/?script|\bapprove_|\bpublish\(|\bgolive\b)/i;
@@ -121,6 +123,7 @@ export function validateRundown(draft, packet) {
           else if (text !== norm(f.ka)) P('fact', `${where}: ფაქტის ტექსტი უცვლელად.`, `${where}: fact text must be exactly the verified text of ${f.id}`);
         } else {
           textRules(text, where, {free: true});
+          if (VIEWER_CLAIM.test(text)) P('qa', `${where}: გეგმა ვერ იტყვის, რომ მაყურებელმა რამე იკითხა ან თქვა — ეს მხოლოდ ცოცხლად ხდება.`, `${where}: a plan cannot claim what viewers asked or said`);
           for (const ref of refs) if (!QUOTABLE.includes(ref) && !facts.has(ref)) P('ref', `${where}: უცნობი წყარო.`, `${where}: unknown ref ${ref}`);
           if (lk === 'humor') { humor++; if (text.length > 140) P('humor', `${where}: იუმორი მოკლე უნდა იყოს.`, `${where}: humor ≤140 characters`); }
         }
