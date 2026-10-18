@@ -4,3 +4,18 @@ node_modules/
 *.log
 .venv/
 voices/
+
+# Local credentials, generated state and rehearsal backups
+.env
+.env.*
+!.env.example
+/data.*/
+/data-*/
+/credentials.txt
+*.pem
+*.key
+
+# Local deployment metadata and test output
+.openai/
+/test-results/
+/playwright-report/
